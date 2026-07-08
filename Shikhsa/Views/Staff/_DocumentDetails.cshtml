@@ -1,0 +1,220 @@
+﻿@model Shikhsa.Models.StaffMaster
+
+<div class="card shadow-sm">
+
+    <div class="card-header bg-light">
+
+        <div class="d-flex justify-content-between">
+
+            <h5 class="mb-0">
+
+                <i class="ti ti-files"></i>
+
+                Documents
+
+            </h5>
+
+            <button type="button"
+                    class="btn btn-primary"
+                    id="btnAddDocument">
+
+                <i class="ti ti-plus"></i>
+
+                Add Document
+
+            </button>
+
+        </div>
+
+    </div>
+
+    <div class="card-body p-0">
+
+        <div class="table-responsive">
+
+            <table class="table table-bordered table-hover mb-0"
+                   id="tblDocument">
+
+                <thead class="table-primary">
+
+                    <tr>
+
+                        <th>#</th>
+
+                        <th>Document Type</th>
+
+                        <th>Document No</th>
+
+                        <th>Expiry Date</th>
+
+                        <th>File</th>
+
+                        <th>Remarks</th>
+
+                        <th width="120">Action</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+                   
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<div class="modal fade"
+     id="DocumentModal">
+
+    <div class="modal-dialog modal-lg">
+
+        <div class="modal-content">
+
+            <div class="modal-header bg-primary text-white">
+
+                <h5>
+
+                    Document
+
+                </h5>
+
+                <button type="button"
+                        class="btn-close btn-close-white"
+                        data-bs-dismiss="modal"
+                        aria-label="Close">
+                </button>
+
+            </div>
+
+            <div class="modal-body">
+
+                <div class="row g-3">
+
+                    <input type="hidden"
+                           id="DocumentIndex" />
+
+                    <div class="col-lg-6">
+
+                        <label>
+
+                            Document Type
+
+                        </label>
+
+                        <select id="DocumentTypeId"
+                                class="form-select select2">
+
+                            <option value="">Select</option>
+
+                            @foreach (var item in ViewBag.DocumentType)
+                            {
+                                <option value="@item.DataListItemId">
+
+                                    @item.DataListItemText
+
+                                </option>
+                            }
+
+                        </select>
+
+                    </div>
+
+                    <div class="col-lg-6">
+
+                        <label>
+
+                            Document Number
+
+                        </label>
+
+                        <input type="text"
+                               id="DocumentNumber"
+                               class="form-control" />
+
+                    </div>
+
+                    <div class="col-lg-6">
+
+                        <label>
+
+                            Expiry Date
+
+                        </label>
+
+                        <input type="date"
+                               id="ExpiryDate"
+                               class="form-control" />
+
+                    </div>
+
+                    <div class="col-lg-6">
+
+                        <label>
+
+                            Upload File
+
+                        </label>
+
+                        <input type="file"
+                               id="DocumentFile"
+                               class="form-control" />
+                        <a id="DocumentFilePreview"
+                           href="#"
+                           target="_blank"
+                           style="display:none">
+                            View Existing file
+                        </a>
+
+                    </div>
+
+                    <div class="col-lg-12">
+
+                        <label>
+
+                            Remarks
+
+                        </label>
+
+<textarea id="DocumentRemarks"
+          rows="2"
+          class="form-control">
+
+</textarea>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button type="button" class="btn btn-success"
+                        id="btnDocumentSave">
+
+                    Save
+
+                </button>
+
+                <button type="button" class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+
+                    Close
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

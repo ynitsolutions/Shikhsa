@@ -1,0 +1,166 @@
+﻿@* @model List<Shikhsa.ViewModels.StaffUserVM> *@
+
+@{
+    ViewData["Title"] = "Staff User Management";
+    <style>
+        #loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255,255,255,.5);
+            z-index: 99999;
+        }
+
+            #loader .overlay {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100%;
+            }
+    </style>
+}
+
+@* <input type="hidden" asp-for="UserId" /> *@
+<div class="card shadow-sm">
+
+    <div class="card-header bg-primary text-white">
+
+        <h5 class="mb-0">
+
+            Staff User Management
+
+        </h5>
+
+    </div>
+
+    <div class="card-body">
+
+        <div class="row">
+
+            <div class="col-md-4">
+
+                <label>
+
+                    Staff
+
+                </label>
+                <select id="StaffId" class="form-select select2">
+
+                            <option value="">Select</option>
+
+                            @foreach (var item in ViewBag.StaffList)
+                            {
+                                <option value="@item.Value">
+
+                                    @item.Text
+
+                                </option>
+                            }
+                                
+                        </select>
+               @*  <select asp-for="StaffId"
+                        asp-items="Model.StaffList"
+                        class="form-select">
+
+                    <option value="">Select Staff</option>
+
+                </select> *@
+
+            </div>
+
+            <div class="col-md-4">
+
+                <label>
+
+                    Role
+
+                </label>
+                <input type="hidden" id="UserId" />
+                <input type="hidden" id="OldRoleId" />
+                 <select id="RoleId" class="form-select select2">
+
+                            <option value="">Select</option>
+
+                            @foreach (var item in ViewBag.RoleList)
+                            {
+                                <option value="@item.Value">
+
+                                    @item.Text
+
+                                </option>
+                            }
+                                
+                        </select>
+@* 
+                <select asp-for="RoleId"
+                        asp-items="Model.RoleList"
+                        class="form-select">
+
+                    <option value="">Select Role</option>
+
+                </select> *@
+
+            </div>
+
+            <div class="col-md-2 d-flex align-items-end">
+
+                <button type="button"
+                        class="btn btn-success w-100"
+                        id="btnSave">
+
+                    Save
+
+                </button>
+
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+
+                <button type="button"
+                        class="btn btn-secondary"
+                        id="btnClear">
+
+                    Clear
+
+                </button>
+
+            </div>
+
+        </div>
+
+     
+
+    </div>
+    <div class="card mt-3">
+        <div class="card-header">
+            <h5>Staff User List</h5>
+        </div>
+        <div class="card-body">
+            <table class="table table-bordered table-striped table-hover" id="tblStaffUser">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Staff</th>
+                        <th>User Name</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th width="150">Action</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <partial name="_ChangePassword" />
+    </div>
+    <div id="loader" style="display:none;">
+    <div class="overlay">
+        <div class="spinner-border text-primary"></div>
+    </div>
+</div>
+</div>
+
+@section Scripts {
+
+    <script src="~/js/StaffUSer.js"></script>
+}

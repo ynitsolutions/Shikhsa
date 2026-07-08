@@ -1,0 +1,376 @@
+﻿@model Shikhsa.ViewModels.ExamCategoryVM
+
+@{
+    ViewData["Title"] = "Exam Category Master";
+}
+
+<div class="container-fluid">
+
+    <!-- ========================= FORM ========================= -->
+
+    <div class="card shadow-sm mb-4">
+
+        <div class="card-header text-white">
+            <h5 class="mb-0">
+                <i class="ti ti-file-text"></i>
+                
+            </h5>
+        </div>
+
+        <div class="card-body">
+
+            <form asp-action="SaveExamCategory" method="post">
+
+                <input asp-for="ExamCategory.ExamCategoryId" type="hidden" />
+
+                <div class="row g-3">
+
+                    <!-- Exam Name -->
+
+                    <div class="col-lg-4 col-md-6">
+
+                        <label class="form-label">
+                           @Localizer.Get("Exam Name")
+                          
+                        </label>
+
+                        <input asp-for="ExamCategory.ExamCategoryName"
+                               class="form-control required"
+                               placeholder="Exam Name" />
+
+                        <span asp-validation-for="ExamCategory.ExamCategoryName"
+                              class="text-danger"></span>
+
+                    </div>
+
+                    <!-- Short Name -->
+
+                    <div class="col-lg-2 col-md-6">
+
+                        <label class="form-label">
+                            @Localizer.Get("Short Name")
+                        </label>
+
+                        <input asp-for="ExamCategory.ShortName"
+                               class="form-control required"
+                               placeholder="T1" />
+
+                    </div>
+
+                    <!-- Display Order -->
+
+                    <div class="col-lg-2 col-md-6">
+
+                        <label class="form-label">
+                            @Localizer.Get("Display Order")
+                        </label>
+
+                        <input asp-for="ExamCategory.DisplayOrder"
+                               class="form-control required"
+                               type="number" />
+
+                    </div>
+
+                    <!-- Weightage -->
+
+                    <div class="col-lg-2 col-md-6">
+
+                        <label class="form-label">
+                            @Localizer.Get("Weightage") %
+                        </label>
+
+                        <input asp-for="ExamCategory.Weightage"
+                               class="form-control required"
+                               type="number"
+                               step="0.01" />
+
+                    </div>
+
+                    <!-- Button -->
+
+                    <div class="col-lg-2 col-md-12 d-grid">
+
+                        <label>&nbsp;</label>
+
+                        <button type="submit"
+                                class="btn btn-primary">
+
+                            <i class="ti ti-device-floppy"></i>
+
+                          @*   @(Model.ExamCategory.ExamCategoryId == 0
+                                                        ? @Localizer.Get("Save")
+                                                        : @Localizer.Get("Update")) *@
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+                <hr />
+
+                <div class="row">
+
+                    <div class="col-md-3">
+
+                        <div class="form-check form-switch">
+
+                            <input asp-for="ExamCategory.IncludeInFinalResult"
+                                   class="form-check-input" />
+
+                            <label class="form-check-label">
+
+                                @Localizer.Get("Include In Final Result")
+
+                            </label>
+
+                        </div>
+
+                    </div>
+
+                    <div class="col-md-3">
+
+                        <div class="form-check form-switch">
+
+                            <input asp-for="ExamCategory.IsMarksEntryAllowed"
+                                   class="form-check-input" />
+
+                            <label class="form-check-label">
+
+                                @Localizer.Get("Marks Entry Allowed")
+
+                            </label>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================= LIST ========================= -->
+
+    <div class="card shadow-sm">
+
+        <div class="card-header text-white">
+
+            <h5 class="mb-0">
+
+                <i class="ti ti-list"></i>
+
+               
+
+            </h5>
+
+        </div>
+
+        <div class="card-body">
+
+            <div class="table-responsive">
+
+                <table class="table table-bordered table-hover align-middle"
+                       id="tblExamCategory">
+
+                    <thead class="table-light">
+
+                        <tr>
+
+                            <th width="60">
+                                #
+                            </th>
+
+                            <th>
+                                @Localizer.Get("Exam Name")
+                            </th>
+
+                            <th>
+                                @Localizer.Get("Short Name")
+                            </th>
+
+                            <th>
+                                @Localizer.Get("Order")
+                            </th>
+
+                            <th>
+                                @Localizer.Get("Weight") %
+                            </th>
+
+                            <th>
+                                @Localizer.Get("Final")
+                            </th>
+
+                            <th>
+                                @Localizer.Get("Marks")
+                            </th>
+
+                            <th>
+                                @Localizer.Get("Status")
+                            </th>
+
+                            <th>
+                               @*  @Localizer.Get("Action") *@
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        @{
+                            int sr = 1;
+                        }
+
+                        @foreach (var item in Model.ExamCategoryList)
+                        {
+                            <tr>
+
+                                <td>@sr</td>
+
+                                <td>
+
+                                    @item.ExamCategoryName
+
+                                </td>
+
+                                <td>
+
+                                    @item.ShortName
+
+                                </td>
+
+                                <td>
+
+                                    @item.DisplayOrder
+
+                                </td>
+
+                                <td>
+
+                                    @item.Weightage %
+
+                                </td>
+
+                                <td>
+
+                                    @if (item.IncludeInFinalResult)
+                                    {
+                                        <span class="badge bg-success">
+                                            @Localizer.Get("Y")
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">
+                                            @Localizer.Get("N")
+                                        </span>
+                                    }
+
+                                </td>
+
+                                <td>
+
+                                    @if (item.IsMarksEntryAllowed)
+                                    {
+                                        <span class="badge bg-success">
+                                            @Localizer.Get("Y")
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">
+                                            @Localizer.Get("N")
+                                        </span>
+                                    }
+
+                                </td>
+
+                                <td>
+
+                                    @if (item.IsActive)
+                                    {
+                                        <span class="badge bg-success">
+
+                                            @Localizer.Get("A")
+
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">
+
+                                            @Localizer.Get("IA")
+
+                                        </span>
+                                    }
+
+                                </td>
+
+                                <td>
+                                    <permission controller="Exam" action="ExamCategory" type="Edit">
+                                    <a asp-action="ExamCategory"
+                                       asp-route-id="@item.ExamCategoryId"
+                                       >
+
+                                        <i class="ti ti-edit"></i>
+
+                                    </a>
+                                    </permission>
+                                    <permission controller="Exam" action="ExamCategory" type="delete">
+                                    <a asp-action="DeleteExamCategory"
+                                       asp-route-id="@item.ExamCategoryId"
+                                       onclick="return confirm('Are you sure?')"
+                                       >
+
+                                        <i class="ti ti-trash"></i>
+
+                                    </a>
+                                    </permission>
+                                </td>
+
+                            </tr>
+
+                            sr++;
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+@section Scripts {
+
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+
+        $(function () {
+
+            $('#tblExamCategory').DataTable({
+
+                responsive: true,
+
+                pageLength: 10,
+
+                lengthMenu: [[10,25,50,100],[10,25,50,100]]
+
+            });
+
+        });
+
+    </script>
+
+}

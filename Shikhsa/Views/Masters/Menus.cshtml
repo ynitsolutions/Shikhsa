@@ -1,0 +1,250 @@
+﻿@using Shikhsa.Data
+@model Menu
+
+@{
+    var menuList = ViewBag.MenuList as List<Menu>;
+    ViewData["Title"] =  @Localizer.Get("Menu Master");
+}
+
+<div class="row">
+
+    <!-- LEFT SIDE FORM -->
+    <div class="col-md-12">
+
+        <div class="card">
+
+            <div class="card-header">
+                <h4>@(Model.Id == 0?  @Localizer.Get("Add Menu") :  @Localizer.Get("Update Menu")) </h4>
+            </div>
+
+            <div class="card-body">
+
+                <form asp-action="SaveMenus" method="post">
+
+                    <input type="hidden" asp-for="Id" />
+
+                    <div class="row">
+
+                        <!-- MENU NAME -->
+                        <div class="col-md-6 col-lg-4 mb-3">
+
+                            <label class="form-label">
+                                 @Localizer.Get("Menu Name")
+                            </label>
+
+                            <input asp-for="Name" class="form-control" />
+
+                        </div>
+                        <div class="col-md-6 col-lg-4 mb-3" style="display:none">
+
+                            <label class="form-label">
+                                @Localizer.Get("Controller Name")
+                            </label>
+
+                            <input asp-for="ControllerName" class="form-control" />
+
+                        </div>
+                        <!-- URL -->
+                        <div class="col-md-6 col-lg-4 mb-3" style="display:none" >
+
+                            <label class="form-label"> @Localizer.Get("Action Name")</label>
+
+                            <input asp-for="ActionName" class="form-control" />
+
+                        </div>
+
+                        <!-- ICON -->
+                        <div class="col-md-6 col-lg-4 mb-3">
+
+                            <label class="form-label"> @Localizer.Get("Icon")</label>
+
+                            <input asp-for="Icon" class="form-control" placeholder="ti ti-home" />
+
+                        </div>
+
+                        <!-- DISPLAY ORDER -->
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <label class="form-label">@Localizer.Get("Display Order")</label>
+                            <input asp-for="DisplayOrder" class="form-control" />
+                        </div>
+
+                        <!-- STATUS -->
+                        <div class="col-md-6 col-lg-4 mb-3">
+
+                            <label class="form-label">
+                                 @Localizer.Get("Status")
+                            </label>
+
+                            <select asp-for="IsActive"
+                                    class="form-select select2">
+
+                                <option value="true">
+                                     @Localizer.Get("Active")
+                                </option>
+
+                                <option value="false">
+                                     @Localizer.Get("InActive")
+                                </option>
+
+                            </select>
+
+                        </div>
+
+                    </div>
+
+                    <!-- BUTTONS -->
+                    <div class="mt-2">
+
+                        <button type="submit" class="btn btn-success">
+                             @Localizer.Get("Save Menu")
+                        </button>
+
+                        <button type="reset" class="btn btn-secondary"> @Localizer.Get("Reset") </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+</div>
+<div class="row">
+
+    <!-- RIGHT SIDE LIST -->
+    <div class="col-md-12">
+
+        <div class="card">
+
+            <div class="card-header">
+                <h4> @Localizer.Get("Menu List")</h4>
+            </div>
+
+            <div class="card-body">
+
+                <table class="table table-bordered table-hover">
+
+                    <thead>
+
+                        <tr>
+
+                            <th> #</th>
+
+                            <th> @Localizer.Get("Menu")</th>
+                            @* 
+                            <th>URL</th> *@
+
+                            <th> @Localizer.Get("Icon")</th>
+
+                            <th> @Localizer.Get("Order")</th>
+
+                            <th> @Localizer.Get("Status")</th>
+
+                            <th width="180">
+                                @Localizer.Get("Action")
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        @if (menuList != null
+                                                && menuList.Any())
+                        {
+                            int i = 1;
+
+                            foreach (var item in menuList)
+                            {
+                                <tr>
+
+                                    <td>@i</td>
+
+                                    <td>
+                                        @item.Name
+                                    </td>
+
+                                    @*  <td>
+                                        @item.Url
+                                    </td> *@
+
+                                    <td>
+                                        <i class="@item.Icon"></i>
+                                        @item.Icon
+                                    </td>
+
+                                    <td>
+                                        @item.DisplayOrder
+                                    </td>
+
+                                    <td>
+
+                                        @if (item.IsActive)
+                                        {
+                                            <span class="badge bg-success">
+                                                Active
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">
+                                                InActive
+                                            </span>
+                                        }
+
+                                    </td>
+
+                                    <td>
+                                        <permission controller="Masters" action="Menus" type="edit">
+                                            <a asp-action="Menus" asp-route-id="@item.Id" class="btn btn-warning btn-sm">
+                                                @Localizer.Get("Edit")
+                                            </a>
+                                        </permission>
+                                        @*  <a asp-action="Menus"asp-route-id="@item.Id" class="btn btn-warning btn-sm">
+
+                                    Edit
+
+                                </a> *@
+                                        <permission controller="Masters" action="Menus" type="delete">
+                                            <a asp-action="DeleteMenu" asp-route-id="@item.Id" class="btn btn-info btn-sm">
+                                                @(item.IsActive? @Localizer.Get("InActive") : @Localizer.Get("Active"))
+
+                                            </a>
+                                        </permission>
+
+                                    </td>
+
+                                </tr>
+
+                                i++;
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+
+                                <td colspan="7"
+                                    class="text-center">
+
+                                    No Record Found
+
+                                </td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+</div>

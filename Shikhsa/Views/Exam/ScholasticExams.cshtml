@@ -1,0 +1,353 @@
+﻿@using Shikhsa.ViewModels
+@model ScholasticExamVM
+@{
+
+    ViewData["Title"] = @Localizer.Get("Scholastic Exam");
+    var docs = ViewBag.Documents as List<Tbl_StudentDocument>;
+
+}
+<div class="container-fluid">
+
+    <!-- FORM -->
+    <div class="card shadow-sm mb-3">
+        <div class="card-header">
+            <h5 class="mb-0">
+                @(Model.Exam.Id > 0 ? Localizer.Get("Edit Scholastic Exam") : Localizer.Get("Add Scholastic Exam"))
+            </h5>
+        </div>
+
+        <div class="card-body">
+
+            <form asp-action="SaveScholasticExams" method="post">
+
+                <input asp-for="Exam.Id" type="hidden" />
+
+                <div class="row">
+
+                    <!-- Exam Name -->
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label"> @Localizer.Get("Exam Name")</label>
+                        <input asp-for="Exam.ExamName"
+                               class="form-control required" />
+                    </div>
+                    <!-- Batch -->
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">
+                            @Localizer.Get("Batch")
+                        </label>
+
+                        <select asp-for="Exam.BatchId" class="form-control select2 required">
+
+                         
+                            @foreach (var item in Model.Batches)
+                            {
+                                <option value="@item.BatchId">
+                                    @item.AcademicYear
+                                </option>
+                            }
+
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">
+                            @Localizer.Get("Class")
+                        </label>
+
+                        <select asp-for="Exam.ClassId" class="form-control select2 required">
+
+                           
+                            @foreach (var item in Model.Classes)
+                            {
+                                <option value="@item.DataListItemId">
+                                    @item.DataListItemText
+                                </option>
+                            }
+
+                        </select>
+                    </div>
+                    <!-- Category -->
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">
+                             @Localizer.Get("Exam Term")
+                        </label>
+
+                        <select asp-for="Exam.ExamCategoryId" class="form-control select2 required">
+
+                           
+                            @foreach (var item in Model.ExamCategories)
+                            {
+                                <option value="@item.ExamCategoryId">
+                                    @item.ExamCategoryName
+                                </option>
+                            }
+
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">
+                             @Localizer.Get("Exam Type")
+                        </label>
+
+                        <select asp-for="Exam.ExamType" class="form-control select2 required">
+
+                            <option></option>
+                            @foreach (var item in Model.ExamType)
+                            {
+                                <option value="@item.DataListItemId">
+                                    @item.DataListItemText
+                                </option>
+                            }
+
+                        </select>
+                    </div>
+                    <!-- Subject Multi Select -->
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label"> @Localizer.Get("Subjects")</label>
+
+                        <select asp-for="SelectedSubjects"
+                                class=" form-control select2 required"
+                                multiple>
+
+                         
+                          
+
+                        </select>
+                    </div>
+
+                 
+
+                </div>
+
+
+                <div class="row">
+
+                    <!-- Min Marks -->
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">
+                             @Localizer.Get("Min Marks")
+                        </label>
+
+                        <input asp-for="Exam.MinMarks"
+                               class="form-control required" />
+                    </div>
+
+                    <!-- Max Marks -->
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">
+                            @Localizer.Get("Max Marks")
+                        </label>
+
+                        <input asp-for="Exam.MaxMarks"
+                               class="form-control required" />
+                    </div>
+
+                 
+
+                    <!-- Buttons -->
+                    <div class="col-md-3 mb-3 d-flex align-items-end">
+
+                        <button type="submit"
+                                class="btn btn-primary me-2">
+                            @Localizer.Get("Save")
+                        </button>
+
+                        <a asp-action="Index"
+                           class="btn btn-secondary">
+                             @Localizer.Get("Reset")
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
+
+    <!-- LIST -->
+    <div class="card shadow-sm">
+
+        <div class="card-header">
+            <h5 class="mb-0">
+               
+            </h5>
+        </div>
+
+        <div class="card-body">
+
+            <div class="table-responsive">
+
+                <table class="table table-bordered table-striped table-hover align-middle" id="testlist"> 
+
+                    <thead class="table-light">
+
+                        <tr>
+                            <th width="60">#</th>
+                            <th> @Localizer.Get("Exam Name")</th>
+                            <th> @Localizer.Get("Subjects")</th>
+                            <th> @Localizer.Get("Term")</th>
+                            <th> @Localizer.Get("TYpe")</th>
+                            <th> @Localizer.Get("Min Marks")</th>
+                            <th> @Localizer.Get("Max Marks")</th>
+                            <th> @Localizer.Get("Batch")</th>
+                            <th> @Localizer.Get("Action")</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        @{
+                            int sr = 1;
+                        }
+
+                        @foreach (var item in Model.List)
+                        {
+                            <tr>
+
+                                <td>@sr</td>
+
+                                <td>
+                                    @item.ExamName
+                                </td>
+
+                                <td>
+                                    @item.SubjectNames
+                                </td>
+
+                                <td>
+                                    @item.ExamCategoryName
+                                </td>
+                                <td>
+                                    @item.ExamTypeName
+                                </td>
+
+                                <td>
+                                    @item.MinMarks
+                                </td>
+
+                                <td>
+                                    @item.MaxMarks
+                                </td>
+
+                                <td>
+                                    @item.BatchName
+                                </td>
+
+                                <td>
+                                    <permission controller="Exam" action="ScholasticExams" type="edit">
+                                    <a asp-action="SaveScholasticExams"
+                                       asp-route-id="@item.Id"
+                                       class="btn btn-warning btn-sm">
+                                        @Localizer.Get("Edit")
+                                    </a>
+                                    </permission>
+                                    <permission controller="Exam" action="ScholasticExams" type="delete">
+                                    <form asp-action="DeleteScholasticExams" method="post" style="display:inline;">
+                                        <input type="hidden" name="id" value="@item.Id" />
+
+                                        <button type="submit"
+                                                class="btn btn-danger btn-sm"
+                                                onclick="return confirm('Are you sure?');">
+                                              @Localizer.Get("Delete")
+                                        </button>
+                                    </form>
+                                    </permission>
+                                   @*  <a asp-action="DeleteScholasticExams"
+                                       asp-route-id="@item.Id"
+                                       onclick="return confirm('Are you sure?')"
+                                       class="btn btn-danger btn-sm">
+
+                                        Delete
+                                    </a> *@
+
+                                </td>
+
+                            </tr>
+
+                            sr++;
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+@section Scripts
+{
+    <script>
+
+        $(document).ready(function () {
+
+            var selectedSubjects = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.SelectedSubjects));
+
+            function loadSubjects() {
+
+                var classId = $("#Exam_ClassId").val();
+                var batchId = $("#Exam_BatchId").val();
+
+                var ddl = $("#SelectedSubjects");
+
+                ddl.empty();
+
+                if (classId == "" || batchId == "") {
+                    return;
+                }
+
+                $.ajax({
+                    url: '@Url.Action("GetSubjects", "Exam")',
+                    type: 'GET',
+                    data: {
+                        classId: classId,
+                        batchId: batchId
+                    },
+                    success: function (data) {
+
+                        $.each(data, function (i, item) {
+
+                            var option = $("<option>")
+                                .val(item.id)
+                                .text(item.text);
+
+                            if ($.inArray(item.id, selectedSubjects) !== -1) {
+                                option.prop("selected", true);
+                            }
+
+                            ddl.append(option);
+                        });
+                        ddl.trigger('change.select2');
+                    }
+                });
+            }
+
+            // Class Change
+            $("#Exam_ClassId").change(function () {
+                selectedSubjects = [];
+                loadSubjects();
+            });
+
+            // Batch Change
+            $("#Exam_BatchId").change(function () {
+                selectedSubjects = [];
+                loadSubjects();
+            });
+
+            // Edit Mode
+            if ($("#Exam_ClassId").val() != "" &&
+                $("#Exam_BatchId").val() != "") {
+
+                loadSubjects();
+            }
+            $("#testlist").DataTable();
+        });
+
+    </script>
+}

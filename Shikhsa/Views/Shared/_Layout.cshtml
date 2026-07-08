@@ -1,0 +1,421 @@
+﻿@* Views/Shared/_Layout.cshtml *@
+@using Microsoft.AspNetCore.Identity
+@using Shikhsa.Data
+@using Shikhsa.Services
+@using Shikhsa.ViewModels
+@using Shikhsa.Helpers
+@using Shikhsa.ViewModels
+
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+@inject PermissionService MenuService
+@inject LocalizationService L
+@inject PermissionService PermissionService
+@{
+
+
+
+    var isAuthenticated = SignInManager.IsSignedIn(User);
+
+    List<MenuCacheVM> userMenus = new();
+
+    UserSessionVM? currentUser = null;
+
+    if (isAuthenticated)
+    {
+        currentUser =Context.Session.GetObject<UserSessionVM>("CurrentUser");
+
+        if (currentUser != null)
+        {
+            var permissions = MenuService.GetPermissions(currentUser.Id);
+
+            if (permissions == null)
+            {
+                 MenuService.CacheUserPermissions(currentUser.Id);
+                permissions = MenuService.GetPermissions(currentUser.Id);
+            }
+
+            userMenus =permissions?.Menus?? new List<MenuCacheVM>();
+        }
+    }
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString()?.ToLower();
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString()?.ToLower();
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] — Shikhsa</title>
+
+    <!-- Tabler Icons -->
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/@@tabler/icons-webfont@@3.19.0/dist/tabler-icons.min.css" />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=DM+Sans:wght@400;500&display=swap"
+          rel="stylesheet" />
+
+    <!-- CSS -->
+    <link href="~/assets/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/site.css" />
+    <link href="~/css/toastr.min.css" rel="stylesheet" />
+    <link href="~/css/datatables.bootstrap5.min.css" rel="stylesheet" />
+    <link href="~/css/select2.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/flatpickr.min.css" />
+    <link href="~/css/cropper.min.css" rel="stylesheet" />
+    <link href="~/css/sweetalert2.min.css" rel="stylesheet" />
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+
+    @if (isAuthenticated)
+    {
+        <!-- ░░ SIDEBAR OVERLAY (mobile) ░░ -->
+        <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+        <div class="app-layout">
+
+            <!-- ░░░░░░░░░░ SIDEBAR ░░░░░░░░░░ -->
+            <aside id="sidebar" class="sidebar" role="navigation" aria-label="Main navigation">
+
+                <!-- Brand -->
+                <div class="sidebar-brand">
+                    <div class="brand-icon">
+                        @*  <i class="ti ti-school" aria-hidden="true"></i> *@
+                        <img src="~/images/logo.png" alt="Brand Logo" class="brand-logo">
+                    </div>
+                    <div>
+                        <div class="brand-name">Shikhsa | शिक्षा</div>
+                        <div class="brand-tagline">YN IT Solutions</div>
+                    </div>
+                </div>
+
+                <!-- Nav -->
+                <nav class="sidebar-nav">
+
+                    <ul style="list-style:none; padding:0; margin:0;">
+
+                        @if (!userMenus.Any())
+                        {
+                            <li style="padding:1rem; text-align:center;">
+                                No menus assigned
+                            </li>
+                        }
+
+                        @foreach (var menu in userMenus
+                                            .Where(x => x.ParentId == null || x.ParentId == 0))
+                        {
+                            var hasChildren =
+                            menu.Children != null &&
+                            menu.Children.Any();
+
+                            var menuId = $"submenu_{menu.Id}";
+                            var isParentActive = menu.Children.Any(c =>c.ControllerName != null && c.ActionName != null && c.ControllerName.ToLower()
+                            == currentController&& c.ActionName.ToLower()== currentAction);
+
+                            var isDirectActive =!hasChildren && menu.ControllerName != null && menu.ActionName != null && menu.ControllerName.ToLower()
+                            == currentController && menu.ActionName.ToLower()== currentAction;
+
+                            <li class="nav-item">
+
+                                @if (hasChildren)
+                                {
+                                    <a class="nav-link @(isParentActive ? "active" : "")" href="#"data-submenu="@menuId" 
+                                    aria-expanded="@(isParentActive ? "true" : "false")">
+                                        <i class="ti @(menu.Icon ?? "ti-circle")"></i><span>@menu.Name</span>
+                                        <i class="ti ti-chevron-right nav-arrow"
+                                           style="@(isParentActive ? "transform:rotate(90deg)" : "")">
+                                        </i>
+
+                                    </a>
+
+                                    <ul id="@menuId" class="nav-submenu @(isParentActive ? "open" : "")">
+
+                                        @foreach (var child in menu.Children)
+                                        {
+                                            var isChildActive =child.ControllerName != null && child.ActionName != null && child.ControllerName.ToLower()
+                                            == currentController && child.ActionName.ToLower() == currentAction;
+                                            <li>
+                                                <a class="nav-link @(isChildActive ? "active" : "")" href="@Url.Action(child.ActionName,child.ControllerName)">
+                                                    <i class="ti @(child.Icon ?? "ti-point")"></i><span>@child.Name</span>
+                                                 </a>
+
+                                            </li>
+                                                        }
+
+                                    </ul>
+                                }
+                                else
+                                {
+                                    <a class="nav-link @(isDirectActive ? "active" : "")" href="@Url.Action(menu.ActionName,menu.ControllerName)">
+                                        <i class="ti @(menu.Icon ?? "ti-circle")"></i> <span>@menu.Name</span>
+                                     </a>
+                                 }
+
+                            </li>
+                        }
+
+                    </ul>
+
+                </nav>
+
+
+                <!-- Sidebar Footer -->
+                <div style="padding:1rem; border-top:1px solid var(--border);">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <div class="avatar">
+                            @((currentUser?.FullName ?? "U").Substring(0, 1).ToUpper())
+                        </div>
+                        <div style="flex:1; min-width:0;">
+                            <div style="font-size:0.82rem; font-weight:600;
+                                            color:var(--text-primary); white-space:nowrap;
+                                            overflow:hidden; text-overflow:ellipsis;">
+                                @(currentUser?.FullName ?? User.Identity?.Name)
+                            </div>
+                            <div style="font-size:0.72rem; color:var(--text-muted);
+                                            white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                                @currentUser?.Email
+                            </div>
+                        </div>
+                        <form asp-controller="Account" asp-action="Logout" method="post"
+                              style="margin:0;">
+                            @Html.AntiForgeryToken()
+                            <button type="submit"
+                                    class="btn btn-sm btn-outline"
+                                    style="padding:5px 8px;"
+                                    title="Sign out">
+                                <i class="ti ti-logout" aria-hidden="true"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+            </aside>
+            <!-- ░░░░░░░░ END SIDEBAR ░░░░░░░░ -->
+            <!-- ░░░░░░░░ MAIN CONTENT ░░░░░░░░ -->
+            <div class="main-content">
+
+                <!-- Top Bar -->
+                <header class="topbar">
+                    <div class="topbar-left">
+                        <button id="sidebarToggle" class="sidebar-toggle"
+                                aria-label="Toggle sidebar">
+                            <i class="ti ti-menu-2" aria-hidden="true"></i>
+                        </button>
+                        <div>
+                            <div style="font-family:var(--font-main); font-size:0.95rem;
+                                            font-weight:600; color:var(--text-primary);">
+                                @ViewData["Title"]
+                            </div>
+                            @if (ViewData["Subtitle"] != null)
+                            {
+                                <div style="font-size:0.75rem; color:var(--text-muted);">
+                                    @ViewData["Subtitle"]
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    <div class="topbar-right">
+                        <!-- Role badge -->
+                     @*    @{
+                            var roles = currentUser != null
+                            ? await UserManager.GetRolesAsync(currentUser)
+                            : new List<string>();
+                        }
+                        @if (roles.Any())
+                        {
+                            <span class="badge badge-primary">
+                                <i class="ti ti-shield-check" aria-hidden="true"></i>
+                                @roles.First()
+                            </span>
+                        } *@
+                        @if (!string.IsNullOrWhiteSpace(currentUser?.RoleName))
+                        {
+                            <span class="badge badge-primary">
+                                <i class="ti ti-shield-check"
+                                   aria-hidden="true"></i>
+
+                                @currentUser.RoleName
+                            </span>
+                        }
+                        <!-- User avatar dropdown -->
+                        <div style="position:relative;" id="userDropdownWrap">
+                            <button id="userDropdownBtn"
+                                    style="background:none; border:none; cursor:pointer;
+                                               display:flex; align-items:center; gap:8px; padding:4px;"
+                                    aria-haspopup="true" aria-expanded="false">
+                                <div class="avatar" style="width:34px; height:34px; font-size:0.78rem;">
+                                    @((currentUser?.FullName ?? "U").Substring(0, 1).ToUpper())
+                                </div>
+                                <i class="ti ti-chevron-down"
+                                   style="font-size:0.8rem; color:var(--text-muted);"
+                                   aria-hidden="true"></i>
+                            </button>
+
+                            <div id="userDropdown" style="display:none; position:absolute; right:0; top:calc(100% + 8px);
+                                            background:var(--bg-card); border:1px solid var(--border);
+                                            border-radius:var(--radius-md); box-shadow:var(--shadow-md);
+                                            min-width:200px; z-index:500; padding:6px 0;">
+                                <div style="padding:10px 14px; border-bottom:1px solid var(--border);">
+                                    <div style="font-size:0.85rem; font-weight:600; color:var(--text-primary);">
+                                        @currentUser?.FullName
+                                    </div>
+                                    <div style="font-size:0.75rem; color:var(--text-muted);">
+                                        @currentUser?.Email
+                                    </div>
+                                </div>
+                                <form asp-controller="Account" asp-action="Logout"
+                                      method="post" style="padding:4px 0;">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit"
+                                            style="width:100%; background:none; border:none;
+                                                       padding:8px 14px; text-align:left; cursor:pointer;
+                                                       font-size:0.85rem; color:var(--danger);
+                                                       display:flex; align-items:center; gap:8px;">
+                                        <i class="ti ti-logout" aria-hidden="true"></i> Sign out
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- Page Body -->
+                <main class="page-content" role="main">
+                    @if (TempData["Success"] != null)
+                    {
+                        <script>
+                            ShowSuccess('@TempData["Success"]');
+                        </script>
+                    }
+
+                    @if (TempData["Error"] != null)
+                    {
+                        <script>
+                            ShowError('@TempData["Error"]');
+                        </script>
+                    }
+
+                    @if (TempData["Warning"] != null)
+                    {
+                        <script>
+                            ShowWarning('@TempData["Warning"]');
+                        </script>
+                    }
+
+                    @if (TempData["Info"] != null)
+                    {
+                        <script>
+                            ShowInfo('@TempData["Info"]');
+                        </script>
+                    }
+                    @RenderBody()
+                </main>
+
+            </div>
+            <!-- ░░░░░░░░ END MAIN CONTENT ░░░░░░░░ -->
+
+        </div>
+    }
+    else
+    {
+        @RenderBody()
+    }
+
+    <!-- JS -->
+@*     <script src="~/assets/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js"></script>
+    <script src="~/js/toastr.min.js"></script>
+    <script src="~/js/jquery-3.7.1.min.js"></script>
+    <script src="~/js/jquery.datatables.min.js"></script>
+    <script src="~/js/datatables.bootstrap5.min.js"></script>
+    <script src="~/js/select2.min.js"></script>
+    <script src="~/js/flatpickr.min.js"></script>
+    <script src="~/js/cropper.min.js"></script>
+    <script src="~/js/sweetalert2.min.js"></script>
+    <script src="~/js/common.js"></script> *@
+    <script src="~/js/jquery-3.7.1.min.js"></script>
+    <script src="~/assets/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/toastr.min.js"></script>
+    <script src="~/js/jquery.datatables.min.js"></script>
+    <script src="~/js/datatables.bootstrap5.min.js"></script>
+    <script src="~/js/select2.min.js"></script>
+    <script src="~/js/flatpickr.min.js"></script>
+    <script src="~/js/cropper.min.js"></script>
+    <script src="~/js/sweetalert2.min.js"></script>
+    <script src="~/js/site.js"></script>
+    <script src="~/js/common.js"></script>
+    <!-- Dropdown toggle -->
+    <script>
+        (function () {
+            const btn      = document.getElementById('userDropdownBtn');
+            const dropdown = document.getElementById('userDropdown');
+            if (!btn || !dropdown) return;
+
+            btn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                const isOpen = dropdown.style.display === 'block';
+                dropdown.style.display = isOpen ? 'none' : 'block';
+                btn.setAttribute('aria-expanded', String(!isOpen));
+            });
+
+            document.addEventListener('click', function () {
+                dropdown.style.display = 'none';
+                btn?.setAttribute('aria-expanded', 'false');
+            });
+        })();
+    </script>
+    <script>
+
+        $(document).ready(function ()
+        {
+            $('.select2').select2({
+            width:'100%',
+            placeholder: 'Select',
+    allowClear: true});
+            // $(document).on('inp:ut', '.text-only', function () {
+            // this.value = this.value.replace(/[^a-zA-Z\u0900-\u097F]/g, '');
+            // });
+                    document.querySelectorAll('.fp-date').forEach(function (el) {
+
+            flatpickr(el, {
+                wrap: true,
+                dateFormat: "Y-m-d"
+            });
+
+        });
+
+        });
+                // Automatically initialize Select2 for ANY Bootstrap Modal
+        $(document).on('shown.bs.modal', '.modal', function () {
+
+            var modal = $(this);
+
+            modal.find('.select2').each(function () {
+
+                if ($(this).hasClass('select2-hidden-accessible')) {
+                    $(this).select2('destroy');
+                }
+
+                $(this).select2({
+                    dropdownParent: modal,
+                    width: '100%'
+                });
+
+            });
+        });
+        
+         // $('#tblSubMenu').DataTable({
+         //        responsive: true,
+         //        autoWidth: false,
+         //        pageLength: 10
+         //    });
+       
+
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

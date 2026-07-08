@@ -1,0 +1,202 @@
+﻿@model Shikhsa.ViewModels.FeePlanIndexViewModel
+@{
+    ViewData["Title"] = "Configure Fee Plans";
+}
+
+<h4 class="mb-3">Configure Fee Plans</h4>
+
+<ul class="nav nav-tabs" id="feePlanTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tuition" type="button">🏫 Tuition Fee</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#transport" type="button">🚌 Transport Fee</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#hostel" type="button">🏠 Hostel Fee</button>
+    </li>
+</ul>
+
+<div class="tab-content border border-top-0 p-3">
+
+    <!-- ================= TUITION TAB ================= -->
+    <div class="tab-pane fade show active" id="tuition">
+        <h5>Configure Tuition Fee Plan</h5>
+        <form asp-action="SaveTuition" method="post" class="row g-3 mb-4">
+            <input type="hidden" asp-for="NewTuition.TuitionFeePlanId" />
+            <div class="col-md-3">
+                <label class="form-label">Fee Heading</label>
+                <input asp-for="NewTuition.FeeHeading" class="form-control" required />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Class</label>
+                <input asp-for="NewTuition.ClassId" class="form-control" placeholder="e.g. Class-I" required />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Medium</label>
+                <input asp-for="NewTuition.Medium" class="form-control" required />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Fee Value</label>
+                <input asp-for="NewTuition.FeeValue" type="number" step="0.01" class="form-control" required />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Academic Year</label>
+                <input asp-for="NewTuition.AcademicYear" class="form-control" placeholder="2022-2023" required />
+            </div>
+            <div class="col-12 text-end">
+                <button type="reset" class="btn btn-outline-secondary">Reset</button>
+                <button type="submit" class="btn btn-primary">Save Tuition Plan</button>
+            </div>
+        </form>
+
+        <h6>Tuition Fee Plans (@Model.TuitionPlans.Count)</h6>
+        <table class="table table-striped">
+            <thead>
+                <tr><th>S.No</th><th>Class</th><th>Fee Heading</th><th>Medium</th><th>Fee Value</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+                @for (int i = 0; i < Model.TuitionPlans.Count; i++)
+                {
+                    var p = Model.TuitionPlans[i];
+                    <tr>
+                        <td>@(i + 1)</td>
+                        <td>@p.ClassId</td>
+                        <td>@p.FeeHeading</td>
+                        <td>@p.Medium</td>
+                        <td>₹@p.FeeValue</td>
+                        <td>
+                            <a asp-action="EditTuition" asp-route-id="@p.TuitionFeePlanId" class="btn btn-sm btn-outline-primary">Edit</a>
+                            <form asp-action="DeleteTuition" asp-route-id="@p.TuitionFeePlanId" method="post" class="d-inline"
+                                  onsubmit="return confirm('Delete this plan?');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ================= TRANSPORT TAB ================= -->
+    <div class="tab-pane fade" id="transport">
+        <h5>Configure Transport Fee Plan</h5>
+        <form asp-action="SaveTransport" method="post" class="row g-3 mb-4">
+            <input type="hidden" asp-for="NewTransport.TransportFeePlanId" />
+            <div class="col-md-3">
+                <label class="form-label">Fee Type</label>
+                <input asp-for="NewTransport.FeeHeadingId" class="form-control" required />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Academic Year</label>
+                <input asp-for="NewTransport.AcademicYear" class="form-control" required />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Transport</label>
+                <input asp-for="NewTransport.TransportId" class="form-control" required />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Transport Fee</label>
+                <input asp-for="NewTransport.TransportFee" type="number" step="0.01" class="form-control" required />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Transport Option</label>
+                <select asp-for="NewTransport.TransportOption" class="form-select">
+                    <option>One Way</option>
+                    <option>Two Way</option>
+                </select>
+            </div>
+            <div class="col-12 text-end">
+                <button type="reset" class="btn btn-outline-secondary">Reset</button>
+                <button type="submit" class="btn btn-success">Save Transport Plan</button>
+            </div>
+        </form>
+
+        <h6>Transport Fee Configuration (@Model.TransportPlans.Count)</h6>
+        <table class="table table-striped">
+            <thead>
+                <tr><th>S.No</th><th>Transport</th><th>Fee Type</th><th>Fee</th><th>Option</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+                @for (int i = 0; i < Model.TransportPlans.Count; i++)
+                {
+                    var p = Model.TransportPlans[i];
+                    <tr>
+                        <td>@(i + 1)</td>
+                        <td>@p.TransportId</td>
+                        <td>@p.FeeHeadingId</td>
+                        <td>₹@p.TransportFee</td>
+                        <td>@p.TransportOption</td>
+                        <td>
+                            <a asp-action="EditTransport" asp-route-id="@p.TransportFeePlanId" class="btn btn-sm btn-outline-primary">Edit</a>
+                            <form asp-action="DeleteTransport" asp-route-id="@p.TransportFeePlanId" method="post" class="d-inline"
+                                  onsubmit="return confirm('Delete this plan?');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ================= HOSTEL TAB ================= -->
+    <div class="tab-pane fade" id="hostel">
+        <h5>Configure Hostel Fee Plan</h5>
+        <form asp-action="SaveHostel" method="post" class="row g-3 mb-4">
+            <input type="hidden" asp-for="NewHostel.HostelFeePlanId" />
+            <div class="col-md-3">
+                <label class="form-label">Fee Type</label>
+                <input asp-for="NewHostel.FeeHeadingId" class="form-control" required />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Hostel</label>
+                <input asp-for="NewHostel.HostelId" class="form-control" required />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Room Type</label>
+                <input asp-for="NewHostel.RoomType" class="form-control" required />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Meal Plan</label>
+                <input asp-for="NewHostel.MealPlan" class="form-control" required />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Hostel Fee</label>
+                <input asp-for="NewHostel.HostelFee" type="number" step="0.01" class="form-control" required />
+            </div>
+            <div class="col-12 text-end">
+                <button type="reset" class="btn btn-outline-secondary">Reset</button>
+                <button type="submit" class="btn btn-danger">Save Hostel Plan</button>
+            </div>
+        </form>
+
+        <h6>Hostel Configuration (@Model.HostelPlans.Count)</h6>
+        <table class="table table-striped">
+            <thead>
+                <tr><th>S.No</th><th>Hostel</th><th>Room Type</th><th>Meal Plan</th><th>Fee</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+                @for (int i = 0; i < Model.HostelPlans.Count; i++)
+                {
+                    var p = Model.HostelPlans[i];
+                    <tr>
+                        <td>@(i + 1)</td>
+                        <td>@p.HostelId</td>
+                        <td>@p.RoomType</td>
+                        <td>@p.MealPlan</td>
+                        <td>₹@p.HostelFee</td>
+                        <td>
+                            <a asp-action="EditHostel" asp-route-id="@p.HostelFeePlanId" class="btn btn-sm btn-outline-primary">Edit</a>
+                            <form asp-action="DeleteHostel" asp-route-id="@p.HostelFeePlanId" method="post" class="d-inline"
+                                  onsubmit="return confirm('Delete this plan?');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+</div>

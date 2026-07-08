@@ -1,0 +1,348 @@
+﻿@using Shikhsa.ViewModels
+@model StaffAttendanceVM
+
+@{
+    ViewData["Title"] = "Staff Attendance";
+    var summary = ViewBag.Summary as AttendanceSummary;
+}
+<style>
+
+    .table th {
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .table td {
+        vertical-align: middle;
+    }
+
+    .card {
+        border-radius: 12px;
+    }
+
+    .form-check-input {
+        transform: scale(1.2);
+    }
+
+    .summary-card {
+        border-radius: 10px;
+        color: #fff;
+        padding: 8px;
+        min-height: 85px;
+    }
+
+        .summary-card h3 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .summary-card p {
+            margin: 0;
+            font-size: 14px;
+        }
+
+</style>
+@* @if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+
+        @TempData["Success"]
+
+        <button class="btn-close"
+                data-bs-dismiss="alert">
+        </button>
+
+    </div>
+} *@
+
+<div class="container-fluid">
+
+    <div class="card shadow">
+
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">
+                Staff Attendance
+            </h4>
+        </div>
+
+        <div class="card-body">
+
+            <!-- Date + Search -->
+
+            <form method="get" asp-action="StaffAttendance">
+
+                <div class="row mb-3">
+
+                    <div class="col-md-3">
+
+                        <label>Date</label>
+
+                        <input asp-for="AttendanceDate"
+                               type="date"
+                               class="form-control" />
+
+                    </div>
+
+                    <div class="col-md-3">
+
+                        <label>Search</label>
+
+                        <input asp-for="Search"
+                               class="form-control"
+                               placeholder="Search Staff..." />
+
+                    </div>
+
+                    <div class="col-md-2 d-grid">
+
+                        <label>&nbsp;</label>
+
+                        <button class="btn btn-primary">
+
+                            Show
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </form>
+
+            <!-- Summary -->
+
+            <div class="row mb-4">
+
+                <div class="col-md-3">
+
+                    <div class="card bg-primary summary-card">
+                        <div class="card-body text-center">
+                            <h3 id="totalCount">@(summary?.TotalStaff ?? 0)</h3>
+                            <p>Total Staff</p>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <div class="card bg-success summary-card">
+                        <div class="card-body text-center">
+                            <h3 id="presentCount">@(summary?.Present ?? 0)</h3>
+                            <p>Present</p>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <div class="card bg-danger summary-card">
+                        <div class="card-body text-center">
+                            <h3 id="absentCount">@(summary?.Absent ?? 0)</h3>
+                            <p>Absent</p>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <div class="card bg-warning summary-card">
+                        <div class="card-body text-center">
+                            <h3 id="leaveCount">@(summary?.Leave ?? 0)</h3>
+                            <p>Leave</p>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- Attendance Form -->
+
+            <form asp-action="SaveStaffAttendance" method="post">
+
+                @Html.AntiForgeryToken()
+
+                <input asp-for="AttendanceDate" type="hidden" />
+
+                <div class="mb-3">
+
+                 @*    <button type="submit"
+                            class="btn btn-success">
+
+                        <i class="fa fa-save"></i>
+
+                        Save Attendance
+
+                    </button>
+
+                    <button type="submit"
+                            name="markAll"
+                            value="true"
+                            class="btn btn-warning">
+
+                        Mark All Present
+
+                    </button> *@
+                    <button type="submit"
+                            name="submitType"
+                            value="Save"
+                            class="btn btn-success">
+
+                        Save Attendance
+
+                    </button>
+
+                    <button type="submit"
+                            name="submitType"
+                            value="MarkAll"
+                            class="btn btn-warning">
+
+                        Mark All Present
+
+                    </button>
+
+                </div>
+
+                <div class="table-responsive">
+
+                    <table class="table table-bordered table-hover align-middle">
+
+                        <thead class="table-primary">
+
+                            <tr>
+
+                                <th width="70">Code</th>
+
+                                <th>Staff Name</th>
+
+                                @foreach (var type in Model.AttendanceTypes.OrderBy(x=>x.DisplayOrder))
+                                {
+                                    <th class="text-center">
+
+                                        @type.Code
+
+                                    </th>
+                                }
+
+                                <th width="250">
+
+                                    Remarks
+
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            @for (int i = 0; i < Model.Staffs.Count; i++)
+                            {
+
+                                <tr>
+
+                                    <td>
+
+                                        @Model.Staffs[i].StaffCode
+
+                                        <input type="hidden"
+                                               asp-for="Staffs[i].StaffId" />
+
+                                        <input type="hidden"
+                                               asp-for="Staffs[i].AttendanceId" />
+
+                                    </td>
+
+                                    <td>
+
+                                        @Model.Staffs[i].StaffName
+
+                                    </td>
+
+                                    @foreach (var type in Model.AttendanceTypes.OrderBy(x=>x.DisplayOrder))
+                                    {
+                                       <td class="text-center">
+
+                                            <input class="form-check-input"type="radio"asp-for="Staffs[i].AttendanceTypeId"value="@type.AttendanceTypeId"data-code="@type.Code"data-isleave="@type.IsLeave.ToString().ToLower()" />
+
+                                       </td>
+                                    }
+
+                                    <td>
+
+                                        <input asp-for="Staffs[i].Remarks"
+                                               class="form-control" />
+
+                                    </td>
+
+                                </tr>
+
+                            }
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+@section Scripts
+{
+<script>
+            function updateSummary() {
+
+            var total = $('tbody tr').length;
+            var present = 0;
+            var absent = 0;
+            var leave = 0;
+
+            $('tbody tr').each(function () {
+
+                var selected = $(this).find('input[type=radio]:checked');
+
+                if (selected.length === 0)
+                    return;
+
+                var code = selected.data("code");
+                var isLeave = selected.data("isleave");
+
+                // Leave
+                if (isLeave === true || isLeave === "true") {
+                    leave++;
+                }
+                // Present
+                else if (code === "P" || code === "O" || code === "H") {
+                    present++;
+                }
+                // Absent
+                else if (code === "A") {
+                    absent++;
+                }
+
+            });
+
+            $("#totalCount").text(total);
+            $("#presentCount").text(present);
+            $("#absentCount").text(absent);
+            $("#leaveCount").text(leave);
+        }
+
+    $(document).on("change", "input[type=radio]", function () {
+        updateSummary();
+    });
+
+    $(function () {
+        updateSummary();
+    });
+</script>
+}

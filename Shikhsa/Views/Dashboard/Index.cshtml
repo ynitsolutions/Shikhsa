@@ -1,0 +1,360 @@
+﻿@* Views/Dashboard/Index.cshtml *@
+@model Shikhsa.ViewModels.DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+    ViewData["Subtitle"] = "Welcome back, " + Model.UserFullName;
+}
+
+@section Styles {
+    <style>
+        /* ── Stat Cards ──────────────────────────────────── */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 1.3rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: var(--transition);
+            animation: fadeIn 0.5s ease both;
+        }
+
+            .stat-card:hover {
+                transform: translateY(-3px);
+                box-shadow: var(--shadow-md);
+            }
+
+        .stat-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+            .stat-icon.purple {
+                background: var(--primary-light);
+                color: var(--primary);
+            }
+
+            .stat-icon.green {
+                background: #E1F5EE;
+                color: #1D9E75;
+            }
+
+            .stat-icon.blue {
+                background: #E3F0FF;
+                color: #2563EB;
+            }
+
+            .stat-icon.orange {
+                background: #FEF0E0;
+                color: #D97706;
+            }
+
+        .stat-value {
+            font-family: var(--font-main);
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            margin-top: 3px;
+            font-weight: 500;
+        }
+
+        /* ── Welcome Banner ──────────────────────────────── */
+        .welcome-banner {
+            background: var(--primary);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem 2rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+            position: relative;
+            overflow: hidden;
+            animation: fadeIn 0.4s ease both;
+        }
+
+            .welcome-banner::before {
+                content: '';
+                position: absolute;
+                top: -40px;
+                right: -40px;
+                width: 160px;
+                height: 160px;
+                border-radius: 50%;
+                background: rgba(255,255,255,0.07);
+            }
+
+            .welcome-banner::after {
+                content: '';
+                position: absolute;
+                bottom: -30px;
+                left: 30%;
+                width: 120px;
+                height: 120px;
+                border-radius: 50%;
+                background: rgba(255,255,255,0.04);
+            }
+
+        .welcome-text {
+            position: relative;
+            z-index: 1;
+        }
+
+        .welcome-title {
+            font-family: var(--font-main);
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .welcome-sub {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.7);
+            margin-top: 3px;
+        }
+
+        .welcome-badge {
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.25);
+            border-radius: 99px;
+            padding: 6px 16px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #fff;
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* ── Recent Users Table ──────────────────────────── */
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .section-title {
+            font-family: var(--font-main);
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+            .section-title i {
+                color: var(--primary);
+            }
+
+        /* Stagger card animations */
+        .stat-card:nth-child(1) {
+            animation-delay: 0.05s;
+        }
+
+        .stat-card:nth-child(2) {
+            animation-delay: 0.10s;
+        }
+
+        .stat-card:nth-child(3) {
+            animation-delay: 0.15s;
+        }
+
+        .stat-card:nth-child(4) {
+            animation-delay: 0.20s;
+        }
+    </style>
+}
+
+<!-- Welcome Banner -->
+<div class="welcome-banner">
+    <div class="welcome-text">
+        <div class="welcome-title">
+            Good @GetGreeting(), @Model.UserFullName.Split(' ')[0]! 👋
+        </div>
+        <div class="welcome-sub">
+            Here's what's happening in your system today.
+        </div>
+    </div>
+    <div class="welcome-badge">
+        <i class="ti ti-shield-check" aria-hidden="true"></i>
+        @Model.UserRole
+    </div>
+</div>
+
+<!-- Stat Cards -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon purple">
+            <i class="ti ti-users" aria-hidden="true"></i>
+        </div>
+        <div>
+            <div class="stat-value" data-count="@Model.TotalUsers">0</div>
+            <div class="stat-label">Total Users</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon green">
+            <i class="ti ti-user-check" aria-hidden="true"></i>
+        </div>
+        <div>
+            <div class="stat-value" data-count="@Model.ActiveUsers">0</div>
+            <div class="stat-label">Active Users</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon blue">
+            <i class="ti ti-shield-lock" aria-hidden="true"></i>
+        </div>
+        <div>
+            <div class="stat-value" data-count="@Model.TotalRoles">0</div>
+            <div class="stat-label">Total Roles</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon orange">
+            <i class="ti ti-layout-sidebar" aria-hidden="true"></i>
+        </div>
+        <div>
+            <div class="stat-value" data-count="@Model.TotalMenus">0</div>
+            <div class="stat-label">Menu Items</div>
+        </div>
+    </div>
+</div>
+
+<!-- Bottom Row -->
+<div style="display:grid; grid-template-columns:1fr; gap:1rem;">
+
+    <!-- Recent Users -->
+    <div class="card" style="animation: fadeIn 0.5s 0.25s ease both;">
+        <div class="section-header">
+            <div class="section-title">
+                <i class="ti ti-clock" aria-hidden="true"></i>
+                Recently Added Users
+            </div>
+            <a href="/Users" class="btn btn-sm btn-outline">
+                View all <i class="ti ti-arrow-right" aria-hidden="true"></i>
+            </a>
+        </div>
+
+        @if (!Model.RecentUsers.Any())
+        {
+            <div style="text-align:center; padding:2rem; color:var(--text-muted);">
+                <i class="ti ti-users-off" style="font-size:2rem;"></i>
+                <p style="margin-top:8px; font-size:0.85rem;">No users yet.</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-wrapper">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Full Name</th>
+                            <th>Email</th>
+                            <th>Status</th>
+                            <th>Joined</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            int i = 1;
+                        }
+                        @foreach (var u in Model.RecentUsers)
+                        {
+                            <tr>
+                                <td style="color:var(--text-muted); font-size:0.82rem;">@i</td>
+                                <td>
+                                    <div style="display:flex; align-items:center; gap:8px;">
+                                        <div class="avatar" style="width:30px; height:30px; font-size:0.72rem;">
+                                            @u.FullName.Substring(0, 1).ToUpper()
+                                        </div>
+                                        <span style="font-weight:500;">@u.FullName</span>
+                                    </div>
+                                </td>
+                                <td style="color:var(--text-secondary); font-size:0.85rem;">
+                                    @u.Email
+                                </td>
+                                <td>
+                                    @if (u.IsActive)
+                                    {
+                                        <span class="badge badge-success">Active</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-danger">Inactive</span>
+                                    }
+                                </td>
+                                <td style="color:var(--text-muted); font-size:0.82rem;">
+                                    @u.CreatedAt.ToString("MMM dd, yyyy")
+                                </td>
+                            </tr>
+                            i = i++;
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+
+</div>
+
+@section Scripts {
+    <script>
+        // ── Count-up animation for stat numbers ─────────────
+        document.querySelectorAll('[data-count]').forEach(el => {
+            const target   = parseInt(el.dataset.count);
+            const duration = 900;
+            const step     = Math.ceil(duration / target) || 1;
+            let   current  = 0;
+
+            if (target === 0) { el.textContent = '0'; return; }
+
+            const timer = setInterval(() => {
+                current += Math.ceil(target / 30);
+                if (current >= target) {
+                    el.textContent = target;
+                    clearInterval(timer);
+                } else {
+                    el.textContent = current;
+                }
+            }, step);
+        });
+    </script>
+}
+
+@functions {
+    string GetGreeting()
+    {
+        var h = DateTime.Now.Hour;
+        return h < 12 ? "morning" : h < 17 ? "afternoon" : "evening";
+    }
+}

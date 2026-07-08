@@ -1,0 +1,73 @@
+﻿
+@* @model List<Shikhsa.ViewModels.PermissionItemVM>
+
+@if (Model != null && Model.Any())
+{
+    @for (int i = 0; i < Model.Count; i++)
+    {
+        <tr>
+
+            <td>
+                @Model[i].Name
+
+                <input asp-for="@Model[i].PermissionItemId" type="hidden" />
+                <input asp-for="@Model[i].SubMenuId" type="hidden" />
+                <input asp-for="@Model[i].Name" type="hidden" />
+            </td>
+
+            <td class="text-center">
+
+                <input asp-for="@Model[i].CanView"
+                       class="form-check-input" />
+
+            </td>
+
+            <td class="text-center">
+
+                <input asp-for="@Model[i].CanCreate"
+                       class="form-check-input" />
+
+            </td>
+
+            <td class="text-center">
+
+                <input asp-for="@Model[i].CanUpdate"
+                       class="form-check-input" />
+
+            </td>
+
+            <td class="text-center">
+
+                <input asp-for="@Model[i].CanDelete"
+                       class="form-check-input" />
+
+            </td>
+
+            <td class="text-center">
+
+                <button type="button"
+                        class="btn btn-sm btn-outline-danger"
+                        onclick="deletePermissionItem(@Model[i].PermissionItemId)">
+
+                    <i class="ti ti-trash"></i>
+
+                </button>
+
+            </td>
+
+        </tr>
+    }
+}
+else
+{
+    <tr>
+
+        <td colspan="6"
+            class="text-center text-muted">
+
+            No Permission Item Found.
+
+        </td>
+
+    </tr>
+} *@

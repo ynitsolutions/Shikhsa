@@ -1,0 +1,325 @@
+﻿@using Shikhsa.Data
+@model Menu
+
+@{
+    var subMenuList = ViewBag.SubMenuList as List<Menu>;
+    ViewData["Title"] = @Localizer.Get("Sub Menu Master");
+}
+
+<div class="container-fluid">
+
+    <div class="row g-3">
+
+        <!-- FORM SECTION -->
+        <div class="col-12 col-lg-4">
+
+            <div class="card h-100">
+
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        @(Model.Id == 0
+                                                ? Localizer.Get("Add SubMenu")
+                                                : Localizer.Get("Update SubMenu"))
+                    </h5>
+                </div>
+
+                <div class="card-body">
+
+                    <form asp-action="SaveSubMenus" method="post">
+
+                        <input asp-for="Id" type="hidden" />
+
+                        <div class="mb-3">
+                            <label class="form-label">
+                                @Localizer.Get("Parent Menu")
+                            </label>
+
+                            <select asp-for="ParentId"
+                                    asp-items="ViewBag.ParentMenus"
+                                    class="form-select select2">
+
+                                <option value="">
+                                    @Localizer.Get("Select Menu")
+                                </option>
+
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">
+                                @Localizer.Get("SubMenu Name")
+                            </label>
+
+                            <input asp-for="Name"
+                                   class="form-control" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">
+                                @Localizer.Get("Controller Name")
+                            </label>
+
+                            <input asp-for="ControllerName"
+                                   class="form-control" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">
+                                @Localizer.Get("Action Name")
+                            </label>
+
+                            <input asp-for="ActionName"
+                                   class="form-control" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">
+                                @Localizer.Get("Icon")
+                            </label>
+
+                            <input asp-for="Icon"
+                                   class="form-control"
+                                   placeholder="ti ti-user" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">
+                                @Localizer.Get("Display Order")
+                            </label>
+
+                            <input asp-for="DisplayOrder"
+                                   class="form-control" />
+                        </div>
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+                                @Localizer.Get("Status")
+                            </label>
+
+                            <select asp-for="IsActive"
+                                    class="form-select select2">
+
+                                <option value="true">
+                                    @Localizer.Get("Active")
+                                </option>
+
+                                <option value="false">
+                                    @Localizer.Get("InActive")
+                                </option>
+
+                            </select>
+
+                        </div>
+
+                        <div class="d-flex flex-wrap gap-2">
+
+                            <permission controller="Masters"
+                                        action="SubMenus"
+                                        type="create">
+
+                                <button type="submit"
+                                        class="btn btn-success">
+
+                                    @(Model.Id == 0
+                                                                        ? Localizer.Get("Save")
+                                                                        : Localizer.Get("Update"))
+
+                                </button>
+
+                            </permission>
+
+                            @if (Model.Id > 0)
+                            {
+                                <a asp-action="SubMenus"
+                                   class="btn btn-secondary">
+
+                                    @Localizer.Get("Cancel")
+
+                                </a>
+                            }
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- GRID SECTION -->
+        <div class="col-12 col-lg-8">
+
+            <div class="card h-100">
+
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        @Localizer.Get("SubMenu List")
+                    </h5>
+                </div>
+
+                <div class="card-body">
+
+                    <div class="table-responsive">
+
+                        <table id="tblSubMenu"
+                               class="table table-bordered table-hover align-middle">
+
+                            <thead>
+
+                                <tr>
+
+                                    <th>#</th>
+
+                                    <th>
+                                        @Localizer.Get("Parent Menu")
+                                    </th>
+
+                                    <th>
+                                        @Localizer.Get("SubMenu")
+                                    </th>
+
+                                    <th>
+                                        @Localizer.Get("URL")
+                                    </th>
+
+                                    <th>
+                                        @Localizer.Get("Icon")
+                                    </th>
+
+                                    <th>
+                                        @Localizer.Get("Order")
+                                    </th>
+
+                                    <th>
+                                        @Localizer.Get("Status")
+                                    </th>
+
+                                    <th class="text-nowrap">
+                                        @Localizer.Get("Action")
+                                    </th>
+
+                                </tr>
+
+                            </thead>
+
+                            <tbody>
+
+                                @if (subMenuList != null && subMenuList.Any())
+                                {
+                                    int i = 1;
+
+                                    foreach (var item in subMenuList)
+                                    {
+                                        <tr>
+
+                                            <td>@i</td>
+
+                                            <td>
+                                                @Localizer.Get(item.Parent?.Name)
+                                            </td>
+
+                                            <td>
+                                                @Localizer.Get(item.Name)
+                                            </td>
+
+                                            <td style="max-width:250px;word-break:break-word;">
+                                                @item.ControllerName/@item.ActionName
+                                            </td>
+
+                                            <td class="text-nowrap">
+                                                <i class="@item.Icon"></i>
+                                                @item.Icon
+                                            </td>
+
+                                            <td>
+                                                @item.DisplayOrder
+                                            </td>
+
+                                            <td>
+
+                                                @if (item.IsActive)
+                                                {
+                                                    <span class="badge bg-success">
+                                                        @Localizer.Get("Active")
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-danger">
+                                                        @Localizer.Get("InActive")
+                                                    </span>
+                                                }
+
+                                    </td>
+
+                                    <td class="text-nowrap">
+
+                                        <permission controller="Masters"
+                                                    action="SubMenus"
+                                                    type="edit">
+
+                                            <a asp-action="SubMenus"
+                                               asp-route-id="@item.Id"
+                                               class="btn btn-warning btn-sm">
+
+                                                @Localizer.Get("Edit")
+
+                                            </a>
+
+                                        </permission>
+
+                                        <permission controller="Masters"
+                                                    action="SubMenus"
+                                                    type="delete">
+
+                                            <a asp-action="DeleteSubMenus"
+                                               asp-route-id="@item.Id"
+                                               class="btn btn-info btn-sm">
+
+                                                @(item.IsActive
+                                                                                                ? Localizer.Get("InActive")
+                                                                                                : Localizer.Get("Active"))
+
+                                            </a>
+
+                                                </permission>
+
+                                            </td>
+
+                                        </tr>
+
+                                                                i++;
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+
+                                        <td colspan="8"
+                                            class="text-center">
+
+                                            @Localizer.Get("No Record Found")
+
+                                        </td>
+
+                                    </tr>
+                                }
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

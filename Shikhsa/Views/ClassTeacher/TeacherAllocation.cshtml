@@ -1,0 +1,179 @@
+﻿
+@model Shikhsa.ViewModels.ClassTeacherAssignmentVM
+
+@{
+    ViewData["Title"] = "Class Teacher & Subject Assignment";
+}
+
+<div class="container-fluid">
+
+    <div class="card shadow-sm">
+
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">
+                Class Teacher & Subject Assignment
+            </h5>
+        </div>
+
+        <div class="card-body">
+
+            <div class="row">
+
+                <div class="col-md-3">
+                    <label>Academic Batch</label>
+
+                    <select asp-for="BatchId"
+                            asp-items="Model.Batches"
+                            class="form-control select2 required"
+                            id="BatchId">
+
+                        <option value="">Select Batch</option>
+
+                    </select>
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <label>Section</label>
+
+                    <select asp-for="SectionId"
+                            asp-items="Model.Sections"
+                            class="form-control select2 required"
+                            id="SectionId">
+
+                        <option value="">Select Section</option>
+
+                    </select>
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <label>Copy From Batch</label>
+
+                    <select id="CopyBatchId"
+                            asp-items="Model.CopyBatches"
+                            class="form-control select2">
+
+                        <option value="">Select Batch</option>
+
+                    </select>
+
+                </div>
+
+                <div class="col-md-3 d-flex align-items-end">
+
+                    <button class="btn btn-primary me-2"
+                            id="btnLoad">
+
+                        <i class="bi bi-search"></i>
+
+                        Load
+
+                    </button>
+
+                    <button class="btn btn-warning"
+                            id="btnCopy">
+
+                        <i class="bi bi-copy"></i>
+
+                        Copy
+
+                    </button>
+
+                </div>
+
+            </div>
+
+            <hr />
+
+            <div id="assignmentContainer">
+            </div>
+
+            <div class="text-end mt-3">
+
+                <button class="btn btn-success"
+                        id="btnSave">
+
+                    <i class="bi bi-check-circle"></i>
+
+                    Save Assignment
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+<script type="text/template" id="teacherRowTemplate">
+
+    <tr>
+
+        <td>
+
+            <input type="hidden" class="classId"/>
+
+          <select class="form-select teacherSelect"></select> 
+
+
+        </td>
+
+        <td>
+
+            <select multiple class="form-select subjectSelect select2">
+
+            </select>
+
+        </td>
+
+        <td class="text-center">
+
+            <input type="checkbox"
+                   class="form-check-input isClassTeacher"/>
+
+        </td>
+
+        <td class="text-center">
+
+            <button type="button"
+                    class="btn btn-danger btnDelete">
+
+                <i class="bi bi-trash"></i>
+
+            </button>
+
+        </td>
+
+    </tr>
+
+</script>
+<div id="pageLoader"
+     style="display:none;
+            position:fixed;
+            left:0;
+            top:0;
+            width:100%;
+            height:100%;
+            background:rgba(255,255,255,.6);
+            z-index:99999;">
+
+    <div class="d-flex
+                justify-content-center
+                align-items-center
+                h-100">
+
+        <div class="spinner-border text-primary"></div>
+
+    </div>
+
+</div>
+
+@section Scripts {
+<script src="~/js/schoolteacher.js"></script>
+  
+
+}

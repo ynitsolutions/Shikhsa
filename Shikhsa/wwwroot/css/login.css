@@ -1,0 +1,230 @@
+/* ============================================================
+   login.css — Login Page Styles
+   ============================================================ */
+
+.login-page {
+    min-height:      100vh;
+    display:         flex;
+    align-items:     stretch;
+    background:      var(--bg-page);
+    overflow:        hidden;
+}
+
+/* ── Left Branding Panel ──────────────────────────────────── */
+.login-panel-left {
+    flex:            1;
+    background:      var(--primary);
+    display:         flex;
+    flex-direction:  column;
+    align-items:     center;
+    justify-content: center;
+    padding:         3rem 2.5rem;
+    position:        relative;
+    overflow:        hidden;
+}
+
+.login-panel-left::before {
+    content:         '';
+    position:        absolute;
+    top:             -80px;
+    right:           -80px;
+    width:           320px;
+    height:          320px;
+    border-radius:   50%;
+    background:      rgba(255,255,255,0.06);
+}
+
+.login-panel-left::after {
+    content:         '';
+    position:        absolute;
+    bottom:          -60px;
+    left:            -60px;
+    width:           240px;
+    height:          240px;
+    border-radius:   50%;
+    background:      rgba(255,255,255,0.04);
+}
+
+.login-brand {
+    text-align:      center;
+    position:        relative;
+    z-index:         1;
+    animation:       fadeIn 0.7s ease both;
+}
+
+.login-logo {
+    width:           80px;
+    height:          80px;
+    background:      rgba(255,255,255,0.15);
+    border-radius:   var(--radius-lg);
+    display:         flex;
+    align-items:     center;
+    justify-content: center;
+    font-size:       2.4rem;
+    color:           #fff;
+    margin:          0 auto 1.5rem;
+    border:          2px solid rgba(255,255,255,0.2);
+}
+
+.login-brand-name {
+    font-family:     var(--font-main);
+    font-size:       2rem;
+    font-weight:     700;
+    color:           #fff;
+    letter-spacing:  -0.02em;
+}
+
+.login-brand-tagline {
+    font-size:       0.9rem;
+    color:           rgba(255,255,255,0.65);
+    margin-top:      6px;
+    line-height:     1.5;
+}
+
+.login-roles {
+    display:         flex;
+    gap:             8px;
+    flex-wrap:       wrap;
+    justify-content: center;
+    margin-top:      1.5rem;
+}
+
+.login-role-badge {
+    padding:         5px 14px;
+    border-radius:   99px;
+    font-size:       0.78rem;
+    font-weight:     600;
+    background:      rgba(255,255,255,0.15);
+    color:           #fff;
+    border:          1px solid rgba(255,255,255,0.25);
+    letter-spacing:  0.02em;
+}
+
+.login-features {
+    margin-top:      2.5rem;
+    display:         flex;
+    flex-direction:  column;
+    gap:             12px;
+    width:           100%;
+    max-width:       280px;
+    position:        relative;
+    z-index:         1;
+    animation:       fadeIn 0.7s 0.15s ease both;
+}
+
+.login-feature {
+    display:         flex;
+    align-items:     center;
+    gap:             12px;
+    background:      rgba(255,255,255,0.08);
+    border-radius:   var(--radius-sm);
+    padding:         0.75rem 1rem;
+    border:          1px solid rgba(255,255,255,0.1);
+}
+
+.login-feature i {
+    font-size:       1.2rem;
+    color:           rgba(255,255,255,0.85);
+    flex-shrink:     0;
+}
+
+.login-feature span {
+    font-size:       0.83rem;
+    color:           rgba(255,255,255,0.75);
+    font-weight:     500;
+}
+
+/* ── Right Form Panel ─────────────────────────────────────── */
+.login-panel-right {
+    width:           480px;
+    display:         flex;
+    flex-direction:  column;
+    align-items:     center;
+    justify-content: center;
+    padding:         2.5rem 3rem;
+    background:      var(--bg-card);
+    animation:       fadeIn 0.5s ease both;
+}
+
+.login-form-wrap { width: 100%; max-width: 360px; }
+
+.login-heading {
+    font-family:     var(--font-main);
+    font-size:       1.6rem;
+    font-weight:     700;
+    color:           var(--text-primary);
+    margin-bottom:   4px;
+}
+
+.login-subheading {
+    font-size:       0.88rem;
+    color:           var(--text-secondary);
+    margin-bottom:   2rem;
+}
+
+.login-divider {
+    display:         flex;
+    align-items:     center;
+    gap:             12px;
+    margin:          1.2rem 0;
+}
+
+.login-divider::before,
+.login-divider::after {
+    content:         '';
+    flex:            1;
+    height:          1px;
+    background:      var(--border);
+}
+
+.login-divider span {
+    font-size:       0.75rem;
+    color:           var(--text-muted);
+    white-space:     nowrap;
+}
+
+.login-footer {
+    margin-top:      2rem;
+    padding-top:     1.5rem;
+    border-top:      1px solid var(--border);
+    text-align:      center;
+    font-size:       0.78rem;
+    color:           var(--text-muted);
+}
+
+/* ── Checkbox ─────────────────────────────────────────────── */
+.check-group {
+    display:         flex;
+    align-items:     center;
+    gap:             8px;
+    cursor:          pointer;
+}
+
+.check-group input[type="checkbox"] {
+    width:           16px;
+    height:          16px;
+    accent-color:    var(--primary);
+    cursor:          pointer;
+    flex-shrink:     0;
+}
+
+.check-group span {
+    font-size:       0.85rem;
+    color:           var(--text-secondary);
+}
+
+/* ── Responsive ───────────────────────────────────────────── */
+@media (max-width: 991px) {
+    .login-page        { flex-direction: column; }
+    .login-panel-left  { padding: 2.5rem 2rem; min-height: 260px; }
+    .login-features    { display: none; }
+    .login-panel-right { width: 100%; padding: 2rem 1.5rem; }
+}
+
+@media (max-width: 576px) {
+    .login-panel-left  { min-height: 200px; padding: 2rem 1.5rem; }
+    .login-logo        { width: 60px; height: 60px; font-size: 1.8rem; }
+    .login-brand-name  { font-size: 1.6rem; }
+    .login-panel-right { padding: 1.5rem 1.2rem; }
+    .login-heading     { font-size: 1.3rem; }
+}

@@ -1,0 +1,203 @@
+﻿@using Shikhsa.ViewModels
+@model SubjectMasterVM
+@{
+
+    ViewData["Title"] = "Subjects Master";
+}
+
+<div class="container-fluid">
+
+    <!-- Subject Form -->
+    <div class="card mb-3">
+
+        <div class="card-header">
+            <h5 class="mb-0">
+                @(Model.Subject?.SubjectId > 0 ? @Localizer.Get("Edit Subject") : @Localizer.Get("Add Subject"))
+            </h5>
+        </div>
+
+        <div class="card-body">
+
+            <form asp-action="SaveSubjectMaster" method="post">
+
+                <input asp-for="Subject.SubjectId" type="hidden" />
+
+                <div class="row g-3">
+
+                    <div class="col-lg-4 col-md-6 col-sm-12">
+
+                        <label class="form-label">
+                             @Localizer.Get("Subject Name") 
+                        </label>
+
+                        <input asp-for="Subject.SubjectName" class="form-control required" placeholder="Enter Subject Name" />
+
+                        <span asp-validation-for="Subject.SubjectName"
+                              class="text-danger"></span>
+
+                    </div>
+
+                    <div class="col-lg-4 col-md-6 col-sm-12">
+
+                        <label class="form-label">
+                             @Localizer.Get("Language Subject Name")
+                        </label>
+
+                        <input asp-for="Subject.LanguageSubjectName" class="form-control required" placeholder="Enter Language Subject Name" />
+
+                    </div>
+
+                    <div class="col-lg-2 col-md-6 col-sm-12">
+
+                        <label class="form-label">
+                             @Localizer.Get("Is Language Subject")
+                        </label>
+
+                        <select asp-for="Subject.IsLanguageSubject"
+                                class="form-select select2">
+
+                            <option value="false"> @Localizer.Get("No")</option>
+                            <option value="true"> @Localizer.Get("Yes")</option>
+
+                        </select>
+
+                    </div>
+
+                    <div class="col-lg-2 col-md-6 col-sm-12 d-flex align-items-end">
+                        <permission controller="Masters" action="SubjectMaster" type="create">
+                          
+                            <button type="submit" class="btn btn-success w-100">
+
+                                <i class="ti ti-device-floppy"></i>
+                            @*     @(Model.Subject?.SubjectId > 0 ? @Localizer.Get("Update"): @Localizer.Get("Save")) *@
+
+                            </button>
+                        </permission>
+                    @*     <button type="submit"
+                                class="btn btn-primary w-100">
+
+                            <i class="ti ti-device-floppy"></i>
+
+                            @(Model.Subject?.SubjectId > 0
+                                                        ? " Update"
+                                                        : " Save")
+
+                        </button> *@
+
+                    </div>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+    <!-- Subject List -->
+    <div class="card">
+
+        <div class="card-header">
+            <h5 class="mb-0"> @Localizer.Get("Subject List")</h5>
+        </div>
+
+        <div class="card-body">
+
+            <div class="table-responsive">
+
+                <table class="table table-bordered table-striped table-hover align-middle">
+
+                    <thead class="table-light">
+
+                        <tr>
+                            <th width="80">#</th>
+                            <th> @Localizer.Get("Subject Name")</th>
+                            <th> @Localizer.Get("Language Subject Name")</th>
+                            <th> @Localizer.Get("Language Subject")</th>
+                            <th> @Localizer.Get("Action")</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        @if (Model.SubjectList.Any())
+                        {
+                            foreach (var item in Model.SubjectList)
+                            {
+                                <tr>
+
+                                    <td>@item.SubjectId</td>
+
+                                    <td> @Localizer.Get(@item.SubjectName)</td>
+
+                                    <td>
+                                        @(string.IsNullOrEmpty(item.LanguageSubjectName)? "-" :  @Localizer.Get(item.LanguageSubjectName))
+                            </td>
+
+                                    <td>
+                                @if (item.IsLanguageSubject)
+                                        {
+                                            <span class="badge bg-success">
+                                                 @Localizer.Get("Yes")
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">
+                                                 @Localizer.Get("No")
+                                            </span>
+                                        }
+                                    </td>
+
+                                    <td>
+                                        <permission controller="Masters" action="SubjectMaster" type="Edit">
+                                            <a asp-action="SubjectMaster"
+                                               asp-route-id="@item.SubjectId"
+                                               >
+                                                <i class="ti ti-edit"></i>
+                                            </a>
+                                        </permission>
+                                        @* <a asp-action="SubjectMaster"
+                                           asp-route-id="@item.SubjectId"
+                                           class="btn btn-warning btn-sm">
+
+                                            <i class="ti ti-edit"></i>
+
+                                        </a> *@
+                                          <permission controller="Masters" action="SubjectMaster" type="delete">
+                                            <a asp-action="DeleteSubjectMaster"
+                                           asp-route-id="@item.SubjectId"
+                                          
+                                           onclick="return confirm('Are you sure?')">
+
+                                            <i class="ti ti-trash"></i>
+
+                                        </a>
+                                        </permission>
+
+                                    </td>
+
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center">
+                                    No Records Found
+                                </td>
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

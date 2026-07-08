@@ -1,0 +1,297 @@
+﻿@model Shikhsa.ViewModels.ClassBatchSubjectVM
+@{
+
+    ViewData["Title"] = "Subjet Class";
+}
+<div class="card shadow-sm mb-4">
+
+
+
+    <div class="card-body">
+
+        <form asp-action="SaveClassBatchSubjectMapping" method="post">
+
+            <input asp-for="HeaderId" type="hidden" />
+
+            <div class="row">
+
+                <div class="col-lg-4 col-md-6 mb-3">
+
+                    <label>Class</label>
+
+                    <select asp-for="ClassId"
+                            class="form-select select2">
+
+                        <option value="">Select Class</option>
+
+                        @foreach (var item in Model.Classes)
+                        {
+                            <option value="@item.DataListItemId">
+                                @item.DataListItemText
+                            </option>
+                        }
+
+                    </select>
+
+                </div>
+
+                <div class="col-lg-4 col-md-6 mb-3">
+
+                    <label>Batch</label>
+
+                    <select asp-for="BatchId"
+                            class="form-select select2">
+
+                        <option value="">Select Batch</option>
+
+                        @foreach (var item in Model.Batches)
+                        {
+                            <option value="@item.BatchId">
+                                @item.AcademicYear
+                            </option>
+                        }
+
+                    </select>
+
+                </div>
+
+                <div class="col-lg-4 col-md-6 mb-3">
+
+                    <label>Copy From Batch</label>
+
+                    <select asp-for="CopyFromBatchId"
+                            class="form-select select2">
+
+                        <option value="">Select Batch</option>
+
+                        @foreach (var item in Model.Batches)
+                        {
+                            <option value="@item.BatchId">
+                                @item.AcademicYear
+                            </option>
+                        }
+
+                    </select>
+
+                </div>
+
+                <div class="col-12 mb-3">
+
+                    <label>Subjects</label>
+
+                    <select asp-for="SubjectIds"
+                            class="form-select select2"
+                            multiple>
+
+                        @foreach (var item in Model.Subjects)
+                        {
+                            <option value="@item.SubjectId">
+                                @item.SubjectName
+                            </option>
+                        }
+
+                    </select>
+
+                </div>
+
+                <div class="col-12">
+
+                    <button class="btn btn-primary">
+
+                        <i class="ti ti-device-floppy"></i>
+
+                        @(Model.HeaderId > 0 ? "Update" : "Save")
+
+                    </button>
+
+                    <a asp-action="ClassBatchSubjectMapping"
+                       class="btn btn-secondary">
+
+                        Reset
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+<div class="card shadow-sm">
+
+
+    <form method="get">
+
+        <div class="row">
+
+            <div class="col-md-4">
+
+                <label>Class</label>
+
+                <select name="filterClassId"
+                        class="form-select select2">
+
+                    <option value="">All</option>
+                    @foreach (var item in Model.Classes)
+                    {
+                        if (Model.FilterClassId == item.DataListItemId)
+                        {
+                            <option value="@item.DataListItemId" selected>
+                                @item.DataListItemText
+                            </option>
+                        }
+                        else
+                        {
+                            <option value="@item.DataListItemId">
+                                @item.DataListItemText
+                            </option>
+                        }
+                    }
+                    @* @foreach(var item in Model.Classes)
+{
+<option value="@item.DataListItemId"
+@(Model.FilterClassId==item.DataListItemId?"selected":"")>
+
+@item.DataListItemText
+
+</option>
+} *@
+
+                </select>
+
+            </div>
+
+            <div class="col-md-4">
+
+                <label>Batch</label>
+
+                <select name="filterBatchId"
+                        class="form-select select2">
+
+                    <option value="">All</option>
+
+                    @* @foreach(var item in Model.Batches)
+{
+<option value="@item.BatchId"
+@(Model.FilterBatchId==item.BatchId?"selected":"")>
+
+@item.AcademicYear
+
+</option>
+} *@
+                    @foreach (var item in Model.Batches)
+                    {
+                        if (Model.FilterBatchId == item.BatchId)
+                        {
+                            <option value="@item.BatchId" selected>
+                                @item.AcademicYear
+                            </option>
+                        }
+                        else
+                        {
+                            <option value="@item.BatchId">
+                                @item.AcademicYear
+                            </option>
+                        }
+                    }
+
+                </select>
+
+            </div>
+
+            <div class="col-md-4 d-flex align-items-end">
+
+                <button class="btn btn-primary">
+
+                    Search
+
+                </button>
+
+                <a asp-action="ClassBatchSubjectMapping"
+                   class="btn btn-secondary ms-2">
+
+                    Reset
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </form>
+    <div class="card-body table-responsive">
+
+        <table class="table table-bordered table-striped align-middle">
+
+            <thead>
+
+                <tr>
+
+                    <th>#</th>
+
+                    <th>Class</th>
+
+                    <th>Batch</th>
+
+                    <th>Subjects</th>
+
+                    <th width="130">Action</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                @{
+                    int sr = 1;
+                }
+
+                @foreach (var item in Model.ListData)
+                {
+                    <tr>
+
+                        <td>@sr</td>
+
+                        <td>@item.ClassName</td>
+
+                        <td>@item.BatchName</td>
+
+                        <td>@item.Subjects</td>
+
+                        <td>
+
+                            <a asp-action="ClassBatchSubjectMapping"
+                               asp-route-headerId="@item.HeaderId"
+                               class="btn btn-warning btn-sm">
+
+                                <i class="ti ti-edit"></i>
+
+                            </a>
+
+                            <a asp-action="DeleteClassBatchSubject"
+                               asp-route-id="@item.HeaderId"
+                               onclick="return confirm('Delete?')"
+                               class="btn btn-danger btn-sm">
+
+                                <i class="ti ti-trash"></i>
+
+                            </a>
+
+                        </td>
+
+                    </tr>
+
+                    sr++;
+                }
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>

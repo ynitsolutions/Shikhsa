@@ -1,0 +1,210 @@
+﻿@using Shikhsa.ViewModels.DataFilter
+@model StudentReportPageVM
+
+@{
+    var cols = Model.Filter.SelectedColumns ??
+               new List<string>();
+}
+
+<div class="table-responsive">
+
+    <table class="table table-bordered table-striped">
+
+        <thead>
+
+            <tr>
+                <th>
+                    <input type="checkbox" name="All" value="All" id="chkAll" />
+                </th>
+               
+                   @*  <th>Application No</th> *@
+                
+                    <th>Student Name</th>
+               
+                    <th>Father Name</th>
+                
+                    <th>Mother Name</th>
+              
+                    <th>Class</th>
+               
+                    <th>Section</th>
+                
+                    <th>Batch</th>
+               
+                   
+
+                <th width="120">
+                    Action
+                </th>
+
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            @if (Model.Students != null &&
+                        Model.Students.Any())
+            {
+                foreach (var item in Model.Students)
+                {
+                    <tr>
+                        <td>
+                            <input type="checkbox" class="student-checkbox" name="selectedStudents" value="@item.StudentId" />
+                        </td>
+                       
+                          @*   <td>@item.ApplicationNo</td> *@
+                       
+                            <td>@item.StudentName</td>
+                       
+                            <td>@item.FatherName</td>
+                      
+                            <td>@item.MotherName</td>
+                       
+                            <td>@item.ClassName</td>
+                       
+                            <td>@item.SectionName</td>
+                       
+                            <td>@item.BatchName</td>
+                       
+                            
+                     
+                        <td>
+
+       @*                      <permission controller="Students" action="StudentRegistrations" type="edit">
+                                <a asp-action="SaveStudentRegistrations" asp-route-id="@item.StudentId">
+                                    <spam class="ti ti-pencil"></spam>
+                                </a>
+                            </permission>
+                            <permission controller="Students" action="StudentRegistrations" type="delete">
+                                <a asp-action="DeleteStudentRegistrations" asp-route-id="@item.StudentId">
+                                    <spam class="ti ti-trash"></spam>
+                                </a>
+                            </permission> *@
+                            <a href="javascript:void(0);" class="btnStatus" data-studentid="@item.StudentId">
+                                <spam class="ti ti-reload"></spam>
+                            </a>
+                            @*    <button type="button" class="btn btn-primary btnStatus" data-studentid="@item.StudentId">
+                                Change Status
+                            </button> *@
+                        </td>
+
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+
+                    <td colspan="20"
+                        class="text-center">
+
+                        No Records Found
+
+                    </td>
+
+                </tr>
+            }
+
+        </tbody>
+
+    </table>
+
+</div>
+<!--Model PopUP-->
+<div class="modal fade"
+     id="statusModal"
+     tabindex="-1">
+
+    <div class="modal-dialog">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">
+                    Promote Student
+                </h5>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
+
+            </div>
+
+            <div class="modal-body">
+
+                <input type="hidden" id="StudentIds" />
+
+
+                <div id="admissionArea">
+
+                    <div class="mb-3">
+
+                        <label>Class</label>
+
+                        <select id="ClassId" class="form-select select2">
+                            <option value="">Select</option>
+                            @foreach (var item in ViewBag.ClassList)
+                            {
+                                <option value="@item.DataListItemId">
+                                    @item.DataListItemText
+                                </option>
+                            }
+                        </select>
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <label>Section</label>
+
+                        <select id="SectionId" class="form-select select2">
+                            <option value="">Select</option>
+                            @foreach (var item in ViewBag.SectionList)
+                            {
+                                <option value="@item.DataListItemId">
+                                    @item.DataListItemText
+                                </option>
+                            }
+                        </select>
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <label>Batch</label>
+
+                        <select id="BatchId" class="form-select select2">
+                            <option value="">Select</option>
+
+                            @foreach (var item in ViewBag.BatchList)
+                            {
+                                <option value="@item.BatchId">
+                                    @item.AcademicYear
+                                </option>
+                            }
+                        </select>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button type="button"
+                        class="btn btn-success"
+                        id="btnSaveStatus">
+                    Save
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

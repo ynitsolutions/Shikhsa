@@ -1,0 +1,138 @@
+﻿@model IEnumerable<Shikhsa.Models.DataList>
+
+@{
+
+    ViewData["Title"] = "Data List";
+}
+
+<div class="row">
+
+    <div class="col-md-12">
+
+        <div class="card">
+
+            <div class="card-header">
+                <permission controller="Masters" action="DataLIst" type="create">
+                    <a asp-action="SaveDataLIst" class="btn btn-primary">
+                        @Localizer.Get("New DataList")
+                    </a>
+                </permission>
+            </div>
+
+            <div class="card-body">
+
+                <table class="table table-bordered table-hover">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>#</th>
+
+                            <th>List Name</th>
+                            <th>Description</th>
+                            <th>Total Items</th>
+                            <th>Status</th>
+                            <th>Action</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        @if (Model != null && Model.Any())
+                        {
+                            int i = 1;
+
+                            foreach (var item in Model)
+                            {
+                                <tr>
+
+                                    <td>@i</td>
+
+                                    <td>
+                                        @item.DataListName
+                                    </td>
+
+                                    <td>
+                                        @item.Description
+                                    </td>
+
+                                    <td>
+                                        @item.DataListItems.Count()
+                                    </td>
+
+                                    <td>
+                                        @if (item.IsActive)
+                                        {
+                                            <span class="badge bg-success">
+                                                Active
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">
+                                                InActive
+                                            </span>
+                                        }
+                                    </td>
+
+                                   
+
+                            <td>
+
+                              @*   <permission controller="Masters" action="DataList" type="Edit"> *@
+                                    <a asp-action="SaveDataList"
+                                       asp-route-id="@item.DataListId"
+                                       class="btn btn-warning btn-sm">
+                                         @Localizer.Get("Edit")
+                                    </a>
+                              @*   </permission> *@
+                                @* <a asp-action="Index"
+                                   asp-route-id="@item.DataListId"
+                                   class="btn btn-warning btn-sm">
+
+                                    Edit
+
+                                </a> *@
+                                <permission controller="Masters" action="DataList" type="Edit">
+                                            <a asp-action="DeleteDataList" asp-route-id="@item.DataListId" class="btn btn-info btn-sm">
+
+                                        @(item.IsActive ? Localizer.Get("InActive"): Localizer.Get("Active"))
+
+                                </a>
+                                </permission>
+
+                                    </td>
+
+                                </tr>
+
+                                                i++;
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+
+                                <td colspan="8"
+                                    class="text-center">
+
+                                    No Record Found
+
+                                </td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

@@ -1,0 +1,566 @@
+﻿@model Shikhsa.ViewModels.FeeHeadingPageVM
+
+@{
+    ViewData["Title"] = "Fee Heading Master";
+}
+<div class="container-fluid mt-3">
+
+    <div class="card shadow-sm">
+
+        <div class="card-header bg-primary text-white">
+
+            <div class="row align-items-center">
+
+                <div class="col-md-6">
+                    <h5 class="mb-0">
+                        Fee Heading Master
+                    </h5>
+                </div>
+
+                <div class="col-md-6 text-md-end">
+
+                    <a asp-action="Index"
+                       class="btn btn-light btn-sm">
+
+                        <i class="fa fa-plus"></i>
+                        New
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="card-body">
+
+            <form asp-action="SaveFeeHeadings"
+                  method="post"
+                  autocomplete="off">
+
+                @Html.AntiForgeryToken()
+
+                <input asp-for="Form.FeeHeadingId" type="hidden" />
+
+                <div asp-validation-summary="ModelOnly"
+                     class="text-danger mb-3">
+                </div>
+
+                <div class="row">
+
+                    <div class="col-lg-5 col-md-6 mb-3">
+
+                        <label asp-for="Form.FeeHeadingName"
+                               class="form-label fw-semibold">
+                        </label>
+
+                        <input asp-for="Form.FeeHeadingName"
+                               class="form-control"
+                               placeholder="Enter Fee Heading" />
+
+                        <span asp-validation-for="Form.FeeHeadingName"
+                              class="text-danger">
+                        </span>
+
+                    </div>
+
+                    <div class="col-lg-3 col-md-6 mb-3">
+
+                        <label class="form-label fw-semibold">
+
+                            Frequency
+
+                        </label>
+
+                        <select asp-for="Form.FrequencyId"
+                                asp-items="Model.FrequencyList"
+                                class="form-select">
+
+                            <option value="">-- Select Frequency --</option>
+
+                        </select>
+
+                        <span asp-validation-for="Form.FrequencyId"
+                              class="text-danger">
+                        </span>
+
+                    </div>
+
+                    <div class="col-lg-2 col-md-6 mb-3">
+
+                        <label class="form-label fw-semibold">
+
+                            Status
+
+                        </label>
+
+                        <div class="form-check mt-2">
+
+                            <input asp-for="Form.IsActive"
+                                   class="form-check-input" />
+
+                            <label asp-for="Form.IsActive"
+                                   class="form-check-label">
+
+                                Active
+
+                            </label>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <hr />
+
+                <h6 class="fw-bold mb-3">
+
+                    Applicable Months
+
+                </h6>
+
+                <div class="row">
+
+                    <div class="col-lg-2 col-md-3 col-6 mb-3">
+
+                        <div class="form-check">
+
+                            <input asp-for="Form.Jan"
+                                   class="form-check-input" />
+
+                            <label asp-for="Form.Jan"
+                                   class="form-check-label">
+
+                                January
+
+                            </label>
+
+                        </div>
+
+                    </div>
+
+                    <div class="col-lg-2 col-md-3 col-6 mb-3">
+
+                        <div class="form-check">
+
+                            <input asp-for="Form.Feb"
+                                   class="form-check-input" />
+
+                            <label asp-for="Form.Feb"
+                                   class="form-check-label">
+
+                                February
+
+                            </label>
+
+                        </div>
+
+                    </div>
+
+                    <div class="col-lg-2 col-md-3 col-6 mb-3">
+
+                        <div class="form-check">
+
+                            <input asp-for="Form.Mar"
+                                   class="form-check-input" />
+
+                            <label asp-for="Form.Mar"
+                                   class="form-check-label">
+
+                                March
+
+                            </label>
+
+                        </div>
+
+                    </div>
+
+                    <div class="col-lg-2 col-md-3 col-6 mb-3">
+
+                        <div class="form-check">
+
+                            <input asp-for="Form.Apr"
+                                   class="form-check-input" />
+
+                            <label asp-for="Form.Apr"
+                                   class="form-check-label">
+
+                                April
+
+                            </label>
+
+                        </div>
+
+                    </div>
+
+                    <div class="col-lg-2 col-md-3 col-6 mb-3">
+
+                        <div class="form-check">
+
+                            <input asp-for="Form.May"
+                                   class="form-check-input" />
+
+                            <label asp-for="Form.May"
+                                   class="form-check-label">
+
+                                May
+
+                            </label>
+
+                        </div>
+
+                    </div>
+
+                    <div class="col-lg-2 col-md-3 col-6 mb-3">
+
+                        <div class="form-check">
+
+                            <input asp-for="Form.Jun"
+                                   class="form-check-input" />
+
+                            <label asp-for="Form.Jun"
+                                   class="form-check-label">
+
+                                June
+
+                            </label>
+
+                        </div>
+
+                    </div>
+
+                    <div class="col-lg-2 col-md-3 col-6 mb-3">
+
+                        <div class="form-check">
+
+                            <input asp-for="Form.Jul"
+                                   class="form-check-input" />
+
+                            <label asp-for="Form.Jul"
+                                   class="form-check-label">
+
+                                July
+
+                            </label>
+
+                        </div>
+
+                    </div>
+
+                    <div class="col-lg-2 col-md-3 col-6 mb-3">
+
+                        <div class="form-check">
+
+                            <input asp-for="Form.Aug"
+                                   class="form-check-input" />
+
+                            <label asp-for="Form.Aug"
+                                   class="form-check-label">
+
+                                August
+
+                            </label>
+
+                        </div>
+
+                    </div>
+
+                    <div class="col-lg-2 col-md-3 col-6 mb-3">
+
+                        <div class="form-check">
+
+                            <input asp-for="Form.Sep"
+                                   class="form-check-input" />
+
+                            <label asp-for="Form.Sep"
+                                   class="form-check-label">
+
+                                September
+
+                            </label>
+
+                        </div>
+
+                    </div>
+
+                    <div class="col-lg-2 col-md-3 col-6 mb-3">
+
+                        <div class="form-check">
+
+                            <input asp-for="Form.Oct"
+                                   class="form-check-input" />
+
+                            <label asp-for="Form.Oct"
+                                   class="form-check-label">
+
+                                October
+
+                            </label>
+
+                        </div>
+
+                    </div>
+
+                    <div class="col-lg-2 col-md-3 col-6 mb-3">
+
+                        <div class="form-check">
+
+                            <input asp-for="Form.Nov"
+                                   class="form-check-input" />
+
+                            <label asp-for="Form.Nov"
+                                   class="form-check-label">
+
+                                November
+
+                            </label>
+
+                        </div>
+
+                    </div>
+
+                    <div class="col-lg-2 col-md-3 col-6 mb-3">
+
+                        <div class="form-check">
+
+                            <input asp-for="Form.Dec"
+                                   class="form-check-input" />
+
+                            <label asp-for="Form.Dec"
+                                   class="form-check-label">
+
+                                December
+
+                            </label>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <hr />
+
+                <div class="text-end">
+
+                    <button type="submit"
+                            class="btn btn-success">
+
+                        <i class="fa fa-save"></i>
+
+                        @(Model.Form.FeeHeadingId == 0 ? "Save" : "Update")
+
+                    </button>
+
+                    <a asp-action="Index"
+                       class="btn btn-secondary">
+
+                        <i class="fa fa-refresh"></i>
+
+                        Reset
+
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+    <div class="card shadow-sm mt-4">
+
+        <div class="card-header bg-dark text-white">
+
+            <div class="row">
+
+                <div class="col-md-6">
+
+                    <h5 class="mb-0">
+                        Fee Heading List
+                    </h5>
+
+                </div>
+
+                <div class="col-md-6 text-md-end">
+
+                    <span class="badge bg-light text-dark">
+
+                        Total Records :
+                        @Model.List.Count
+
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="card-body">
+
+            <div class="table-responsive">
+
+                <table class="table table-bordered table-hover align-middle"
+                       id="tblFeeHeading">
+
+                    <thead class="table-primary">
+
+                        <tr>
+
+                            <th width="60">#</th>
+
+                            <th>Fee Heading</th>
+
+                            <th width="180">Frequency</th>
+
+                            <th class="text-center">Jan</th>
+                            <th class="text-center">Feb</th>
+                            <th class="text-center">Mar</th>
+                            <th class="text-center">Apr</th>
+                            <th class="text-center">May</th>
+                            <th class="text-center">Jun</th>
+                            <th class="text-center">Jul</th>
+                            <th class="text-center">Aug</th>
+                            <th class="text-center">Sep</th>
+                            <th class="text-center">Oct</th>
+                            <th class="text-center">Nov</th>
+                            <th class="text-center">Dec</th>
+
+                            <th width="90">Status</th>
+
+                            <th width="130" class="text-center">
+
+                                Action
+
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        @{
+                            int sr = 1;
+                        }
+
+                        @foreach (var item in Model.List)
+                        {
+                            <tr>
+
+                                <td>
+
+                                    @(sr++)
+
+                                </td>
+
+                                <td>
+
+                                    @item.FeeHeadingName
+
+                                </td>
+
+                                <td>
+
+                                    @item.Frequency?.Text
+
+                                </td>
+
+                                <td class="text-center">@(item.Jan ? "✓" : "-")</td>
+                                <td class="text-center">@(item.Feb ? "✓" : "-")</td>
+                                <td class="text-center">@(item.Mar ? "✓" : "-")</td>
+                                <td class="text-center">@(item.Apr ? "✓" : "-")</td>
+                                <td class="text-center">@(item.May ? "✓" : "-")</td>
+                                <td class="text-center">@(item.Jun ? "✓" : "-")</td>
+                                <td class="text-center">@(item.Jul ? "✓" : "-")</td>
+                                <td class="text-center">@(item.Aug ? "✓" : "-")</td>
+                                <td class="text-center">@(item.Sep ? "✓" : "-")</td>
+                                <td class="text-center">@(item.Oct ? "✓" : "-")</td>
+                                <td class="text-center">@(item.Nov ? "✓" : "-")</td>
+                                <td class="text-center">@(item.Dec ? "✓" : "-")</td>
+
+                               <td class="text-center">
+
+                                    @if (item.IsActive)
+                                    {
+                                        <a asp-action="DeleteFeeHeadings"
+                                           asp-route-id="@item.FeeHeadingId"
+                                           class="btn btn-success btn-sm"
+                                           title="Click to Deactivate">
+
+                                            <i class="fa fa-check-circle"></i>
+                                            Active
+
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <a asp-action="DeleteFeeHeadings"
+                                           asp-route-id="@item.FeeHeadingId"
+                                           class="btn btn-danger btn-sm"
+                                           title="Click to Activate">
+
+                                            <i class="fa fa-times-circle"></i>
+                                            Inactive
+
+                                        </a>
+                                    }
+
+                                </td>
+
+                                <td class="text-center">
+
+                                    <a asp-action="FeeHeadings"
+                                       asp-route-id="@item.FeeHeadingId"
+                                       class="btn btn-warning btn-sm">
+
+                                        <i class="fa fa-edit"></i>
+
+                                    </a>
+                                </td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+</div>
+@section Scripts
+{
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+
+        $(document).ready(function () {
+
+            $('#tblFeeHeading').DataTable({
+
+                responsive: true,
+
+                autoWidth: false,
+
+                pageLength: 10,
+
+                lengthMenu: [[10,25,50,100],[10,25,50,100]],
+
+                order: []
+
+            });
+
+        });
+
+    </script>
+
+}

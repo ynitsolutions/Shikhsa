@@ -1,0 +1,208 @@
+﻿@model IEnumerable<Shikhsa.Models.Notification.NotificationTemplate>
+
+@{
+    ViewData["Title"] = "Notification Templates";
+}
+
+<div class="card shadow-sm">
+
+    <div class="card-header bg-primary text-white">
+
+        <div class="d-flex justify-content-between align-items-center">
+
+            <h5 class="mb-0">
+                Notification Templates
+            </h5>
+
+            <a asp-action="SaveNotificationTemplate"
+               class="btn btn-light">
+
+                <i class="bi bi-plus-circle"></i>
+
+                Add Template
+
+            </a>
+
+        </div>
+
+    </div>
+
+    <div class="card-body">
+
+        <table class="table table-bordered table-striped table-hover"
+               id="tblTemplate">
+
+            <thead>
+
+                <tr>
+
+                    <th width="70">
+                        Id
+                    </th>
+
+                    <th>
+                        Template
+                    </th>
+
+                    <th>
+                        Code
+                    </th>
+
+                    <th>
+                        Channel
+                    </th>
+
+                    <th width="90">
+                        Status
+                    </th>
+
+                    <th width="120">
+                        Action
+                    </th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                @foreach (var item in Model)
+                {
+                    <tr>
+
+                        <td>
+
+                            @item.NotificationTemplateId
+
+                        </td>
+
+                        <td>
+
+                            @item.TemplateName
+
+                        </td>
+
+                        <td>
+
+                            @item.TemplateCode
+
+                        </td>
+
+                        <td>
+
+                            @item.Channel
+
+                        </td>
+
+                        <td>
+
+                            @if (item.IsActive)
+                            {
+                                <span class="badge bg-success">
+                                    Active
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">
+                                    Inactive
+                                </span>
+                            }
+
+                        </td>
+
+                        <td>
+
+                            <a asp-action="SaveNotificationTemplate"
+                               asp-route-id="@item.NotificationTemplateId"
+                               class="btn btn-warning btn-sm">
+
+                                <i class="bi bi-pencil-square"></i>
+
+                            </a>
+
+                            <button class="btn btn-danger btn-sm"
+                                    onclick="Delete(@item.NotificationTemplateId)">
+
+                                <i class="bi bi-trash"></i>
+
+                            </button>
+
+                        </td>
+
+                    </tr>
+                }
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+@section Scripts {
+
+    <script>
+
+        $(function(){
+
+            $("#tblTemplate").DataTable({
+
+                responsive:true,
+
+                pageLength:10,
+
+                ordering:true
+
+            });
+
+        });
+
+        function Delete(id){
+
+        Swal.fire({
+
+        title:'Delete ?',
+
+        text:'Are you sure?',
+
+        icon:'warning',
+
+        showCancelButton:true,
+
+        confirmButtonText:'Yes'
+
+        }).then((result)=>{
+
+        if(result.isConfirmed){
+
+        $.post('/NotificationTemplate/Delete/'+id,function(res){
+
+        if(res.status==1){
+
+        Swal.fire('Success',res.message,'success')
+
+        .then(()=>{
+
+        location.reload();
+
+        });
+
+        }
+        else{
+
+        Swal.fire('Error',res.message,'error');
+
+        }
+
+        });
+
+        }
+
+        });
+
+        }
+
+    </script>
+
+}

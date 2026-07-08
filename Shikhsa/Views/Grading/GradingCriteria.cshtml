@@ -1,0 +1,563 @@
+﻿@model Shikhsa.ViewModels.GradingCriteriaVM
+
+@{
+    ViewData["Title"] = "Manage Grading Criteria";
+}
+
+ <style>
+
+  
+    .page-card {
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,.08);
+    }
+
+    .page-header {
+        background: linear-gradient(90deg,#5b65e6,#7b4dd7);
+        color: #fff;
+        padding: 22px;
+    }
+
+        .page-header h3 {
+            font-weight: 700;
+            margin-bottom: 3px;
+        }
+
+        .page-header small {
+            opacity: .85;
+        }
+
+</style>
+
+<div class="container-fluid mt-4">
+
+    <div class="page-card">
+
+        <div class="page-header">
+
+            <div class="d-flex justify-content-between align-items-center">
+
+                <div>
+
+                    <h3>
+                        <i class="bi bi-list-check"></i>
+                        Manage Grading Criteria
+                    </h3>
+
+                    <small>
+                        Define and manage grading criteria for student evaluations.
+                    </small>
+
+                </div>
+
+                <div>
+
+                    <button class="btn btn-light btn-sm me-2"
+                            data-bs-toggle="modal"
+                            data-bs-target="#bulkModal">
+
+                        <i class="bi bi-stack"></i>
+
+                        Bulk Create
+
+                    </button>
+
+                    <button class="btn btn-light btn-sm">
+
+                        <i class="bi bi-download"></i>
+
+                        Export CSV
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="form-card">
+
+            <form asp-action="SaveGradingCriteria" method="post">
+
+                <input asp-for="Criteria.GradingCriteriaId" type="hidden" />
+
+                <div class="section-title">
+
+                    <i class="bi bi-plus-circle-fill text-primary"></i>
+
+                    Add New Grading Criteria
+
+                </div>
+
+                <div class="row">
+
+                    <div class="col-md-3 mb-3">
+
+                        <label>
+
+                            Select Term
+
+                         
+
+                        </label>
+
+                        <select asp-for="Criteria.TermId"
+                                asp-items="Model.Terms"
+                                class="form-control select2 required">
+
+                            <option value="">---Select Term---</option>
+
+                        </select>
+
+                        <span asp-validation-for="Criteria.TermId"
+                              class="text-danger"></span>
+
+                    </div>
+
+
+                    <div class="col-md-3 mb-3">
+
+                        <label>
+
+                            Class Name
+
+                            
+
+                        </label>
+
+                        <select asp-for="Criteria.ClassId" class="form-control select2  required">
+
+                            <option value="">@Localizer.Get("Select")</option>
+
+                            @foreach (var item in Model.Classes)
+                            {
+                                <option value="@item.DataListItemId">
+                                    @item.DataListItemText
+                                </option>
+                            }
+
+                        </select>
+                        @* <select asp-for="Criteria.ClassId"
+                                asp-items="Model.Classes"
+                                class="form-select select2">
+
+                            <option value="">---Select Class---</option>
+
+                        </select> *@
+
+                        <span asp-validation-for="Criteria.ClassId"
+                              class="text-danger"></span>
+
+                    </div>
+
+
+                    <div class="col-md-3 mb-3">
+
+                        <label>
+
+                            Batch Name
+
+                           
+
+                        </label>
+
+                        <select asp-for="Criteria.BatchId" class="form-control select2  required">
+
+                            <option value="">@Localizer.Get("Select")</option>
+
+                            @foreach (var item in Model.Batches)
+                            {
+                                <option value="@item.BatchId">
+                                    @item.AcademicYear
+                                </option>
+                            }
+
+                        </select>
+                 @*        <select asp-for="Criteria.BatchId"
+                                asp-items="Model.Batches"
+                                class="form-select select2">
+
+                            <option value="">---Select Batch---</option>
+
+                        </select> *@
+
+                        <span asp-validation-for="Criteria.BatchId"
+                              class="text-danger"></span>
+
+                    </div>
+
+
+                    <div class="col-md-3 mb-3">
+
+                        <label>
+
+                            Minimum Percentage
+
+                          
+
+                        </label>
+
+                        <input asp-for="Criteria.MinPercentage"
+                               class="form-control required"
+                               placeholder="Enter Min %" />
+
+                        <span asp-validation-for="Criteria.MinPercentage"
+                              class="text-danger"></span>
+
+                    </div>
+
+                </div>
+
+                <div class="row">
+
+                    <div class="col-md-3 mb-3">
+
+                        <label>
+
+                            Maximum Percentage
+
+                            <span class="required">*</span>
+
+                        </label>
+
+                        <input asp-for="Criteria.MaxPercentage"
+                               class="form-control required"
+                               placeholder="Enter Max %" />
+
+                        <span asp-validation-for="Criteria.MaxPercentage"
+                              class="text-danger"></span>
+
+                    </div>
+
+
+                    <div class="col-md-3 mb-3">
+
+                        <label>
+
+                            Grade
+
+                          
+
+                        </label>
+
+                        <input asp-for="Criteria.Grade"
+                               class="form-control required"
+                               placeholder="A+,A,B,C..." />
+
+                        <span asp-validation-for="Criteria.Grade"
+                              class="text-danger"></span>
+
+                    </div>
+
+                </div>
+
+                <div class="row">
+
+                    <div class="col-md-12 mb-3">
+
+                        <label>
+
+                            Grade Description
+
+                        </label>
+
+<textarea asp-for="Criteria.Description"
+          class="form-control required textspaceonly"
+          placeholder="Enter grade description">
+
+</textarea>
+
+                    </div>
+
+                </div>
+
+                <div class="text-end">
+
+                    <button class="btn btn-purple px-5">
+
+                        <i class="bi bi-check-circle"></i>
+
+                        Submit
+
+                    </button>
+
+                </div>
+
+            </form>
+            <div class="card shadow-sm mt-4">
+
+                <div class="card-header bg-white">
+
+                    <div class="d-flex justify-content-between align-items-center">
+
+                        <h5 class="mb-0">
+                            <i class="bi bi-table"></i>
+                            Grading Criteria List
+                        </h5>
+
+                        <button class="btn btn-success btn-sm" id="btnRefresh">
+                            <i class="bi bi-arrow-clockwise"></i>
+                            Refresh
+                        </button>
+
+                    </div>
+
+                </div>
+
+                <div class="card-body">
+
+                    <div id="gridContainer">
+
+                        @await Html.PartialAsync("_Grid", Model)
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- Bulk Modal Placeholder -->
+
+<div class="modal fade"
+     id="bulkModal">
+
+    <div class="modal-dialog modal-xl">
+
+        <div class="modal-content">
+
+            <div class="modal-body">
+
+                <form asp-action="BulkCreate"
+                      asp-controller="Grading"
+                      method="post"
+                      id="bulkForm">
+
+                    @Html.AntiForgeryToken()
+
+                    <div class="modal-body">
+
+                        <div class="row mb-3">
+
+                            <div class="col-md-4">
+                                <label>Batch</label>
+                                <select asp-for="Criteria.BatchId"
+                                        asp-items="@(new SelectList(Model.Batches, "BatchId", "AcademicYear"))"
+                                        class="form-control select2 required">
+                                    <option value="">Select Batch</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label>Class</label>
+                                <select asp-for="Criteria.ClassId" class="form-control select2 required">
+                                    <option value="">Select</option>
+
+                                    @foreach (var item in Model.Classes)
+                                    {
+                                        <option value="@item.DataListItemId">
+                                            @item.DataListItemText
+                                        </option>
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label>Term</label>
+                                <select asp-for="Criteria.TermId"
+                                        asp-items="Model.Terms"
+                                        class="form-control select2 required">
+                                    <option value="">Select Term</option>
+                                </select>
+                            </div>
+
+                        </div>
+
+                        <table class="table table-bordered" id="tblBulk">
+
+                            <thead>
+                                <tr>
+                                    <th>Min %</th>
+                                    <th>Max %</th>
+                                    <th>Grade</th>
+                                    <th>Description</th>
+                                    <th>
+                                        <button type="button"
+                                                id="btnAddRow"
+                                                class="btn btn-success btn-sm">
+                                            +
+                                        </button>
+                                    </th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+
+                                <tr>
+
+                                    <td>
+                                        <input asp-for="GradeRanges[0].MinPercentage" class="form-control required" />
+                                    </td>
+
+                                    <td>
+                                        <input asp-for="GradeRanges[0].MaxPercentage" class="form-control required" />
+                                    </td>
+
+                                    <td>
+                                        <input asp-for="GradeRanges[0].Grade" class="form-control required" />
+                                    </td>
+
+                                    <td>
+                                        <input asp-for="GradeRanges[0].Description" class="form-control required" />
+                                    </td>
+
+                                    <td>
+                                        <button type="button"
+                                                class="btn btn-danger btnRemove">
+                                            X
+                                        </button>
+                                    </td>
+
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                    <div class="modal-footer">
+
+                        <button type="button"
+                                class="btn btn-secondary"
+                                data-bs-dismiss="modal">
+                            Close
+                        </button>
+
+                        <button type="submit"
+                                class="btn btn-primary">
+                            Save
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+@section Scripts {
+
+    <partial name="_ValidationScriptsPartial" />
+
+ 
+    <script>
+
+        $(function () {
+
+            $('#tblGrading').DataTable({
+
+                responsive: true,
+
+                pageLength: 10,
+
+                lengthMenu: [[10,25,50,100],[10,25,50,100]],
+
+                language:{
+
+                    search:"Search :",
+
+                    searchPlaceholder:"Search Grading..."
+
+                }
+
+            });
+
+        });
+                $(document).on("click",".btnEdit",function(){
+
+            var id=$(this).data("id");
+
+            $.get("/Grading/SaveGradingCriteria/"+id,function(res){
+
+                $("#Criteria_Id").val(res.id);
+                $("#Criteria_TermId").val(res.termId).trigger("change");
+                $("#Criteria_ClassId").val(res.classId).trigger("change");
+                $("#Criteria_BatchId").val(res.batchId).trigger("change");
+                $("#Criteria_MinPercentage").val(res.minPercentage);
+                $("#Criteria_MaxPercentage").val(res.maxPercentage);
+                $("#Criteria_Grade").val(res.grade);
+                $("#Criteria_Description").val(res.description);
+
+                $("html,body").animate({
+                    scrollTop:0
+                },500);
+
+            });
+
+
+        });
+                $(document).on("click",".btnDelete",function(){
+
+            if(!confirm("Delete this record?"))
+                return;
+
+            var id=$(this).data("id");
+
+            location.href="/Grading/Delete/"+id;
+
+        });
+
+    </script>
+    <script>
+                     var index = 1;
+
+        $("#btnAddRow").click(function () {
+
+            var row = `<tr>
+
+        <td>
+        <input class="form-control required" name="GradeRanges[${index}].MinPercentage"/>
+        </td>
+
+        <td>
+        <input class="form-control required" name="GradeRanges[${index}].MaxPercentage"/>
+        </td>
+
+        <td>
+        <input class="form-control required" name="GradeRanges[${index}].Grade"/>
+        </td>
+
+        <td>
+        <input class="form-control required" name="GradeRanges[${index}].Description"/>
+        </td>
+
+        <td>
+        <button type="button" class="btn btn-danger btnRemove">X</button>
+        </td>
+
+        </tr>`;
+
+            $("#tblBulk tbody").append(row);
+
+            index++;
+        });
+
+        $(document).on("click", ".btnRemove", function () {
+            $(this).closest("tr").remove();
+        });
+
+    </script>
+}

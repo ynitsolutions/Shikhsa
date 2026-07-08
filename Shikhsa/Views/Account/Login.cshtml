@@ -1,0 +1,166 @@
+﻿@model Shikhsa.ViewModels.LoginViewModel
+@{
+    Layout = null;
+    ViewData["Title"] = "Sign In — Shikhsa";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/@@tabler/icons-webfont@@3.19.0/dist/tabler-icons.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="~/css/login.css" />
+</head>
+<body>
+
+    <main class="login-page" role="main">
+
+        <!-- ── Left Branding Panel ── -->
+        <div class="login-panel-left" aria-hidden="true">
+            <div class="login-brand">
+                <div class="login-logo">
+                   @*  <i class="ti ti-school"></i> *@
+                    <img src="~/images/logo.png" alt="Brand Logo" class="brand-logo">
+                </div>
+                <div class="login-brand-name">@ViewBag.SchoolName </div>
+                <div class="login-brand-tagline">
+                    @ViewBag.TagLine <br />
+                    @ViewBag.mobileNo | @ViewBag.Email<br />
+                    
+                    <small>Powered by YN IT Solutions</small>
+                </div>
+                @* <div class="login-roles">
+                    <span class="login-role-badge">
+                        <i class="ti ti-shield-check"></i> YN IT Solutions
+                    </span>
+                    <span class="login-role-badge">
+                        <i class="ti ti-user"></i> Teacher
+                    </span>
+                </div> *@
+            </div>
+           @*  <div class="login-features">
+                <div class="login-feature">
+                    <i class="ti ti-users"></i>
+                    <span>Complete user &amp; role management</span>
+                </div>
+                <div class="login-feature">
+                    <i class="ti ti-layout-sidebar"></i>
+                    <span>Dynamic menus based on your role</span>
+                </div>
+                <div class="login-feature">
+                    <i class="ti ti-shield-lock"></i>
+                    <span>Granular access rights per menu</span>
+                </div>
+                <div class="login-feature">
+                    <i class="ti ti-device-mobile"></i>
+                    <span>Fully responsive on all devices</span>
+                </div>
+            </div> *@
+        </div>
+
+        <!-- ── Right Form Panel ── -->
+        <div class="login-panel-right">
+            <div class="login-form-wrap">
+
+                <h1 class="login-heading">Welcome back</h1>
+                <p class="login-subheading">Sign in to your Shikhsa account</p>
+
+                @* Validation summary *@
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    <div class="alert alert-danger" data-autohide="6000">
+                        <i class="ti ti-alert-circle"></i>
+                        <div>@Html.ValidationSummary(false)</div>
+                    </div>
+                }
+
+                @* TempData success message *@
+                @if (TempData["Success"] != null)
+                {
+                    <div class="alert alert-success" data-autohide="4000">
+                        <i class="ti ti-check"></i>
+                        @TempData["Success"]
+                    </div>
+                }
+
+                <form id="loginForm" asp-action="Login" asp-controller="Account"
+                      method="post" novalidate>
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="ReturnUrl" />
+
+                    @* Email *@
+                    <div class="form-group">
+                        <label class="form-label" asp-for="Email"></label>
+                        <div class="input-group">
+                            <i class="ti ti-mail input-icon"></i>
+                            <input asp-for="Email"
+                                   class="form-control"
+                                   type="email"
+                                   placeholder="you@example.com"
+                                   autocomplete="email"
+                                   autofocus />
+                        </div>
+                        <span asp-validation-for="Email" class="invalid-feedback"></span>
+                    </div>
+
+                    @* Password *@
+                    <div class="form-group">
+                        <label class="form-label" asp-for="Password"></label>
+                        <div class="input-group">
+                            <i class="ti ti-lock input-icon"></i>
+                            <input asp-for="Password"
+                                   id="Password"
+                                   class="form-control"
+                                   type="password"
+                                   placeholder="Enter your password"
+                                   autocomplete="current-password" />
+                            <button type="button" id="togglePassword"
+                                    class="input-toggle" aria-label="Show password">
+                                <i class="ti ti-eye"></i>
+                            </button>
+                        </div>
+                        <span asp-validation-for="Password" class="invalid-feedback"></span>
+                    </div>
+
+                    @* Remember me + Forgot password *@
+                    <div style="display:flex; align-items:center;
+                            justify-content:space-between; margin-bottom:1.4rem;">
+                        <label class="check-group">
+                            <input asp-for="RememberMe" type="checkbox" />
+                            <span>Remember me</span>
+                        </label>
+                        <a href="/Account/ForgotPassword"
+                           style="font-size:0.83rem; color:var(--primary); font-weight:500;">
+                            Forgot password?
+                        </a>
+                    </div>
+
+                    @* Submit *@
+                    <button type="submit" class="btn btn-primary btn-lg btn-block">
+                        <div class="spinner" aria-hidden="true"></div>
+                        <span class="btn-text">
+                            <i class="ti ti-login"></i> Sign in
+                        </span>
+                    </button>
+
+                </form>
+
+                <div class="login-footer">
+                    &copy; @DateTime.Now.Year <strong>@ViewBag.SchoolNamel</strong>
+                    &mdash; All rights reserved
+                    <br />
+                    Desgined By <a href="https://www.ynitsolutions.com" target="_blank" rel="noopener noreferrer">
+                        YN IT Solutions
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script src="~/js/login.js"></script>
+</body>
+</html>

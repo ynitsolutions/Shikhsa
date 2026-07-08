@@ -1,0 +1,171 @@
+﻿@using Shikhsa.ViewModels
+@model BatchVM
+
+@{
+    var batchList = ViewBag.BatchList as List<Batches>;
+}
+<div class="card">
+
+    @* <div class="card-header">
+        @(Model.BatchId == 0 ? "Add Batch" : "Edit Batch")
+    </div> *@
+
+    <div class="card-body">
+
+        @using (Html.BeginForm("SaveBatches", "Masters", FormMethod.Post))
+        {
+            @Html.AntiForgeryToken()
+
+            @Html.HiddenFor(x => x.BatchId)
+
+            <div class="row">
+
+                <div class="col-md-3">
+                    <label>@Localizer.Get("Academic Year")</label>
+                    @Html.TextBoxFor(x => x.AcademicYear,
+                    new { @class = "form-control" })
+            </div>
+
+            <div class="col-md-3">
+                <label>@Localizer.Get("Start Date")</label>
+                @Html.TextBoxFor(x => x.StartDate,
+                                "{0:yyyy-MM-dd}",
+                                new
+                                {
+                                    @class = "form-control",
+                                    type = "date"
+                                })
+            </div>
+
+            <div class="col-md-3">
+                <label>@Localizer.Get("End Date")</label>
+                @Html.TextBoxFor(x => x.EndDate,"{0:yyyy-MM-dd}",new{@class = "form-control", type = "date"})
+            </div>
+
+        </div>
+
+        <hr />
+
+        <div class="row">
+
+            <div class="col-md-3">
+                <label>
+                    @Html.CheckBoxFor(x => x.ActiveForRegistration)
+                    @Localizer.Get("Active For Registration")
+                </label>
+            </div>
+
+            <div class="col-md-3">
+                <label>
+                    @Html.CheckBoxFor(x => x.ActiveForAdmission)
+                    @Localizer.Get("Active For Admission")
+                </label>
+            </div>
+
+            <div class="col-md-3">
+                <label>
+                    @Html.CheckBoxFor(x => x.ActiveForPayment)
+                    @Localizer.Get("Active For Payment")
+                </label>
+            </div>
+
+            <div class="col-md-3">
+                <label>
+                    @Html.CheckBoxFor(x => x.IsCurrentYear)
+                    @Localizer.Get("Current Academic Year")
+                </label>
+            </div>
+
+        </div>
+
+        <hr />
+
+        <button type="submit"
+                class="btn btn-success">
+            @(Model.BatchId == 0 ? @Localizer.Get("Save") : @Localizer.Get("Update"))
+        </button>
+
+        <a href="@Url.Action("Batches")" class="btn btn-secondary">
+            Reset
+        </a>
+                }
+
+    </div>
+
+</div>
+<div class="card mt-3">
+
+  @*   <div class="card-header">
+        Academic Year List
+    </div> *@
+
+    <div class="card-body">
+
+        <table class="table table-bordered table-striped">
+
+            <thead>
+                <tr>
+                    <th>@Localizer.Get("Academic Year")</th>
+                    <th>@Localizer.Get("Registration")</th>
+                    <th>@Localizer.Get("Admission")</th>
+                    <th>@Localizer.Get("Payment")</th>
+                    <th>@Localizer.Get("Current Year")</th>
+                    <th width="150">@Localizer.Get("Action")</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                @foreach (var item in batchList)
+                {
+                    <tr>
+
+                        <td>@item.AcademicYear</td>
+
+                        <td class="text-center">
+                            <input type="checkbox"
+                                   @(item.ActiveForRegistration ? "checked" : "")
+                                   disabled />
+                        </td>
+
+                        <td class="text-center">
+                            <input type="checkbox"
+                                   @(item.ActiveForAdmission ? "checked" : "")
+                                   disabled />
+                        </td>
+
+                        <td class="text-center">
+                            <input type="checkbox"
+                                   @(item.ActiveForPayment ? "checked" : "")
+                                   disabled />
+                        </td>
+
+                        <td class="text-center">
+                            <input type="checkbox"
+                                   @(item.IsCurrentYear ? "checked" : "")
+                                   disabled />
+                        </td>
+
+                        <td>
+
+                            <a href="@Url.Action("Batches",new { id = item.BatchId })" class="btn btn-warning btn-sm">
+                            @Localizer.Get("Edit")
+                        </a>
+
+                            <a href="@Url.Action("DeleteBatches",new { id = item.BatchId })" onclick="return confirm(@Localizer.Get("Delete this record?"))
+                           class="btn btn-danger btn-sm">
+                            @Localizer.Get("Delete")
+                        </a>
+
+                        </td>
+
+                    </tr>
+                                }
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>

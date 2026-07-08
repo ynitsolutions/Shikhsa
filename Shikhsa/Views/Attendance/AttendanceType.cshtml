@@ -1,0 +1,195 @@
+﻿@model Shikhsa.ViewModels.AttendanceTypeVM
+
+<div class="container-fluid">
+
+    <div class="card shadow">
+
+        <div class="card-header bg-primary text-white">
+
+            <h4>Attendance Type Master</h4>
+
+        </div>
+
+        <div class="card-body">
+
+            <form asp-action="SaveAttendanceType" method="post">
+
+                @Html.AntiForgeryToken()
+
+                <input asp-for="AttendanceType.AttendanceTypeId" type="hidden" />
+
+                <div class="row">
+
+                    <div class="col-md-2">
+
+                        <label>Code</label>
+
+                        <input asp-for="AttendanceType.Code"
+                               class="form-control" />
+
+                        <span asp-validation-for="AttendanceType.Code"
+                              class="text-danger"></span>
+
+                    </div>
+
+                    <div class="col-md-4">
+
+                        <label>Name</label>
+
+                        <input asp-for="AttendanceType.Name"
+                               class="form-control" />
+
+                        <span asp-validation-for="AttendanceType.Name"
+                              class="text-danger"></span>
+
+                    </div>
+
+                    <div class="col-md-2">
+
+                        <label>Display Order</label>
+
+                        <input asp-for="AttendanceType.DisplayOrder"
+                               class="form-control" />
+
+                    </div>
+
+                </div>
+
+                <div class="row mt-3">
+
+                    <div class="col-md-3">
+
+                        <div class="form-check">
+
+                            <input asp-for="AttendanceType.IsLeave"
+                                   class="form-check-input" />
+
+                            <label asp-for="AttendanceType.IsLeave"
+                                   class="form-check-label">
+                                Is Leave
+                            </label>
+
+                        </div>
+
+                    </div>
+
+                    <div class="col-md-3">
+
+                        <div class="form-check">
+
+                            <input asp-for="AttendanceType.IsActive"
+                                   class="form-check-input" />
+
+                            <label asp-for="AttendanceType.IsActive"
+                                   class="form-check-label">
+                                Active
+                            </label>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="mt-3">
+
+                    <button class="btn btn-success">
+
+                        @(Model.AttendanceType.AttendanceTypeId == 0 ? "Save" : "Update")
+
+                    </button>
+
+                    <a asp-action="Index"
+                       class="btn btn-secondary">
+
+                        Clear
+
+                    </a>
+
+                </div>
+
+            </form>
+
+            <hr />
+
+            <table class="table table-bordered table-hover">
+
+                <thead class="table-primary">
+
+                    <tr>
+
+                        <th>#</th>
+
+                        <th>Code</th>
+
+                        <th>Name</th>
+
+                        <th>Leave</th>
+
+                        <th>Active</th>
+
+                        <th>Order</th>
+
+                        <th width="120">Action</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    @{
+                        int sr = 1;
+                    }
+
+                    @foreach (var item in Model.AttendanceTypes)
+                    {
+                        <tr>
+
+                            <td>@sr</td>
+
+                            <td>@item.Code</td>
+
+                            <td>@item.Name</td>
+
+                            <td>@(item.IsLeave ? "Yes" : "No")</td>
+
+                            <td>@(item.IsActive ? "Yes" : "No")</td>
+
+                            <td>@item.DisplayOrder</td>
+
+                            <td>
+
+                                <a asp-action="Index"
+                                   asp-route-id="@item.AttendanceTypeId"
+                                   class="btn btn-warning btn-sm">
+
+                                    Edit
+
+                                </a>
+
+                                <a asp-action="Delete"
+                                   asp-route-id="@item.AttendanceTypeId"
+                                   onclick="return confirm('Delete this record?')"
+                                   class="btn btn-danger btn-sm">
+
+                                    Delete
+
+                                </a>
+
+                            </td>
+
+                        </tr>
+
+                        sr++;
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>

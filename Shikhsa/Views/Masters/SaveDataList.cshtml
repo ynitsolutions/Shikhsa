@@ -1,0 +1,207 @@
+﻿@model Shikhsa.ViewModels.DataListVM
+
+@{
+    ViewData["Title"] = "Create Data List";
+}
+<div class="row">
+
+    <!-- LEFT SIDE FORM -->
+    <div class="col-md-12">
+
+        <div class="card">
+
+            <div class="card-header">
+                <h4>
+                    @(Model.DataList.DataListId == 0
+                                        ? Localizer.Get("Add Data List")
+                                        : Localizer.Get("Update Data List"))
+                </h4>
+            </div>
+
+            <div class="card-body">
+
+                <form asp-action="SaveDataList" method="post">
+
+    <div class="card p-3 mb-3">
+
+        <div class="row">
+
+            <div class="col-md-6 mb-3">
+                <label> @Localizer.Get("List Name")</label>
+                <input asp-for="DataList.DataListId" class="form-control" style="display:none;" />
+                <input asp-for="DataList.DataListName" class="form-control" />
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label> @Localizer.Get("Description")</label>
+                <input asp-for="DataList.Description" class="form-control" />
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="card p-3">
+
+        <div class="d-flex justify-content-between mb-3">
+            <h5> @Localizer.Get("Items")</h5>
+
+            <button type="button" id="btnAdd" class="btn btn-primary">
+                 @Localizer.Get("Add Row")
+            </button>
+        </div>
+
+        <table class="table table-bordered" id="tblItems">
+            <thead>
+                <tr>
+                    <th> @Localizer.Get("Item Text")</th>
+                    <th> @Localizer.Get("Item Value")</th>
+                    <th> @Localizer.Get("Display Order")</th>
+                   <th> @Localizer.Get("Active") </ th >
+                    <th>@Localizer.Get("Action")</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                @for (int i = 0; i < Model.Items.Count; i++)
+                {
+                                    bool isExisting = Model.Items[i].DataListItemId != 0;
+                    <tr>
+                        <td>
+                            <input asp-for="Items[i].DataListItemText" class="form-control" />
+                        </td>
+
+                        <td>
+                                            <input asp-for="Items[i].DataListItemId" class="form-control" type="hidden" />
+                                            <input asp-for="Items[i].DataListItemValue" class="form-control" />
+                        </td>
+
+                        <td>
+                            <input asp-for="Items[i].DisplayOrder" class="form-control" />
+                        </td>
+
+                                        <td>
+                                            @if (isExisting)
+                                            {
+                                                <!-- Existing item -> toggle switch, delete NAHI hoga -->
+                                                <div class="form-check form-switch">
+                                                    <input class="form-check-input toggleActive" type="checkbox"
+                                                           asp-for="Items[i].IsActive" />
+                                                    <label class="form-check-label statusLabel">
+                                                        @(Model.Items[i].IsActive ? Localizer.Get("Active") : Localizer.Get("Inactive"))
+                                                    </label>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <!-- Naya row jo abhi save hi nahi hua -->
+                                                <input asp-for="Items[i].IsActive" type="hidden" value="true" />
+                                                <span class="badge bg-info">@Localizer.Get("New")</span>
+                                            }
+                                        </td>
+
+                                        <td>
+                                            @if (isExisting)
+                                            {
+                                                <!-- Existing item ko delete nahi karna, sirf toggle -->
+                                                <span class="text-muted small">—</span>
+                                            }
+                                            else
+                                            {
+                                                <button type="button" class="btn btn-danger btn-sm btnRemove">
+                                                    @Localizer.Get("Remove")
+                                                </button>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+
+                            </tbody>
+
+                        </table>
+
+                        <div class="mt-3">
+                            <button type="submit" class="btn btn-success">
+                                 @Localizer.Get("Save")
+                            </button>
+                        </div>
+
+                    </div>
+
+                </form>
+@* } *@
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+</div>
+@section Scripts {
+
+    <script>
+
+        let index = @Model.Items.Count;
+
+        $(document).ready(function () {
+
+            $("#btnAdd").click(function () {
+
+                       let row = `
+        <tr>
+
+            <td>
+         
+                <input name="Items[${index}].DataListItemText"
+                       class="form-control" />
+            </td>
+
+            <td>
+                <input name="Items[${index}].DataListItemValue"
+                       class="form-control" />
+            </td>
+
+            <td>
+                <input name="Items[${index}].DisplayOrder"
+                       class="form-control"
+                       value="0" />
+            </td>
+
+            <td>
+                <input type="checkbox"
+                       name="Items[${index}].IsActive"
+                       value="true"
+                       checked />
+
+                <input type="hidden"
+                       name="Items[${index}].IsActive"
+                       value="false" />
+            </td>
+
+            <td>
+                <button type="button"
+                        class="btn btn-danger btnRemove">
+                    Remove
+                </button>
+            </td>
+
+        </tr>`;
+
+                $("#tblItems tbody").append(row);
+
+                index++;
+            });
+
+            $(document).on("click", ".btnRemove", function () {
+                $(this).closest("tr").remove();
+            });
+
+        });
+
+    </script>
+
+}

@@ -1,0 +1,128 @@
+﻿@using Shikhsa.ViewModels
+@model List<ClassAccordionVM>
+
+<div class="accordion" id="accordionAssignment">
+
+    @for (int i = 0; i < Model.Count; i++)
+    {
+        var cls = Model[i];
+
+        <div class="accordion-item mb-2">
+
+            <h2 class="accordion-header">
+
+                <button class="accordion-button @(i == 0 ? "" : "collapsed")"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#collapse_@cls.ClassId">
+
+                    <b>@cls.ClassName</b>
+
+                </button>
+
+            </h2>
+
+            <div id="collapse_@cls.ClassId"
+                 class="accordion-collapse collapse @(i == 0 ? "show" : "")">
+
+                <div class="accordion-body">
+
+                    <table class="table table-bordered table-sm align-middle teacherTable">
+
+                        <thead class="table-primary">
+
+                            <tr>
+
+                                <th style="width:30%">Teacher</th>
+
+                                <th style="width:45%">Subjects</th>
+
+                                <th style="width:10%">CT</th>
+
+                                <th style="width:15%"></th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody id="tbody_@cls.ClassId">
+
+                            @for (int j = 0; j < cls.Teachers.Count; j++)
+                            {
+                                var teacher = cls.Teachers[j];
+
+                                <tr>
+
+                                    <td>
+
+                                        <input type="hidden"
+                                               class="classId"
+                                               value="@cls.ClassId" />
+
+                                        <select class="form-select teacherSelect"
+                                                data-id="@teacher.StaffId"
+                                                data-text="@teacher.StaffName">
+                                        </select>
+
+                                    </td>
+
+                                    <td>
+
+                                        <select multiple class="form-select subjectSelect select2">
+
+                                            @foreach (var sub in teacher.Subjects)
+                                            {
+                                                <option value="@sub.Value"
+                                                        selected="@(teacher.SubjectIds.Contains(int.Parse(sub.Value)))">
+                                                    @sub.Text
+                                                </option>
+                                            }
+                                        </select>
+
+                                    </td>
+
+                                    <td class="text-center">
+
+                                        <input type="checkbox"
+                                               class="form-check-input isClassTeacher"
+                                               @(teacher.IsClassTeacher ? "checked" : "") />
+
+                                    </td>
+
+                                    <td class="text-center">
+
+                                        <button type="button"
+                                                class="btn btn-danger btn-sm btnDelete">
+
+                                            <i class="bi bi-trash"></i>
+
+                                        </button>
+
+                                    </td>
+
+                                </tr>
+
+                            }
+
+                        </tbody>
+
+                    </table>
+
+                    <button type="button"
+                            class="btn btn-success btn-sm btnAddTeacher"
+                            data-class="@cls.ClassId">
+
+                        <i class="bi bi-plus-circle"></i>
+
+                        Add Teacher
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+    }
+
+</div>

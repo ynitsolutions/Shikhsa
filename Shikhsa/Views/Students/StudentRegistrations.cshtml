@@ -1,0 +1,395 @@
+﻿@using Shikhsa.ViewModels.DataFilter
+
+
+@model StudentReportPageVM
+
+@{
+    ViewData["Title"] = "Student Registration List";
+}
+
+<div class="card">
+
+    @* <div class="card-header">
+        <h4>Student Registration Report</h4>
+    </div> *@
+
+    <div class="card-body">
+
+        <form method="post" asp-action="StudentRegistrations">
+
+            <div class="row">
+
+                <div class="col-md-2">
+                    <label>Application No</label>
+                    <input asp-for="Filter.ApplicationNo"
+                           class="form-control" />
+                </div>
+
+                <div class="col-md-2">
+                    <label>Student Name</label>
+                    <input asp-for="Filter.StudentName"
+                           class="form-control" />
+                </div>
+
+                <div class="col-md-2">
+                    <label>Father Name</label>
+                    <input asp-for="Filter.FatherName"
+                           class="form-control" />
+                </div>
+                <div class="col-md-2">
+                    <label>Mother Name</label>
+                    <input asp-for="Filter.MotherName"
+                           class="form-control" />
+                </div>
+                <div class="col-md-2">
+                    <label>Guardian Name</label>
+                    <input asp-for="Filter.GuardianName"
+                           class="form-control" />
+                </div>
+
+                <div class="col-md-2">
+                    <label>Mobile</label>
+                    <input asp-for="Filter.MobileNo"
+                           class="form-control" />
+                </div>
+                <div class="col-md-2">
+
+                    <label>Gender</label>
+
+                    <select asp-for="Filter.GenderId"
+                            class="form-control select2">
+
+                        <option value="">Select</option>
+
+                        @foreach (var item in ViewBag.GenderList)
+                        {
+                            <option value="@item.DataListItemId">
+                                @item.DataListItemText
+                            </option>
+                        }
+
+                    </select>
+
+                </div>
+                <div class="col-md-2">
+
+                    <label>Religion</label>
+
+                    <select asp-for="Filter.ReligionId"
+                            class="form-control select2">
+
+                        <option value="">Select</option>
+
+                        @foreach (var item in ViewBag.ReligionList)
+                        {
+                            <option value="@item.DataListItemId">
+                                @item.DataListItemText
+                            </option>
+                        }
+
+                    </select>
+
+                </div>
+                <div class="col-md-2">
+
+                    <label>Class</label>
+
+                    <select asp-for="Filter.RegClassId"
+                            class="form-control select2">
+
+                        <option value="">Select</option>
+
+                        @foreach (var item in ViewBag.ClassList)
+                        {
+                            <option value="@item.DataListItemId">
+                                @item.DataListItemText
+                            </option>
+                        }
+
+                    </select>
+
+                </div>
+                <div class="col-md-2">
+
+                    <label>Category</label>
+
+                    <select asp-for="Filter.CategoryId"
+                            class="form-control select2">
+
+                        <option value="">Select</option>
+
+                        @foreach (var item in ViewBag.CategoryList)
+                        {
+                            <option value="@item.DataListItemId">
+                                @item.DataListItemText
+                            </option>
+                        }
+
+                    </select>
+
+                </div>
+                <div class="col-md-2">
+
+                    <label>Batch</label>
+
+                    <select asp-for="Filter.AdmissionBatchId"
+                            class="form-control select2">
+
+                        <option value="">Select</option>
+
+                        @foreach (var item in ViewBag.BatchList)
+                        {
+                            <option value="@item.BatchId">
+                                @item.AcademicYear
+                            </option>
+                        }
+
+                    </select>
+
+
+
+                </div>
+            </div>
+
+                <div class="card-body">
+
+                    <div class="row">
+
+                        <div class="col-md-2">
+                            <label>
+                                <input type="checkbox"
+                                       name="Filter.SelectedColumns"
+                                       value="ApplicationNo"
+                                       checked />
+                                Application No
+                            </label>
+                        </div>
+
+                        <div class="col-md-2">
+                            <label>
+                                <input type="checkbox"
+                                       name="Filter.SelectedColumns"
+                                       value="StudentName"
+                                       checked />
+                                Student Name
+                            </label>
+                        </div>
+
+                        <div class="col-md-2">
+                            <label>
+                                <input type="checkbox"
+                                       name="Filter.SelectedColumns"
+                                       value="FatherName"
+                                       checked />
+                                Father Name
+                            </label>
+                        </div>
+                        <div class="col-md-2">
+                            <label>
+                                <input type="checkbox"
+                                       name="Filter.SelectedColumns"
+                                       value="MotherName"
+                                      />
+                                Mother Name
+                            </label>
+                        </div>
+                        <div class="col-md-2">
+                            <label>
+                                <input type="checkbox"
+                                       name="Filter.SelectedColumns"
+                                       value="GuardianName"
+                                        />
+                                Guardian Name
+                            </label>
+                        </div>
+                        <div class="col-md-2">
+                            <label>
+                                <input type="checkbox"
+                                       name="Filter.SelectedColumns"
+                                       value="LocalAddress"
+                                        />
+                               Local Address
+                            </label>
+                        </div>
+                        <div class="col-md-2">
+                            <label>
+                                <input type="checkbox"
+                                       name="Filter.SelectedColumns"
+                                       value="PermanentAddress"
+                                        />
+                               Permanent Address
+                            </label>
+                        </div>
+
+                        
+                        <div class="col-md-2">
+                            <label>
+                                <input type="checkbox"
+                                       name="Filter.SelectedColumns"
+                                       value="FatherMobile"
+                                       checked />
+                                Mobile
+                            </label>
+                        </div>
+
+                        <div class="col-md-2">
+                            <label>
+                                <input type="checkbox"
+                                       name="Filter.SelectedColumns"
+                                       value="DOB" />
+                                DOB
+                            </label>
+                        </div>
+
+                        <div class="col-md-2">
+                            <label>
+                                <input type="checkbox"
+                                       name="Filter.SelectedColumns"
+                                       value="AadhaarNumber" />
+                                Aadhaar
+                            </label>
+                        </div>
+                       
+                       
+
+                    </div>
+
+                </div>
+
+            @* </div> *@
+
+            <br />
+            <permission controller="Students" action="StudentRegistrations" type="create">
+                <a asp-action="SaveStudentRegistrations">
+                    <spam class="ti ti-plus"></spam>
+                    </a>
+                </permission>
+            @* <button type="submit"
+                    class="btn btn-primary">
+                Search
+            </button> *@
+            <button type="submit" class="border-0 bg-transparent p-0">
+                <i class="ti ti-search fs-5"></i>
+            </button>
+
+            <button type="submit" formaction="@Url.Action("ExportExcel")" class="border-0 bg-transparent p-0">
+                <i class="ti ti-download"></i>
+            </button>
+           @*  <button type="button" class="btn btn-success" id="btnBulkStatus">
+                Update Status
+            </button> *@
+            <a href="javascript:void(0);" class="btnStatus" id="btnBulkStatus">
+                <spam class="ti ti-reload"></spam>
+            </a>
+
+        </form>
+
+        <hr />
+
+        <div id="gridContainer">
+
+            @await Html.PartialAsync(
+            "_StudentGrid",
+                        Model)
+
+        </div>
+
+    </div>
+
+</div>
+@section Scripts
+{
+<script>
+        $("#StatusId").change(function ()
+        {
+            debugger
+            var statusId = $(this).val();
+           var modal = new bootstrap.Modal(document.getElementById('admissionArea')
+        );
+            if (statusId == "27") // Admitted
+            {
+               // $("#admissionArea").show();
+               modal.show();
+            }
+            else
+            {
+                modal.hide();
+               // $("#admissionArea").hide();
+            }
+    });
+
+    $(".btnStatus").click(function () 
+    {
+
+        var studentId = $(this).data("studentid");
+
+        $("#StudentIds").val(studentId);
+           var modal =new bootstrap.Modal(document.getElementById('statusModal')
+        );
+        //$("#statusModal").modal("show");
+        modal.show();
+    });
+        $("#btnBulkStatus").click(function () {
+
+        var ids = [];
+
+        $("input[name='selectedStudents']:checked")
+            .each(function () {
+
+                ids.push($(this).val());
+
+            });
+
+        if (ids.length == 0)
+        {
+            alert("Select student first");
+            return;
+        }
+
+        $("#StudentIds").val(ids.join(','));
+           var modal =
+        new bootstrap.Modal(
+            document.getElementById('statusModal')
+        );
+       modal.show();
+
+    });
+        $("#btnSaveStatus").click(function () {
+
+        $.ajax({
+            url: '/Students/UpdateStudentStatus',
+            type: 'POST',
+            data: {
+                StudentIds: $("#StudentIds").val(),
+                StatusId: $("#StatusId").val(),
+                ClassId: $("#ClassId").val(),
+                SectionId: $("#SectionId").val(),
+                BatchId: $("#BatchId").val()
+            },
+            success: function (res) {
+
+                if (res.success) {
+                    alert("Saved Successfully!")
+                    // Swal.fire(
+                    //     'Success',
+                    //     res.message,
+                    //     'success'
+                    // ).then(() => {
+
+                    //     location.reload();
+
+                    // });
+                }
+                else {
+                    alert(res.message);
+                    // Swal.fire(
+                    //     'Error',
+                    //     res.message,
+                    //     'error');
+                }
+            }
+        });
+
+    });
+</script>
+}

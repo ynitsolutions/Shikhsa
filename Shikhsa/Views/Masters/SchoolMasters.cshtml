@@ -1,0 +1,347 @@
+﻿@model SchoolMaster
+
+@{
+    ViewData["Title"] = "School Master";
+}
+
+<div class="container-fluid">
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">
+                <i class="fa fa-school"></i>
+                School Master
+            </h4>
+        </div>
+
+        <div class="card-body">
+
+            <form asp-action="SaveSchoolMasters"
+                  method="post"
+                  enctype="multipart/form-data">
+
+                <input asp-for="SchoolId" type="hidden" />
+                <input asp-for="LogoPath" type="hidden" />
+
+                <!-- Basic Information -->
+                <div class="card mb-3">
+                    <div class="card-header bg-light">
+                        <strong>Basic Information</strong>
+                    </div>
+
+                    <div class="card-body">
+
+                        <div class="row">
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="SchoolName" class="form-label"></label>
+                                <input asp-for="SchoolName" class="form-control" />
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="SchoolShortName" class="form-label"></label>
+                                <input asp-for="SchoolShortName" class="form-control" />
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="TagLine" class="form-label"></label>
+                                <input asp-for="TagLine" class="form-control" />
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="SchoolMotto" class="form-label"></label>
+                                <input asp-for="SchoolMotto" class="form-control" />
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label>School Logo</label>
+                                <input asp-for="SchoolLogo"
+                                       type="file"
+                                       class="form-control" />
+                            </div>
+
+                            <div class="col-md-2 mb-3">
+                                @if (!string.IsNullOrEmpty(Model.LogoPath))
+                                {
+                                    <img src="@Model.LogoPath"
+                                         class="img-thumbnail"
+                                         style="height:80px;" />
+                                }
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Contact Information -->
+                <div class="card mb-3">
+                    <div class="card-header bg-light">
+                        <strong>Contact Information</strong>
+                    </div>
+
+                    <div class="card-body">
+
+                        <div class="row">
+
+                            <div class="col-md-12 mb-3">
+                                <label asp-for="SchoolAddress"></label>
+                                <textarea asp-for="SchoolAddress"
+                                          rows="3"
+                                          class="form-control"></textarea>
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label asp-for="State"></label>
+                                <input asp-for="State"
+                                       class="form-control" />
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label asp-for="District"></label>
+                                <input asp-for="District"
+                                       class="form-control" />
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label asp-for="City"></label>
+                                <input asp-for="City"
+                                       class="form-control" />
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label asp-for="PinCode"></label>
+                                <input asp-for="PinCode"
+                                       class="form-control" />
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="MobileContactNo"></label>
+                                <input asp-for="MobileContactNo"
+                                       class="form-control" />
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="LandlineNo"></label>
+                                <input asp-for="LandlineNo"
+                                       class="form-control" />
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="Email"></label>
+                                <input asp-for="Email"
+                                       class="form-control" />
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Website"></label>
+                                <input asp-for="Website"
+                                       class="form-control" />
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Academic Information -->
+                <div class="card mb-3">
+                    <div class="card-header bg-light">
+                        <strong>Academic Information</strong>
+                    </div>
+
+                    <div class="card-body">
+
+                        <div class="row">
+
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="Board"></label>
+                                <input asp-for="Board"
+                                       class="form-control" />
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="AffiliationNo"></label>
+                                <input asp-for="AffiliationNo"
+                                       class="form-control" />
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="RegistrationCode"></label>
+                                <input asp-for="RegistrationCode"
+                                       class="form-control" />
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label>Initial Class</label>
+                               @*  <select asp-for="InitialClassId"
+                                        class="form-select">
+                                    <option value="">Select Class</option>
+                                </select> *@
+                                <select asp-for="InitialClassId"
+                                        asp-items="ViewBag.ClassList"
+                                        class="form-select">
+                                    <option value="">Select Class</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label>Academic Session Start Month</label>
+                                <select asp-for="AcademicSessionStartMonth"
+                                        class="form-select">
+
+                                    <option value="1">January</option>
+                                    <option value="2">February</option>
+                                    <option value="3">March</option>
+                                    <option value="4">April</option>
+                                    <option value="5">May</option>
+                                    <option value="6">June</option>
+                                    <option value="7">July</option>
+                                    <option value="8">August</option>
+                                    <option value="9">September</option>
+                                    <option value="10">October</option>
+                                    <option value="11">November</option>
+                                    <option value="12">December</option>
+
+                                </select>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Management Information -->
+                <div class="card mb-3">
+                    <div class="card-header bg-light">
+                        <strong>Management Information</strong>
+                    </div>
+
+                    <div class="card-body">
+
+                        <div class="row">
+
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="PrincipalName"></label>
+                                <input asp-for="PrincipalName"
+                                       class="form-control" />
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="PrincipalMobileNo"></label>
+                                <input asp-for="PrincipalMobileNo"
+                                       class="form-control" />
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="PrincipalEmail"></label>
+                                <input asp-for="PrincipalEmail"
+                                       class="form-control" />
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="ManagerName"></label>
+                                <input asp-for="ManagerName"
+                                       class="form-control" />
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="ManagerMobileNo"></label>
+                                <input asp-for="ManagerMobileNo"
+                                       class="form-control" />
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Government Information -->
+                <div class="card mb-3">
+                    <div class="card-header bg-light">
+                        <strong>Government Information</strong>
+                    </div>
+
+                    <div class="card-body">
+
+                        <div class="row">
+
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="UDISECode"></label>
+                                <input asp-for="UDISECode"
+                                       class="form-control" />
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="PANNo"></label>
+                                <input asp-for="PANNo"
+                                       class="form-control" />
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="GSTNo"></label>
+                                <input asp-for="GSTNo"
+                                       class="form-control" />
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Footer Settings -->
+                <div class="card mb-3">
+                    <div class="card-header bg-light">
+                        <strong>Report & Certificate Settings</strong>
+                    </div>
+
+                    <div class="card-body">
+
+                        <div class="row">
+
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="EstablishedYear"></label>
+                                <input asp-for="EstablishedYear"
+                                       class="form-control" />
+                            </div>
+
+                            <div class="col-md-12 mb-3">
+                                <label asp-for="RecognitionText"></label>
+                                <textarea asp-for="RecognitionText"
+                                          rows="2"
+                                          class="form-control"></textarea>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="ReportCardFooterText"></label>
+                                <textarea asp-for="ReportCardFooterText"
+                                          rows="3"
+                                          class="form-control"></textarea>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="TCFooterText"></label>
+                                <textarea asp-for="TCFooterText"
+                                          rows="3"
+                                          class="form-control"></textarea>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="text-end">
+                    <button type="submit"
+                            class="btn btn-success btn-lg">
+                        <i class="fa fa-save"></i>
+                        Save School Information
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
+</div>

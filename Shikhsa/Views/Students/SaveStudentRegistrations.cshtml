@@ -1,0 +1,1153 @@
+﻿@model Tbl_StudentsRegistrations
+@{
+
+    ViewData["Title"] = @Localizer.Get("Students Registration");
+    var docs = ViewBag.Documents as List<Tbl_StudentDocument>;
+
+}
+<form asp-action="SaveStudentRegistrations" enctype="multipart/form-data" method="post" onsubmit="return ValidateStudentForm();">
+
+    <input asp-for="StudentId" type="hidden" />
+
+    <div class="card">
+
+        <div class="card-header">
+            <permission controller="Students" action="StudentRegistrations" type="create">
+
+           <button type="submit" class="btn btn-primary">
+    <i class="ti ti-device-floppy fs-3"></i>
+    </button>
+    </permission>
+         @*    <button type="submit" class="btn btn-success">Save </button> *@
+            <permission controller="Students" action="StudentRegistrations" type="view">
+            <a asp-action="StudentRegistration" class="btn btn-secondary"> Back </a>
+            </permission>
+        </div>
+
+        <div class="card-body">
+
+            <ul class="nav nav-tabs">
+
+                <li class="nav-item">
+                    <a class="nav-link active" data-bs-toggle="tab" href="#tabStudent">Student Details </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link"
+                       data-bs-toggle="tab"
+                       href="#tabParent">
+                          @Localizer.Get("Parent Details")
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link"
+                       data-bs-toggle="tab"
+                       href="#tabPrevious" id="previousSchoolTabLi">
+                          @Localizer.Get("Previous School")
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link"
+                       data-bs-toggle="tab"
+                       href="#tabDocuments">
+                          @Localizer.Get("Documents")
+                    </a>
+                </li>
+
+            </ul>
+
+            <div class="tab-content mt-3">
+                <div class="tab-pane fade show active"
+                     id="tabStudent">
+
+                    <div class="row">
+
+                        <div class="col-md-4">
+                            <label>  @Localizer.Get("First Name")</label>
+                            <input asp-for="FirstName" class="form-control text-only required" />
+                        </div>
+
+                        <div class="col-md-4">
+                            <label>  @Localizer.Get("Middle Name")</label>
+                            <input asp-for="MiddleName"
+                                   class="form-control text-only" />
+                        </div>
+
+                        <div class="col-md-4">
+                            <label>  @Localizer.Get("Last Name")</label>
+                            <input asp-for="LastName"
+                                   class="form-control text-only required" />
+                        </div>
+
+                        @*  <div class="col-md-4 mt-2">
+                            <label>DOB *</label>
+                            <div class="input-group datepicker">
+                                <input asp-for="DOB" class="form-control datepicker required" type="text" data-input />
+                                <span class="input-group-text" data-toggle style="height: auto; align-self: stretch;">
+                                    <i class="ti ti-calendar"></i>
+                                </span>
+                            </div>
+
+                          
+                        </div> *@
+                        <div class="col-md-4 mt-2">
+                            <label>  @Localizer.Get("DOB") </label>
+                            <div class="input-group fp-date">
+
+                                <input asp-for="DOB"
+                                       class="form-control"
+                                       type="text"
+                                       data-input />
+
+                                <span class="input-group-text" data-toggle style="height: auto; align-self: stretch;">
+                                    <i class="ti ti-calendar"></i>
+                                </span>
+
+                            </div>
+                        </div>
+                        <div class="col-md-4 mt-2">
+
+                            <label>  @Localizer.Get("Gender")</label>
+
+                            <select asp-for="GenderId"
+                                    class="form-control select2 required">
+
+                                <option value="">Select</option>
+
+                                @foreach (var item in ViewBag.GenderList)
+                                {
+                                    <option value="@item.DataListItemId">
+                                        @item.DataListItemText
+                                    </option>
+                                }
+
+                            </select>
+
+                        </div>
+                        <div class="col-md-4 mt-2">
+                            <label>  @Localizer.Get("Email")</label>
+                            <input asp-for="Email" type="email" class="form-control" />
+                        </div>
+
+                        <div class="col-md-4 mt-2">
+                            <label>  @Localizer.Get("Contact No")</label>
+                            <input asp-for="ContactNo" maxlength="10" class="form-control required" />
+                        </div>
+
+                        <div class="col-md-4 mt-2">
+                            <label> @Localizer.Get("Aadhaar")</label>
+                            <input asp-for="AadhaarNumber"
+                                   maxlength="12"
+                                   class="form-control" />
+                        </div>
+
+                        <div class="col-md-4 mt-2">
+                            <label> @Localizer.Get("APAAR")</label>
+                            <input asp-for="APAARId"
+                                   maxlength="12"
+                                   class="form-control" />
+                        </div>
+
+                        <div class="col-md-4 mt-2">
+                            <label> @Localizer.Get("PEN")</label>
+                            <input asp-for="PENNumber"
+                                   maxlength="14"
+                                   class="form-control" />
+                        </div>
+                        <div class="col-12 mt-2">
+
+                            <div class="form-check">
+
+                                <input type="checkbox"
+                                       class="form-check-input"
+                                       id="chkSameAddress" />
+
+                                <label class="form-check-label"
+                                       for="chkSameAddress">
+
+                                     @Localizer.Get("Permanent Address Same As Local Address")
+
+                                </label>
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6 mt-2">
+                            <label> @Localizer.Get("Local Address")</label>
+                            <textarea asp-for="LocalAddress" class="form-control required"></textarea>
+                        </div>
+
+                        <div class="col-md-6 mt-2">
+                            <label>@Localizer.Get("Permanent Address")</label>
+                            <textarea asp-for="PermanentAddress" class="form-control required"></textarea>
+                        </div>
+
+                        <div class="col-md-4 mt-2">
+
+                            <label>@Localizer.Get("Category")</label>
+
+                            <select asp-for="CategoryId"
+                                    class="form-control select2">
+
+                                <option value="">@Localizer.Get("Select")</option>
+
+                                @foreach (var item in ViewBag.CategoryList)
+                                {
+                                    <option value="@item.DataListItemId">
+                                        @item.DataListItemText
+                                    </option>
+                                }
+
+                            </select>
+
+                        </div>
+
+                        <div class="col-md-4 mt-2">
+
+                            <label>@Localizer.Get("Religion")</label>
+
+                            <select asp-for="ReligionId" class="form-control select2">
+
+                                <option value="">@Localizer.Get("Select")</option>
+
+                                @foreach (var item in ViewBag.ReligionList)
+                                {
+                                    <option value="@item.DataListItemId">
+                                        @item.DataListItemText
+                                    </option>
+                                }
+
+                            </select>
+
+                        </div>
+
+                        <div class="col-md-4 mt-2">
+
+                            <label>@Localizer.Get("Admission Batch")</label>
+
+                            <select asp-for="AdmissionBatchId" class="form-control select2  required">
+
+                                <option value="">@Localizer.Get("Select")</option>
+
+                                @foreach (var item in ViewBag.BatchList)
+                                {
+                                    <option value="@item.BatchId">
+                                        @item.AcademicYear
+                                    </option>
+                                }
+
+                            </select>
+
+                        </div>
+                        <div class="col-12 col-md-6 col-lg-4">
+
+                            <label>@Localizer.Get("Admission Class") </label>
+
+                            <select asp-for="RegClassId" class="form-control select2 required">
+
+                                <option value="">
+                                    @Localizer.Get("Select")
+                                </option>
+
+                                @foreach (var item in ViewBag.ClassList)
+                                {
+                                    <option value="@item.DataListItemId">
+                                        @item.DataListItemText
+                                    </option>
+                                }
+
+                            </select>
+
+                            <span asp-validation-for="RegClassId" class="text-danger"></span>
+
+                        </div>
+                        <div class="col-12 col-md-6 col-lg-4">
+
+                            <label class="form-label d-block">
+
+                                @Localizer.Get("Is Handicap") ?
+
+                            </label>
+
+                            <div class="form-check form-switch">
+
+                                <input asp-for="IsHandicap" class="form-check-input" type="checkbox" id="IsHandicap" />
+
+                                <label class="form-check-label" for="IsHandicap">
+
+                                    @Localizer.Get("Yes")
+
+                                </label>
+
+                            </div>
+
+                        </div>
+                        <div class="col-12 col-md-6 col-lg-4"
+                             id="divHandicapDetails"
+                             style="display:none;">
+
+                            <label asp-for="HandicapDetails"
+                                   class="form-label">
+
+                                @Localizer.Get("Handicap Details")
+
+                            </label>
+
+                            <input asp-for="HandicapDetails"class="form-control" maxlength="250" placeholder="Specify handicap details" />
+
+                            <span asp-validation-for="HandicapDetails" class="text-danger"></span>
+
+                        </div>
+
+                        <!-- Identification Mark -->
+
+                        <div class="col-12 col-md-6 col-lg-4">
+
+                            <label asp-for="IdentificationMark"
+                                   class="form-label">
+
+                               @Localizer.Get("Identification Mark")
+
+                            </label>
+
+                            <input asp-for="IdentificationMark"class="form-control required"maxlength="100" placeholder="Identification Mark" />
+
+                            <span asp-validation-for="IdentificationMark" class="text-danger"></span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+                <div class="tab-pane fade" id="tabParent">
+
+                    <!-- Existing Parent Search -->
+
+                    <div class="row mb-3">
+
+                        <div class="col-md-4">
+
+                            <label class="form-label">
+                                @Localizer.Get("Search Existing Parent") (@Localizer.Get("Mobile No"))
+                            </label>
+
+                            <input type="text" id="txtParentSearch" maxlength="13" class="form-control indianmobile" placeholder="Enter Mobile No" />
+
+                        </div>
+
+                        <div class="col-md-2">
+
+                            <label>&nbsp;</label>
+
+                            <button type="button"
+                                    id="btnSearchParent"
+                                    class="btn btn-primary d-block">
+                                 @Localizer.Get("Search")
+                            </button>
+
+                        </div>
+
+                    </div>
+                    <input asp-for="Parent.ParentId" class="form-control hidden" type="hidden"/>
+                   @*  <input type="hidden"
+                           id="ParentId"
+                           name="ParentId" /> *@
+
+                    <hr />
+
+                    <div id="parentContainer">
+
+                        <div class="row">
+
+                            <!-- Father Details -->
+
+                            <div class="col-12">
+                                <h5 class="text-primary">
+                                     @Localizer.Get("Father Details")
+                                </h5>
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+
+                                <label class="form-label">
+                                     @Localizer.Get("Father First Name")
+                                </label>
+                                   <input asp-for="Parent.FatherFirstName"
+                                       class="form-control text-only required" maxlength="100"
+                                       placeholder="FatherFirstName" />
+                               @*  <input type="text"
+                                       id="pa FatherFirstName"
+                                       name="FatherFirstName"
+                                       class="form-control text-only required" /> *@
+
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+
+                                <label class="form-label">
+                                      @Localizer.Get("Father Middle Name")
+                                </label>
+                                <input asp-for="Parent.FatherMiddleName" class="form-control text-only" maxlength="100" placeholder="Father Middel Name" />
+                           @*      <input type="text"
+                                       id="FatherMiddleName"
+                                       name="FatherMiddleName"
+                                       class="form-control text-only" /> *@
+
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+
+                                <label class="form-label">
+                                      @Localizer.Get("Father Last Name")
+                                </label>
+                                <input asp-for="Parent.FatherLastName" class="form-control text-only required" maxlength="100" placeholder="Father Last Name" />
+                          @*       <input type="text"
+                                       id="FatherLastName"
+                                       name="FatherLastName"
+                                       class="form-control text-only required" /> *@
+
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+
+                                <label class="form-label">
+                                      @Localizer.Get("Father Mobile")
+                                </label>
+                                <input asp-for="Parent.FatherContactNo" class="form-control indianmobile required" maxlength="13"  placeholder="Father Contact No" />
+
+                               @*  <input type="text"
+                                       id="FatherContactNo"
+                                       name="FatherContactNo"
+                                       maxlength="10"
+                                       class="form-control mobileNo required" /> *@
+
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+
+                                <label class="form-label">
+                                      @Localizer.Get("Father Email")"
+                                </label>
+                                <input asp-for="Parent.FatherEmail" class="form-control " maxlength="100"
+                                       placeholder="Father Email" />
+                                @* <input type="email"
+                                       id="FatherEmail"
+                                       name="FatherEmail"
+                                       class="form-control " /> *@
+
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+
+                                <label class="form-label">
+                                      @Localizer.Get("Father Address")
+                                </label>
+                                <textarea asp-for="Parent.FatherAddress" class="form-control required" placeholder="Father Address"></textarea>
+                               @*  <textarea id="FatherAddress"
+                                          name="FatherAddress"
+                                          class="form-control required"></textarea> *@
+
+                            </div>
+
+                            <hr />
+
+                            <!-- Mother Details -->
+
+                            <div class="col-12 mt-3">
+                                <h5 class="text-success">
+                                      @Localizer.Get("Mother Details")
+                                </h5>
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+
+                                <label class="form-label">
+                                      @Localizer.Get("Mother First Name")
+                                </label>
+                                <input asp-for="Parent.MotherFirstName" class="form-control text-only required" maxlength="100" placeholder="Mother First Name" />
+                               @*  <input type="text"
+                                       id="MotherFirstName"
+                                       name="MotherFirstName"
+                                       class="form-control text-only required" /> *@
+
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+
+                                <label class="form-label">
+                                      @Localizer.Get("Mother Middle Name")
+                                </label>
+                                <input asp-for="Parent.MotherMiddleName"class="form-control text-only" maxlength="100" placeholder="Mother Middle Name" />
+                               @*  <input type="text"
+                                       id="MotherMiddleName"
+                                       name="MotherMiddleName"
+                                       class="form-control text-only" /> *@
+
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+
+                                <label class="form-label">
+                                     @Localizer.Get("Mother Last Name")
+                                </label>
+                                <input asp-for="Parent.MotherLastName" class="form-control text-only required" maxlength="100" placeholder="Father Last Name" />
+                                @* <input type="text"
+                                       id="MotherLastName"
+                                       name="MotherLastName"
+                                       class="form-control text-only required" /> *@
+
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+
+                                <label class="form-label">
+                                      @Localizer.Get("Mother Mobile")
+                                </label>
+                                <input asp-for="Parent.MotherContactNo" class="form-control required" placeholder="Mother Contact No" />
+                              @*   <input type="text"
+                                       id="MotherContactNo"
+                                       name="MotherContactNo"
+                                       maxlength="10"
+                                       class="form-control mobileNo required" /> *@
+
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+
+                                <label class="form-label">
+                                     @Localizer.Get(" Mother Email")
+                                </label>
+                                <input asp-for="Parent.MotherEmail" class="form-control text-only" placeholder="Mother Email" />
+                               @*  <input type="email"
+                                       id="MotherEmail"
+                                       name="MotherEmail"
+                                       class="form-control" /> *@
+
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+
+                                <label class="form-label">
+                                      @Localizer.Get("Mother Address")
+                                </label>
+                                <textarea asp-for="Parent.MotherAddress"class="form-control required" placeholder="Mother Address"></textarea>
+                               @*  <textarea id="MotherAddress"
+                                          name="MotherAddress"
+                                          class="form-control required"></textarea> *@
+
+                            </div>
+
+                            <hr />
+
+                            <!-- Guardian Details -->
+
+                            <div class="col-12 mt-3">
+                                <h5 class="text-danger">
+                                      @Localizer.Get("Guardian Details")
+                                </h5>
+
+                                <div class="form-check form-check-inline">
+
+                                    <input class="form-check-input"
+                                           type="checkbox"
+                                           id="chkGuardianFather" />
+
+                                    <label class="form-check-label"
+                                           for="chkGuardianFather">
+                                          @Localizer.Get("Guardian Same As Father")
+                                    </label>
+
+                                </div>
+
+                                <div class="form-check form-check-inline">
+
+                                    <input class="form-check-input"
+                                           type="checkbox"
+                                           id="chkGuardianMother" />
+
+                                    <label class="form-check-label"
+                                           for="chkGuardianMother">
+                                          @Localizer.Get("Guardian Same As Mother")
+                                    </label>
+
+                                </div>
+
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+
+                                <label class="form-label">
+                                      @Localizer.Get("Guardian First Name")
+                                </label>
+                                <input asp-for="Parent.GuardianFirstName"
+                                       class="form-control text-only required"
+                                       placeholder="Guardian First Name" />
+                              @*   <input type="text"
+                                       id="GuardianFirstName"
+                                       name="GuardianFirstName"
+                                       class="form-control text-only required" /> *@
+
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+
+                                <label class="form-label">
+                                      @Localizer.Get("Guardian Middle Name")
+                                </label>
+                                <input asp-for="Parent.GuardianMiddleName"
+                                       class="form-control text-only"
+                                       placeholder="Guardian Middle Name" />
+                               @*  <input type="text"
+                                       id="GuardianMiddleName"
+                                       name="GuardianMiddleName"
+                                       class="form-control text-only" /> *@
+
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+
+                                <label class="form-label">
+                                     @Localizer.Get("Guardian Last Name")
+                                </label>
+                                <input asp-for="Parent.GuardianLastName"
+                                       class="form-control text-only required"
+                                       placeholder="Guardian Last Name" />
+                               @*  <input type="text"
+                                       id="GuardianLastName"
+                                       name="GuardianLastName"
+                                       class="form-control text-only required" /> *@
+
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+
+                                <label class="form-label">
+                                      @Localizer.Get("Guardian Mobile")
+                                </label>
+                                <input asp-for="Parent.GuardianContactNo"
+                                       class="form-control text-only required"
+                                       placeholder="Guardian Contact No" />
+                                @* <input type="text"
+                                       id="GuardianContactNo"
+                                       name="GuardianContactNo"
+                                       maxlength="10"
+                                       class="form-control mobileNo  required" /> *@
+
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+
+                                <label class="form-label">
+                                      @Localizer.Get("Guardian Email")
+                                </label>
+                                <input asp-for="Parent.GuardianEmail"
+                                       class="form-control "
+                                       placeholder="Guardian Email" />
+                               @*  <input type="email"
+                                       id="GuardianEmail"
+                                       name="GuardianEmail"
+                                       class="form-control" /> *@
+
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+
+                                <label class="form-label">
+                                      @Localizer.Get("Guardian Address")
+                                </label>
+                                <textarea asp-for="Parent.GuardianAddress"
+                                       class="form-control required"
+                                          placeholder="Guardian Address"></textarea>
+                               @*  <textarea id="GuardianAddress"
+                                          name="GuardianAddress"
+                                          class="form-control required"></textarea> *@
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+                <div class="tab-pane fade" id="tabPrevious">
+
+                    <div class="row">
+
+                        <input type="hidden" id="PreviousSchoolRecordId"
+                               name="PreviousSchoolRecordId" />
+
+                        <div class="col-md-4 mb-3">
+
+                            <label class="form-label">
+                                  @Localizer.Get("Last School Class")
+                            </label>
+                            <input asp-for="PreviousSchoolRecord.LastSchoolClass" class="form-control" maxlength="50" placeholder="Last School Class" />
+                       @*      <input type="text"
+                                   id="LastSchoolClass"
+                                   name="LastSchoolClass"
+                                   class="form-control"
+                                   maxlength="50"
+                                   placeholder="Enter Last School Class" /> *@
+
+                        </div>
+
+                        <div class="col-md-8 mb-3">
+
+                            <label class="form-label">
+                                  @Localizer.Get("Last School Name")
+                            </label>
+                             <input asp-for="PreviousSchoolRecord.LastSchoolName" class="form-control" maxlength="200" placeholder="Last School Name" />
+                           @*  <input type="text"
+                                   id="LastSchoolName"
+                                   name="LastSchoolName"
+                                   class="form-control"
+                                   maxlength="200"
+                                   placeholder="Enter School Name" /> *@
+
+                        </div>
+
+                        <div class="col-md-12 mb-3">
+
+                            <label class="form-label">
+                                 @Localizer.Get("Last School Address")
+                            </label>
+                            <textarea asp-for="PreviousSchoolRecord.LastSchoolAddress" class="form-control" rows="5" maxlength="500" placeholder="Last School Address"></textarea>
+                           @*  <textarea id="LastSchoolAddress"
+                                      name="LastSchoolAddress"
+                                      class="form-control"
+                                      rows="3"
+                                      maxlength="500"
+                                      placeholder="Enter School Address"></textarea> *@
+
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+
+                            <label class="form-label">
+                                  @Localizer.Get("School Code")
+                            </label>
+                            <input asp-for="PreviousSchoolRecord.LastSchoolCode" class="form-control" maxlength="50" placeholder="Last School code" />
+                           @*  <input type="text"
+                                   id="LastSchoolCode"
+                                   name="LastSchoolCode"
+                                   class="form-control"
+                                   maxlength="50"
+                                   placeholder="School Code" /> *@
+
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+
+                            <label class="form-label">
+                                  @Localizer.Get("School Board")
+                            </label>
+                            <select asp-for="PreviousSchoolRecord.LastSchoolBoard" id="LastSchoolBoard" name="LastSchoolBoard" class="form-control select2">
+
+                                <option value="">  @Localizer.Get("Select")</option>
+
+                                @foreach (var item in ViewBag.BoardList)
+                                {
+                                    <option value="@item.DataListItemId">
+                                        @item.DataListItemText
+                                    </option>
+                                }
+
+                            </select>
+                           @*  <select id="LastSchoolBoard" name="LastSchoolBoard" class="form-control select2">
+
+                                <option value="">Select</option>
+
+                                @foreach (var item in ViewBag.BoardList)
+                                {
+                                    <option value="@item.DataListItemId">
+                                        @item.DataListItemText
+                                    </option>
+                                }
+
+                            </select> *@
+
+
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+
+                            <label class="form-label">
+                                 @Localizer.Get("UDISE Code")
+                            </label>
+                            <input asp-for="PreviousSchoolRecord.LastSchoolUDISECode" class="form-control" maxlength="200" placeholder="Last School UDISE Code" />
+@* 
+                            <input type="text"
+                                   id="LastSchoolUDISECode"
+                                   name="LastSchoolUDISECode"
+                                   class="form-control"
+                                   maxlength="20"
+                                   placeholder="UDISE Code" /> *@
+
+                        </div>
+
+                        <div class="col-md-12 mb-3">
+
+                            <label class="form-label">
+                                 @Localizer.Get("Reason For Change")
+                            </label>
+                            <textarea asp-for="PreviousSchoolRecord.ReasonForChange" class="form-control" maxlength="500" rows="5" placeholder="Reason for Changing School"></textarea>
+
+                          @*   <textarea id="ReasonForChange"
+                                      name="ReasonForChange"
+                                      class="form-control"
+                                      rows="4"
+                                      maxlength="500"
+                                      placeholder="Reason for changing school"></textarea> *@
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="tab-pane fade"
+                     id="tabDocuments">
+
+                    <div class="row">
+
+                        <div class="col-md-6">
+
+                            <label> @Localizer.Get("Aadhaar")</label>
+
+                            <input type="file"  name="AadhaarFile" class="form-control" />
+                            @{
+                                var aadhaar = docs?.FirstOrDefault(x => x.DocumentType == "AADHAAR");
+                            }
+
+                            @if (aadhaar != null)
+                            {
+                                <a href="@aadhaar.FilePath" target="_blank">
+                                     @Localizer.Get("View Existing Aadhaar")
+                                </a>
+                            }
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <label> @Localizer.Get("Passport Photo")</label>
+
+                            <input type="file" name="PhotoFile" class="form-control" />
+                            @{
+                                var photo = docs?.FirstOrDefault(x => x.DocumentType == "PHOTO");
+                            }
+
+                            @if (photo != null)
+                            {
+                                <a href="@photo.FilePath" target="_blank">
+                                     @Localizer.Get("View Existing Photo")"
+                                </a>
+                            }
+                        </div>
+
+                        <div class="col-md-6 mt-2">
+
+                            <label> @Localizer.Get("Transfer Certificate")</label>
+
+                            <input type="file" name="TCFile" class="form-control" />
+                            @{
+                                var tc = docs?.FirstOrDefault(x => x.DocumentType == "TC");
+                            }
+
+                            @if (tc != null)
+                            {
+                                <a href="@tc.FilePath" target="_blank">
+                                     @Localizer.Get("View Existing TC")
+                                </a>
+                            }
+                        </div>
+
+                        <div class="col-md-6 mt-2">
+
+                            <label> @Localizer.Get("Marksheet")</label>
+
+                            <input type="file" name="MarksheetFile" class="form-control" />
+                            @{
+                                var marksheet = docs?.FirstOrDefault(x => x.DocumentType == "MARKSHEET");
+                            }
+
+                            @if (marksheet != null)
+                            {
+                                <a href="@marksheet.FilePath" target="_blank">
+                                    View Existing Marksheet
+                                </a>
+                            }
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</form>
+@section Scripts {
+    <script>
+
+        $(document).ready(function () {
+
+            toggleHandicap();
+            TogglePreviousSchoolTab();
+
+            $("#IsHandicap").change(function () {
+
+                toggleHandicap();
+
+            });
+
+
+        $("#RegClassId").change(function () {
+
+            TogglePreviousSchoolTab();
+
+        });
+        function TogglePreviousSchoolTab()
+        {
+            var admissionClassId = $("#RegClassId").val();
+
+            var initialClassId ='@ViewBag.InitialClassId';
+
+            if (admissionClassId == initialClassId) {
+
+                $("#previousSchoolTabLi").hide();
+
+                $("#tabPreviousSchool").find("input,textarea,select").val("");
+
+            }
+            else {
+                $("#previousSchoolTabLi").show();
+
+            }
+        }
+          $("#chkSameAddress").change(function () {
+
+        if ($(this).is(":checked")) {
+
+            $("#PermanentAddress")
+                .val($("#LocalAddress").val())
+                .prop("readonly", true);
+
+        }
+        else {
+
+            $("#PermanentAddress")
+                .val("")
+                .prop("readonly", false);
+
+        }
+              $("#LocalAddress").on("keyup change", function () {
+
+            if ($("#chkSameAddress").is(":checked")) {
+
+                $("#PermanentAddress")
+                    .val($(this).val());
+
+            }
+
+        });
+
+        });
+            $("#chkGuardianFather").change(function () {
+
+            if ($(this).is(":checked")) {
+
+                $("#chkGuardianMother").prop("checked", false);
+
+                $("#GuardianFirstName").val($("#FatherFirstName").val());
+                $("#GuardianMiddleName").val($("#FatherMiddleName").val());
+                $("#GuardianLastName").val($("#FatherLastName").val());
+                $("#GuardianContactNo").val($("#FatherContactNo").val());
+                $("#GuardianEmail").val($("#FatherEmail").val());
+                $("#GuardianAddress").val($("#FatherAddress").val());
+
+                ToggleGuardianReadonly(true);
+                 SyncGuardian();
+            }
+            else {
+
+                ClearGuardian();
+
+            }
+
+        });
+
+        $("#chkGuardianMother").change(function () {
+
+            if ($(this).is(":checked")) {
+
+                $("#chkGuardianFather").prop("checked", false);
+
+                $("#GuardianFirstName").val($("#MotherFirstName").val());
+                $("#GuardianMiddleName").val($("#MotherMiddleName").val());
+                $("#GuardianLastName").val($("#MotherLastName").val());
+                $("#GuardianContactNo").val($("#MotherContactNo").val());
+                $("#GuardianEmail").val($("#MotherEmail").val());
+                $("#GuardianAddress").val($("#MotherAddress").val());
+
+                ToggleGuardianReadonly(true);
+                 SyncGuardian();
+            }
+            else {
+
+                ClearGuardian();
+
+            }
+
+        });
+                $("#btnSearchParent").click(function () {
+
+            $.get("/Students/GetParent",
+                { mobile: $("#txtParentSearch").val() },
+                function (res) {
+
+
+            if (res != null) {
+
+                $("#Parent_ParentId").val(res.parentId);
+
+                // Father
+
+                $("#Parent_FatherFirstName").val(res.fatherFirstName);
+                $("#Parent_FatherMiddleName").val(res.fatherMiddleName);
+                $("#Parent_FatherLastName").val(res.fatherLastName);
+                $("#Parent_FatherContactNo").val(res.fatherContactNo);
+                $("#Parent_FatherEmail").val(res.fatherEmail);
+                $("#Parent_FatherAddress").val(res.fatherAddress);
+
+                // Mother
+
+                $("#Parent_MotherFirstName").val(res.motherFirstName);
+                $("#Parent_MotherMiddleName").val(res.motherMiddleName);
+                $("#Parent_MotherLastName").val(res.motherLastName);
+                $("#Parent_MotherContactNo").val(res.motherContactNo);
+                $("#Parent_MotherEmail").val(res.motherEmail);
+                $("#Parent_MotherAddress").val(res.motherAddress);
+
+                // Guardian
+
+                $("#Parent_GuardianFirstName").val(res.guardianFirstName);
+                $("#Parent_GuardianMiddleName").val(res.guardianMiddleName);
+                $("#Parent_GuardianLastName").val(res.guardianLastName);
+                $("#Parent_GuardianContactNo").val(res.guardianContactNo);
+                $("#Parent_GuardianEmail").val(res.guardianEmail);
+                $("#Parent_GuardianAddress").val(res.guardianAddress);
+
+                toastr.success("Parent details loaded successfully.");
+
+            }
+            else {
+
+                toastr.warning("No parent found.");
+
+                $("#Parent_ParentId").val("");
+
+            }
+
+                })
+                .fail(function () {
+
+            toastr.error("Error while fetching parent details.");
+
+        });
+
+        });
+        });
+
+        function toggleHandicap() {
+
+            if ($("#IsHandicap").is(":checked")) {
+
+                $("#divHandicapDetails").show();
+
+            }
+            else {
+
+                $("#divHandicapDetails").hide();
+
+                $("#HandicapDetails").val("");
+
+            }
+        }
+                function ValidateStudentForm() {
+
+            var admissionClassId =$("#RegClassId").val();
+
+            var initialClassId ='@ViewBag.InitialClassId';
+
+            if (admissionClassId != initialClassId) {
+
+                if ($("#PreviousSchoolRecord_LastSchoolName").val().trim() == "") {
+
+                    alert("Last School Name is required.");
+
+                    $("#PreviousSchoolRecord_LastSchoolName").focus();
+
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+                function ToggleGuardianReadonly(isReadOnly) {
+
+            $("#Parent_GuardianFirstName").prop("readonly", isReadOnly);
+            $("#Parent_GuardianMiddleName").prop("readonly", isReadOnly);
+            $("#Parent_GuardianLastName").prop("readonly", isReadOnly);
+            $("#Parent_GuardianContactNo").prop("readonly", isReadOnly);
+            $("#Parent_GuardianEmail").prop("readonly", isReadOnly);
+            $("#Parent_GuardianAddress").prop("readonly", isReadOnly);
+
+        }
+
+        function ClearGuardian() {
+
+            $("#Parent_GuardianFirstName").val("");
+            $("#Parent_GuardianMiddleName").val("");
+            $("#Parent_GuardianLastName").val("");
+            $("#Parent_GuardianContactNo").val("");
+            $("#Parent_GuardianEmail").val("");
+            $("#Parent_GuardianAddress").val("");
+
+            ToggleGuardianReadonly(false);
+
+        }
+         function SyncGuardian() {
+
+            if ($("#chkGuardianFather").is(":checked")) {
+
+                $("#Parent_GuardianFirstName").val($("#Parent_FatherFirstName").val());
+                $("#Parent_GuardianMiddleName").val($("#Parent_FatherMiddleName").val());
+                $("#Parent_GuardianLastName").val($("#Parent_FatherLastName").val());
+                $("#Parent_GuardianContactNo").val($("#Parent_FatherContactNo").val());
+                $("#Parent_GuardianEmail").val($("#Parent_FatherEmail").val());
+                $("#Parent_GuardianAddress").val($("#Parent_FatherAddress").val());
+            }
+
+            if ($("#chkGuardianMother").is(":checked")) {
+
+                $("#Parent_GuardianFirstName").val($("#Parent_MotherFirstName").val());
+                $("#Parent_GuardianMiddleName").val($("#Parent_MotherMiddleName").val());
+                $("#Parent_GuardianLastName").val($("#Parent_MotherLastName").val());
+                $("#Parent_GuardianContactNo").val($("#Parent_MotherContactNo").val());
+                $("#Parent_GuardianEmail").val($("#Parent_MotherEmail").val());
+                $("#Parent_GuardianAddress").val($("#Parent_MotherAddress").val());
+            }
+
+        }
+
+        $("#Parent_FatherFirstName,#Parent_FatherMiddleName,#Parent_FatherLastName,#Parent_FatherContactNo,#Parent_FatherEmail,#Parent_FatherAddress").on("keyup change", SyncGuardian);
+
+        $("#Parent_MotherFirstName,#Parent_MotherMiddleName,#Parent_MotherLastName,#Parent_MotherContactNo,#Parent_MotherEmail,#Parent_MotherAddress").on("keyup change", SyncGuardian);
+    </script>
+}

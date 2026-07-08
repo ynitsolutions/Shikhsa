@@ -1,0 +1,268 @@
+﻿@model Shikhsa.Models.StaffMaster
+
+@{
+    ViewData["Title"] = Model.StaffId == 0 ? "Add Staff" : "Edit Staff";
+}
+
+<form asp-action="SaveStaffs"
+      method="post"
+      enctype="multipart/form-data">
+
+    @Html.HiddenFor(x => x.StaffId)
+
+    <div class="card shadow">
+
+        <div class="card-header bg-primary text-white">
+
+            <div class="d-flex justify-content-between">
+
+                <h4 class="mb-0">
+
+                  @*   @(Model.StaffId == 0 ?
+                                        "New Staff Registration"
+                                        : "Edit Staff") *@
+                    @(Model.StaffId == 0 ?
+                                        "New Staff Registration"
+                                        : $"Edit Staff ({string.Join(" ", new[] { Model.FirstName, Model.MiddleName, Model.LastName }.Where(s => !string.IsNullOrEmpty(s)))})")
+
+
+                </h4>
+
+                <div>
+
+                    <button class="btn btn-success">
+
+                        <i class="ti ti-device-floppy"></i>
+
+                        Save
+
+                    </button>
+
+                    <a asp-action="Staffs"
+                       class="btn btn-danger">
+
+                        Cancel
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="card-body">
+
+            <ul class="nav nav-tabs" id="staffTab">
+
+                <li class="nav-item">
+                    <a class="nav-link active"
+                       data-bs-toggle="tab"
+                       href="#personal">
+                        Personal
+                    </a>
+                </li>
+
+                 <li class="nav-item">
+                    <a class="nav-link"
+                       data-bs-toggle="tab"
+                       href="#academic">
+                        Academic
+                    </a>
+                </li>
+
+               <li class="nav-item">
+                    <a class="nav-link"
+                       data-bs-toggle="tab"
+                       href="#experience">
+                        Experience
+                    </a>
+                </li>
+
+                  <li class="nav-item">
+                    <a class="nav-link"
+                       data-bs-toggle="tab"
+                       href="#documents">
+                        Documents
+                    </a>
+                </li>
+
+                @* <li class="nav-item">
+                    <a class="nav-link"
+                       data-bs-toggle="tab"
+                       href="#payment">
+                        Payment
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link"
+                       data-bs-toggle="tab"
+                       href="#emergency">
+                        Emergency
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link"
+                       data-bs-toggle="tab"
+                       href="#leave">
+                        Leave
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link"
+                       data-bs-toggle="tab"
+                       href="#login">
+                        Login
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link"
+                       data-bs-toggle="tab"
+                       href="#attendance">
+                        Attendance
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link"
+                       data-bs-toggle="tab"
+                       href="#salary">
+                        Salary
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link"
+                       data-bs-toggle="tab"
+                       href="#remarks">
+                        Remarks
+                    </a>
+                </li> *@
+
+            </ul>
+
+            <div class="tab-content border border-top-0 p-3">
+
+                <div class="tab-pane fade show active"
+                     id="personal">
+
+                    <partial name="_PersonalDetails" />
+
+                </div>
+
+               <div class="tab-pane fade"
+                     id="academic">
+
+                    <partial name="_AcademicDetails" />
+
+                </div>
+
+                  <div class="tab-pane fade"
+                     id="experience">
+
+                    <partial name="_ExperienceDetails" />
+
+                </div>
+
+                  <div class="tab-pane fade"
+                     id="documents">
+
+                    <partial name="_DocumentDetails" />
+
+                </div>
+
+                @*  <div class="tab-pane fade"
+                     id="payment">
+
+                    <partial name="_PaymentDetails" />
+
+                </div>
+
+                <div class="tab-pane fade"
+                     id="emergency">
+
+                    <partial name="_EmergencyContact" />
+
+                </div>
+
+                <div class="tab-pane fade"
+                     id="leave">
+
+                    <partial name="_LeaveSettings" />
+
+                </div>
+
+                <div class="tab-pane fade"
+                     id="login">
+
+                    <partial name="_LoginDetails" />
+
+                </div>
+
+                <div class="tab-pane fade"
+                     id="attendance">
+
+                    <partial name="_AttendanceSettings" />
+
+                </div>
+
+                <div class="tab-pane fade"
+                     id="salary">
+
+                    <partial name="_SalaryDetails" />
+
+                </div>
+
+                <div class="tab-pane fade"
+                     id="remarks">
+
+                    <partial name="_Remarks" />
+
+                </div> *@
+
+            </div>
+
+        </div>
+
+    </div>
+    <input type="hidden" id="AcademicJson" name="AcademicJson" />
+    <input type="hidden" id="ExperienceJson" name="ExperienceJson" />
+    <input type="hidden" id="DocumentJson" name="DocumentJson" />
+    <input type="hidden" id="EmergencyJson" name="EmergencyJson" />
+    <input type="hidden" id="LeaveJson" name="LeaveJson" />
+</form>
+
+@section Scripts {
+
+    <script src="~/js/Staff.js"></script>
+    <script>
+
+        var AcademicList = @Html.Raw(
+                    System.Text.Json.JsonSerializer.Serialize(
+                            Model.Academics ?? new List<StaffAcademic>()
+                    ));
+
+    var ExperienceList = @Html.Raw(
+                System.Text.Json.JsonSerializer.Serialize(
+                        Model.Experiences ?? new List<StaffExperience>()
+                ))
+
+    var DocumentList = @Html.Raw(
+                System.Text.Json.JsonSerializer.Serialize(
+                        Model.Documents ?? new List<StaffDocument>()
+                ));
+
+    $(document).ready(function () {
+
+                RenderAcademic();
+            RenderExperience();
+            RenderDocument();
+
+        });
+
+    </script>
+}

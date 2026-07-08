@@ -1,0 +1,234 @@
+﻿@using Shikhsa.ViewModels
+@model List<TranslationGridVM>
+
+@{
+    ViewData["Title"] = "Language Management";
+
+    var languages =
+        ViewBag.Languages as List<Language>;
+}
+
+<div class="card">
+
+    <div class="card-header
+                d-flex
+                justify-content-between
+                align-items-center">
+
+        <h3>
+            Language Management
+        </h3>
+
+        <button type="button"
+                class="btn btn-primary"
+                onclick="addRow()">
+
+            <i class="ti ti-plus"></i>
+
+            Add Row
+
+        </button>
+
+    </div>
+
+
+    <div class="card-body">
+
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success">
+
+                @TempData["Success"]
+
+            </div>
+        }
+
+
+        <form asp-action="Save"
+              method="post">
+
+            <div class="table-responsive">
+
+                <table class="table table-bordered"
+                       id="translationTable">
+
+                    <thead>
+
+                        <tr>
+
+                            <!-- WORD KEY -->
+
+                            <th style="min-width:200px;">
+
+                                Word Key
+
+                            </th>
+
+
+                            <!-- DYNAMIC LANGUAGES -->
+                            @if(languages!=null)
+                            {
+                                @foreach (var lang in languages)
+                            {
+                                <th style="min-width:220px;">
+
+                                    @lang.LanguageName
+                                    (@lang.LanguageCode)
+
+                                </th>
+                            }
+                            }
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        @for (int i = 0; i < Model.Count; i++)
+                        {
+                            <tr>
+
+                                <!-- KEY -->
+
+                                <td>
+
+                                    <input type="text"
+                                           name="[@i].KeyName"
+                                           value="@Model[i].KeyName"
+                                           class="form-control" />
+
+                                </td>
+
+
+                                <!-- TRANSLATIONS -->
+                                @foreach (var lang in languages)
+                                {
+                                    string value = "";
+
+                                    if (Model[i].Translations
+                                    .ContainsKey(
+                                    lang.LanguageCode))
+                                    {
+                                        value =
+                                        Model[i]
+                                        .Translations[
+                                        lang.LanguageCode];
+                                    }
+
+                                    <td>
+
+                                        <input type="text"
+                                               name="[@i].Translations[@lang.LanguageCode]"
+                                               value="@value"
+                                               class="form-control" />
+
+                                    </td>
+                                }
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+            <div class="mt-3">
+
+                <button type="submit"
+                        class="btn btn-success">
+
+                    <i class="ti ti-device-floppy"></i>
+
+                    Save All
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+
+@section Scripts
+{
+    <script>
+
+        // ============================================
+        // DYNAMIC LANGUAGES
+        // ============================================
+
+        const languages = [
+
+            @foreach (var lang in languages)
+            {
+                    <text>
+                        "@lang.LanguageCode",
+                    </text>
+            }
+
+        ];
+
+
+        // ============================================
+        // ADD NEW ROW
+        // ============================================
+
+        function addRow()
+        {
+            let tbody =
+                document.querySelector(
+                    "#translationTable tbody");
+
+            let rowIndex =
+                tbody.rows.length;
+
+            let rowHtml = `
+                <tr>
+
+                    <td>
+
+                        <input type="text"
+                               name="[${rowIndex}].KeyName"
+                               class="form-control" />
+
+                    </td>
+            `;
+
+
+            // ========================================
+            // ADD LANGUAGE COLUMNS
+            // ========================================
+
+            languages.forEach(lang =>
+            {
+                rowHtml += `
+
+                    <td>
+
+                        <input type="text"
+                               name="[${rowIndex}].Translations[${lang}]"
+                               class="form-control" />
+
+                    </td>
+
+                `;
+            });
+
+
+            rowHtml += `</tr>`;
+
+
+            tbody.insertAdjacentHTML(
+                "beforeend",
+                rowHtml);
+        }
+
+    </script>
+}

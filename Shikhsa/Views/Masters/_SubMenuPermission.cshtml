@@ -1,0 +1,44 @@
+﻿@using Shikhsa.ViewModels
+@model List<SubMenuPermissionVM>
+
+@for (int i = 0; i < Model.Count; i++)
+{
+    <tr>
+        <!-- MENU -->
+        <td>
+            @Model[i].MenuName
+            <input type="hidden" name="SubMenus[@i].MenuId" value="@Model[i].MenuId" />
+            <input type="hidden" name="SubMenus[@i].MenuName" value="@Model[i].MenuName" />
+            <button type="button"
+                    class="btn btn-sm btn-link text-danger p-0 ms-2"
+                    title="Remove this permission item"
+                    onclick="deleteSubMenuItem(@Model[i].MenuId)">
+                <i class="ti ti-trash"></i>
+            </button>
+        </td>
+
+        <!-- VIEW -->
+        <td class="text-center">
+            <input type="checkbox" class="form-check-input" name="SubMenus[@i].CanView"
+                   value="true" @(Model[i].CanView ? "checked" : null) />
+        </td>
+
+        <!-- CREATE -->
+        <td class="text-center">
+            <input type="checkbox" class="form-check-input" name="SubMenus[@i].CanCreate"
+                   value="true" @(Model[i].CanCreate ? "checked" : null) />
+        </td>
+
+        <!-- UPDATE -->
+        <td class="text-center">
+            <input type="checkbox" class="form-check-input" name="SubMenus[@i].CanUpdate"
+                   value="true" @(Model[i].CanUpdate ? "checked" : null) />
+        </td>
+
+        <!-- DELETE -->
+        <td class="text-center">
+            <input type="checkbox" class="form-check-input" name="SubMenus[@i].CanDelete"
+                   value="true" @(Model[i].CanDelete ? "checked" : null) />
+        </td>
+    </tr>
+}

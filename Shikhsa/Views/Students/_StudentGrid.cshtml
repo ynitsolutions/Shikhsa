@@ -1,0 +1,290 @@
+﻿@using Shikhsa.ViewModels.DataFilter
+@model StudentReportPageVM
+
+@{
+    var cols = Model.Filter.SelectedColumns ??
+               new List<string>();
+}
+
+<div class="table-responsive">
+
+    <table class="table table-bordered table-striped">
+
+        <thead>
+
+            <tr>
+                <th>
+                    <input type="checkbox" name="All" value="All" />
+                </th>
+                @if (cols.Contains("ApplicationNo"))
+                {
+                    <th>Application No</th>
+                }
+
+                @if (cols.Contains("StudentName"))
+                {
+                    <th>Student Name</th>
+                }
+
+                @if (cols.Contains("FatherName"))
+                {
+                    <th>Father Name</th>
+                }
+                @if (cols.Contains("MotherName"))
+                {
+                    <th>Mother Name</th>
+                }
+                @if (cols.Contains("GuardianName"))
+                {
+                    <th>Guardian Name</th>
+                }
+                @if (cols.Contains("LocalAddress"))
+                {
+                    <th>Local Address</th>
+                }
+                @if (cols.Contains("PermanentAddress"))
+                {
+                    <th>Permanent Address</th>
+                }
+
+                @if (cols.Contains("LocalAddress"))
+                {
+                    <th>Local Address</th>
+                }
+                @if (cols.Contains("FatherMobile"))
+                {
+                    <th>Mobile</th>
+                }
+
+                @if (cols.Contains("DOB"))
+                {
+                    <th>DOB</th>
+                }
+
+                @if (cols.Contains("AadhaarNumber"))
+                {
+                    <th>Aadhaar</th>
+                }
+
+                <th width="120">
+                    Action
+                </th>
+
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            @if (Model.Students != null &&
+                        Model.Students.Any())
+            {
+                foreach (var item in Model.Students)
+                {
+                    <tr>
+                         <td>
+                            <input type="checkbox" name="selectedStudents" value="@item.StudentId" />
+                        </td>
+                        @if (cols.Contains("ApplicationNo"))
+                        {
+                            <td>@item.ApplicationNo</td>
+                        }
+
+                        @if (cols.Contains("StudentName"))
+                        {
+                            <td>@item.StudentName</td>
+                        }
+                        @if (cols.Contains("FatherName"))
+                        {
+                            <td>@item.FatherName</td>
+                        }
+                        @if (cols.Contains("MotherName"))
+                        {
+                            <td>@item.MotherName</td>
+                        }
+                        @if (cols.Contains("GuardianName"))
+                        {
+                            <td>@item.GuardianName</td>
+                        }
+                        @if (cols.Contains("LocalAddress"))
+                        {
+                            <td>@item.LocalAddress</td>
+                        }
+                        @if (cols.Contains("PermanentAddress"))
+                        {
+                            <td>@item.PermanentAddress</td>
+                        }
+                        @if (cols.Contains("FatherMobile"))
+                        {
+                            <td>@item.FatherMobile</td>
+                        }
+
+                        @if (cols.Contains("DOB"))
+                        {
+                            <td>
+                                @item.DOB.ToString("dd/MM/yyyy")
+                            </td>
+                        }
+
+                        @if (cols.Contains("AadhaarNumber"))
+                        {
+                            <td>@item.AadhaarNumber</td>
+                        }
+
+                        <td>
+
+                            <permission controller="Students" action="StudentRegistrations" type="edit">
+                                <a asp-action="SaveStudentRegistrations" asp-route-id="@item.StudentId">
+                                    <spam class="ti ti-pencil"></spam>
+                                </a>
+                            </permission>
+                            <permission controller="Students" action="StudentRegistrations" type="delete">
+                                <a asp-action="DeleteStudentRegistrations" asp-route-id="@item.StudentId">
+                                     <spam class="ti ti-trash"></spam>
+                                </a>
+                            </permission>
+                            <a href="javascript:void(0);"class="btnStatus" data-studentid="@item.StudentId">
+                                <spam class="ti ti-reload"></spam>
+                            </a>
+                         @*    <button type="button" class="btn btn-primary btnStatus" data-studentid="@item.StudentId">
+                                Change Status
+                            </button> *@
+                        </td>
+
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+
+                    <td colspan="20"
+                        class="text-center">
+
+                        No Records Found
+
+                    </td>
+
+                </tr>
+            }
+
+        </tbody>
+
+    </table>
+
+</div>
+<!--Model PopUP-->
+<div class="modal fade"
+     id="statusModal"
+     tabindex="-1">
+
+    <div class="modal-dialog">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">
+                    Update Student Status
+                </h5>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
+
+            </div>
+
+            <div class="modal-body">
+
+                <input type="hidden"
+                       id="StudentIds" />
+
+                <div class="mb-3">
+
+                    <label>Status</label>
+
+                    <select id="StatusId" class="form-select ">
+
+                        <option value="">Select</option>
+                        @foreach (var item in ViewBag.StatusList)
+                        {
+                            <option value="@item.DataListItemId">
+                                @item.DataListItemText
+                            </option>
+                        }
+                    </select>
+
+                </div>
+
+                <div id="admissionArea"
+                     style="display:none;">
+
+                    <div class="mb-3">
+
+                        <label>Class</label>
+
+                        <select id="ClassId" class="form-select ">
+                            <option value="">Select</option>
+                            @foreach (var item in ViewBag.ClassList)
+                            {
+                                <option value="@item.DataListItemId">
+                                    @item.DataListItemText
+                                </option>
+                            }
+                        </select>
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <label>Section</label>
+
+                        <select id="SectionId" class="form-select">
+                            <option value="">Select</option>
+                            @foreach (var item in ViewBag.SectionList)
+                            {
+                                <option value="@item.DataListItemId">
+                                    @item.DataListItemText
+                                </option>
+                            }
+                        </select>
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <label>Batch</label>
+
+                        <select id="BatchId"  class="form-select ">
+                            <option value="">Select</option>
+
+                            @foreach (var item in ViewBag.BatchList)
+                            {
+                                <option value="@item.BatchId">
+                                    @item.AcademicYear
+                                </option>
+                            }
+                        </select>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button type="button"
+                        class="btn btn-success"
+                        id="btnSaveStatus">
+                    Save
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

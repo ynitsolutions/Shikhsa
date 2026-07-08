@@ -1,0 +1,309 @@
+﻿@model IEnumerable<Shikhsa.ViewModels.StaffListModel>
+@using Shikhsa.ViewModels.DataFilter
+
+@{
+    ViewData["Title"] = "Staff List";
+
+    var filter = ViewBag.Filter as StaffFilterVM  ?? new StaffFilterVM ();
+}
+
+<div class="card shadow-sm">
+
+    <div class="card-header bg-primary text-white">
+
+        <div class="row">
+
+            <div class="col-md-6">
+
+                <h4 class="mb-0">
+
+                    <i class="ti ti-users"></i>
+
+                    Staff List
+
+                </h4>
+
+            </div>
+
+            <div class="col-md-6 text-end">
+
+                <a asp-action="SaveStaffs"
+                   class="btn btn-light">
+
+                    <i class="ti ti-plus"></i>
+
+                    Add Staff
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="card-body">
+
+        <form method="get">
+
+            <div class="row">
+
+                <div class="col-md-2 mb-2">
+
+                    <input asp-for="@filter.StaffCode"
+                           name="StaffCode"
+                           class="form-control"
+                           placeholder="Staff Code" />
+
+                </div>
+
+                <div class="col-md-3 mb-2">
+
+                    <input asp-for="@filter.StaffName"
+                           name="StaffName"
+                           class="form-control"
+                           placeholder="Staff Name" />
+
+                </div>
+
+                <div class="col-md-2 mb-2">
+
+                    <input asp-for="@filter.MobileNo"
+                           name="MobileNo"
+                           class="form-control"
+                           placeholder="Mobile" />
+
+                </div>
+
+                <div class="col-md-3 mb-2">
+
+                    <input asp-for="@filter.Email"
+                           name="Email"
+                           class="form-control"
+                           placeholder="Email" />
+
+                </div>
+
+                <div class="col-md-2 mb-2">
+
+                    <button class="btn btn-primary w-100">
+
+                        <i class="ti ti-search"></i>
+
+                        Search
+
+                    </button>
+
+                </div>
+
+            </div>
+
+            <div class="row mt-2">
+
+                <div class="col-md-3">
+
+                    <select name="DepartmentId"
+                            class="form-select select2"
+                            asp-items="ViewBag.DepartmentList">
+
+                        <option value="">Department</option>
+
+                    </select>
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <select name="DesignationId"
+                            class="form-select select2"
+                            asp-items="ViewBag.DesignationList">
+
+                        <option value="">Designation</option>
+
+                    </select>
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <select name="StaffTypeId"
+                            class="form-select select2"
+                            asp-items="ViewBag.StaffTypeList">
+
+                        <option value="">Staff Type</option>
+
+                    </select>
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <select name="EmployeeStatusId"
+                            class="form-select select2"
+                            asp-items="ViewBag.EmployeeStatusList">
+
+                        <option value="">Status</option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+        </form>
+
+        <hr />
+
+        <div class="table-responsive">
+
+            <table class="table table-bordered table-hover align-middle">
+
+                <thead class="table-primary">
+
+                    <tr>
+
+                       
+
+                        <th>Staff Code</th>
+
+                        <th>Name</th>
+
+                        <th>Department</th>
+
+                        <th>Designation</th>
+
+                        <th>Mobile</th>
+
+                        <th>Email</th>
+
+                        <th>Joining</th>
+
+                      
+
+                        <th>Status</th>
+
+                        <th width="180">Action</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    @if (Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr>
+
+                                @* <td>
+
+                                //     <img src="@(string.IsNullOrEmpty(item.PhotoPath)
+                                //                                                  ? "/images/no-image.png"
+                                //                                                  : item.PhotoPath)"
+                                //  width="45"
+                                //  height="45"
+                                //  class="rounded-circle border" />
+
+                                // </td>*@
+
+                                <td>@item.StaffCode</td>
+
+                                <td>@item.StaffName</td>
+
+                                <td>@item.Department</td>
+
+                                <td>@item.Designation</td>
+
+                                <td>@item.MobileNo</td>
+
+                                <td>@item.Email</td>
+
+                                <td>@item.JoiningDate.ToString("dd-MMM-yyyy")</td>
+
+
+                                <td>
+
+                            @if (item.IsActive)
+                                    {
+                                        <span class="badge bg-success">
+
+                                            Active
+
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">
+
+                                            Inactive
+
+                                        </span>
+                                    }
+
+                                </td>
+
+                                <td>
+
+                                    <div class="btn-group">
+
+                                        <a asp-action="SaveStaffs"
+                                           asp-route-id="@item.StaffId"
+                                           class="btn btn-sm btn-primary">
+
+                                            <i class="ti ti-edit"></i>
+
+                                        </a>
+
+                                        <a asp-action="View"
+                                           asp-route-id="@item.StaffId"
+                                           class="btn btn-sm btn-info">
+
+                                            <i class="ti ti-eye"></i>
+
+                                        </a>
+
+                                        <button class="btn btn-sm btn-danger btnDelete"
+                                                data-id="@item.StaffId">
+
+                                            <i class="ti ti-trash"></i>
+
+                                        </button>
+
+                                        <button class="btn btn-sm btn-warning btnReset"
+                                                data-id="@item.StaffId">
+
+                                            <i class="ti ti-key"></i>
+
+                                        </button>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+
+                            <td colspan="11"
+                                class="text-center">
+
+                                No Record Found
+
+                            </td>
+
+                        </tr>
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>

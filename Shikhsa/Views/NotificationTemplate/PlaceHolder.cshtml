@@ -1,0 +1,291 @@
+﻿@model Shikhsa.ViewModels.NotificationPlaceholderVM
+
+@{
+    ViewData["Title"] = "Notification Placeholders";
+}
+<form method="get" asp-action="Index">
+
+    <div class="row mb-3">
+
+        <div class="col-md-10">
+
+            <input type="text"
+                   name="search"
+                   value="@ViewBag.Search"
+                   class="form-control"
+                   placeholder="Search Placeholder..." />
+
+        </div>
+
+        <div class="col-md-2 d-grid">
+
+            <button class="btn btn-primary">
+
+                Search
+
+            </button>
+
+        </div>
+
+    </div>
+
+</form>
+<div class="row">
+
+    <div class="col-lg-4 mb-3">
+
+        <div class="card">
+
+            <div class="card-header bg-primary text-white">
+
+                Notification Placeholder
+
+            </div>
+
+            <div class="card-body">
+
+                <form asp-action="SavePlaceHolder" method="post">
+
+                    @Html.AntiForgeryToken()
+
+                    <input asp-for="Placeholder.NotificationPlaceholderId"
+                           type="hidden" />
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+
+                            Category
+
+                        </label>
+
+                        <select asp-for="Placeholder.NotificationCategoryId"
+                                class="form-select">
+
+                            <option value="">Select</option>
+
+                            @foreach (var item in Model.Categories)
+                            {
+                                <option value="@item.NotificationCategoryId">
+
+                                    @item.CategoryName
+
+                                </option>
+                            }
+
+                        </select>
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <label>
+
+                            Placeholder Code
+
+                        </label>
+
+                        <input asp-for="Placeholder.PlaceholderCode"
+                               class="form-control" />
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <label>
+
+                            Display Name
+
+                        </label>
+
+                        <input asp-for="Placeholder.DisplayName"
+                               class="form-control" />
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <label>
+
+                            Description
+
+                        </label>
+
+                        <textarea asp-for="Placeholder.Description"
+                                  class="form-control"></textarea>
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <label>
+
+                            Sample Value
+
+                        </label>
+
+                        <input asp-for="Placeholder.SampleValue"
+                               class="form-control" />
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <label>
+
+                            Display Order
+
+                        </label>
+
+                        <input asp-for="Placeholder.DisplayOrder"
+                               class="form-control" />
+
+                    </div>
+
+                    <div class="form-check mb-3">
+
+                        <input asp-for="Placeholder.IsActive"
+                               class="form-check-input" />
+
+                        <label class="form-check-label">
+
+                            Active
+
+                        </label>
+
+                    </div>
+
+                    <button class="btn btn-success">
+
+                        Save
+
+                    </button>
+
+                    <a asp-action="Index"
+                       class="btn btn-secondary">
+
+                        Reset
+
+                    </a>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-lg-8">
+        <div class="card">
+
+            <div class="card-header bg-dark text-white">
+
+                Placeholder List
+
+            </div>
+
+            <div class="table-responsive">
+
+                <table class="table table-bordered table-hover">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Category</th>
+
+                            <th>Code</th>
+
+                            <th>Display</th>
+
+                            <th>Sample</th>
+
+                            <th>Status</th>
+
+                            <th width="150">Action</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        @foreach (var item in Model.Placeholders)
+                        {
+                            <tr>
+
+                                <td>
+
+                                    @item.NotificationCategory?.CategoryName
+
+                                </td>
+
+                                <td>
+
+                                    @item.PlaceholderCode
+
+                                </td>
+
+                                <td>
+
+                                    @item.DisplayName
+
+                                </td>
+
+                                <td>
+
+                                    @item.SampleValue
+
+                                </td>
+
+                                <td>
+
+                                    @(item.IsActive ? "Active" : "Inactive")
+
+                                </td>
+
+                                <td>
+
+                                    <a asp-action="Edit"
+                                       asp-route-id="@item.NotificationPlaceholderId"
+                                       class="btn btn-warning btn-sm">
+
+                                        Edit
+
+                                    </a>
+
+                                    <form asp-action="Delete"
+                                          method="post"
+                                          class="d-inline">
+
+                                        @Html.AntiForgeryToken()
+
+                                        <input type="hidden"
+                                               name="id"
+                                               value="@item.NotificationPlaceholderId" />
+
+                                        <button class="btn btn-danger btn-sm">
+
+                                            Delete
+
+                                        </button>
+
+                                    </form>
+
+                                </td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

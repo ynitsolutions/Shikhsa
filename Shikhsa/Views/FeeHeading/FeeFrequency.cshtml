@@ -1,0 +1,281 @@
+﻿@model Shikhsa.ViewModels.FeeFrequencyPageVM
+
+@{
+    ViewData["Title"] = "Fee Frequency Master";
+}
+<div class="card shadow-sm">
+
+    <div class="card-header bg-primary text-white">
+
+        <div class="d-flex justify-content-between">
+
+            <h5 class="mb-0">
+
+                Fee Frequency Master
+
+            </h5>
+
+            <a asp-action="Index"
+               class="btn btn-light btn-sm">
+
+                <i class="fa fa-plus"></i>
+
+                New
+
+            </a>
+
+        </div>
+
+    </div>
+
+    <div class="card-body">
+
+        <form asp-action="SaveFeeFrequency"
+              method="post">
+
+            @Html.AntiForgeryToken()
+
+            <input asp-for="Form.FrequencyId"
+                   type="hidden" />
+
+            <div class="row">
+
+                <div class="col-lg-4 mb-3">
+
+                    <label asp-for="Form.Value"
+                           class="form-label">
+                    </label>
+
+                    <input asp-for="Form.Value"
+                           class="form-control required text-only"/>
+
+                    <span asp-validation-for="Form.Value"
+                          class="text-danger">
+                    </span>
+
+                </div>
+
+                <div class="col-lg-4 mb-3">
+
+                    <label asp-for="Form.Text"
+                           class="form-label">
+                    </label>
+
+                    <input asp-for="Form.Text"
+                           class="form-control"
+                           placeholder="Display Text" />
+
+                    <span asp-validation-for="Form.Text"
+                          class="text-danger">
+                    </span>
+
+                </div>
+
+                <div class="col-lg-2 mb-3">
+
+                    <label asp-for="Form.DisplayOrder"
+                           class="form-label">
+                    </label>
+
+                    <input asp-for="Form.DisplayOrder"
+                           class="form-control" />
+
+                </div>
+
+                <div class="col-lg-2 mb-3">
+
+                    <label class="form-label">
+
+                        Status
+
+                    </label>
+
+                    <div class="form-check mt-2">
+
+                        <input asp-for="Form.IsActive"
+                               class="form-check-input" />
+
+                        <label asp-for="Form.IsActive"
+                               class="form-check-label">
+
+                            Active
+
+                        </label>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <hr />
+
+            <button class="btn btn-primary">
+
+                <i class="fa fa-save"></i>
+
+                @(Model.Form.FrequencyId == 0 ? "Save" : "Update")
+
+            </button>
+
+            <a asp-action="Index"
+               class="btn btn-secondary">
+
+                <i class="fa fa-refresh"></i>
+
+                Reset
+
+            </a>
+
+        </form>
+
+    </div>
+
+</div>
+<div class="card shadow-sm mt-4">
+
+    <div class="card-header bg-dark text-white">
+
+        <h5 class="mb-0">
+
+            Frequency List
+
+        </h5>
+
+    </div>
+
+    <div class="card-body">
+
+        <div class="table-responsive">
+
+            <table class="table table-bordered table-hover"
+                   id="tblFrequency">
+
+                <thead class="table-primary">
+
+                    <tr>
+
+                        <th>#</th>
+
+                        <th>Value</th>
+
+                        <th>Text</th>
+
+                        <th>Display Order</th>
+
+                        <th>Status</th>
+
+                        <th>Edit</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    @{
+
+                        int sr = 1;
+
+                    }
+
+                    @foreach (var item in Model.List)
+                    {
+                        <tr>
+
+                            <td>
+
+                                @(sr++)
+
+                            </td>
+
+                            <td>
+
+                                @item.Value
+
+                            </td>
+
+                            <td>
+
+                                @item.Text
+
+                            </td>
+
+                            <td>
+
+                                @item.DisplayOrder
+
+                            </td>
+
+                            <td>
+
+                                @if (item.IsActive)
+                                {
+                                    <a asp-action="DeleteFeeFrequency"
+                                       asp-route-id="@item.FrequencyId"
+                                       class="btn btn-success btn-sm">
+
+                                        Active
+
+                                    </a>
+                                }
+                                else
+                                {
+                                    <a asp-action="DeleteFeeFrequency"
+                                       asp-route-id="@item.FrequencyId"
+                                       class="btn btn-danger btn-sm">
+
+                                        Inactive
+
+                                    </a>
+                                }
+
+                            </td>
+
+                            <td>
+
+                                <a asp-action="FeeFrequency"
+                                   asp-route-id="@item.FrequencyId"
+                                   class="btn btn-warning btn-sm">
+
+                                    <i class="fa fa-edit"></i>
+
+                                </a>
+
+                            </td>
+
+                        </tr>
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+@section Scripts
+{
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+
+        $(function () {
+
+            $("#tblFrequency").DataTable({
+
+                responsive: true,
+                autoWidth: false,
+                order: []
+
+            });
+
+        });
+
+    </script>
+
+}

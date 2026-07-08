@@ -1,0 +1,198 @@
+﻿@model Shikhsa.Models.Notification.NotificationCategory
+@{
+    ViewData["Title"] = "Notification Categories";
+
+    var list = ViewBag.List as List<Shikhsa.Models.Notification.NotificationCategory>;
+}
+<div class="container-fluid">
+
+    <div class="row">
+
+        <!-- FORM -->
+        <div class="col-lg-4 col-md-5 mb-3">
+
+            <div class="card shadow-sm">
+
+                <div class="card-header bg-primary text-white">
+                    <strong>Notification Category</strong>
+                </div>
+
+                <div class="card-body">
+
+                    <form method="post" asp-action="SaveNotificationCategory">
+
+                        <input type="hidden" asp-for="NotificationCategoryId" />
+
+                        <div class="mb-2">
+                            <label>Category Code</label>
+                            <input asp-for="CategoryCode" class="form-control" required />
+                        </div>
+
+                        <div class="mb-2">
+                            <label>Category Name</label>
+                            <input asp-for="CategoryName" class="form-control" required />
+                        </div>
+
+                        <div class="mb-2">
+                            <label>Icon</label>
+                            <input asp-for="Icon" class="form-control" placeholder="bi bi-people" />
+                        </div>
+
+                        <div class="mb-2">
+                            <label>Color</label>
+                            <input asp-for="Color" class="form-control" placeholder="#0d6efd" />
+                        </div>
+
+                        <div class="mb-2">
+                            <label>Display Order</label>
+                            <input asp-for="DisplayOrder" type="number" class="form-control" />
+                        </div>
+
+                        <div class="form-check mb-3">
+                            <input asp-for="IsActive" class="form-check-input" />
+                            <label class="form-check-label">Active</label>
+                        </div>
+
+                        <button class="btn btn-success w-100">
+                            Save
+                        </button>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- LIST -->
+        <div class="col-lg-8 col-md-7">
+
+            <div class="card shadow-sm">
+
+                <div class="card-header bg-dark text-white">
+                    <strong>Category List</strong>
+                </div>
+
+                <div class="card-body table-responsive">
+
+                    <input type="text"
+                           id="searchBox"
+                           class="form-control mb-2"
+                           placeholder="Search category..." />
+
+                    <table class="table table-bordered table-sm" id="tbl">
+
+                        <thead class="table-light">
+                            <tr>
+                                <th>Code</th>
+                                <th>Name</th>
+                                <th>Icon</th>
+                                <th>Color</th>
+                                <th>Status</th>
+                                <th style="width:120px;">Action</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            @if (list != null)
+                            {
+                                foreach (var item in list)
+                                {
+                                    <tr>
+                                        <td>@item.CategoryCode</td>
+                                        <td>@item.CategoryName</td>
+                                        <td>
+                                            <i class="@item.Icon"></i>
+                                        </td>
+                                        <td>
+                                            <span style="background:@item.Color;padding:5px 10px;color:#fff;">
+                                                @item.Color
+                                            </span>
+                                        </td>
+                                        <td>
+                                            @if (item.IsActive)
+                                            {
+                                                <span class="badge bg-success">Active</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-danger">Inactive</span>
+                                            }
+                                        </td>
+
+                                        <td>
+                                            <a asp-action="SaveNotificationCategory" asp-route-id="@item.NotificationCategoryId" class="btn btn-warning btn-sm">
+                                                @Localizer.Get("Edit")
+                                            </a>
+                                           @*  <a href="/SaveNotificationCategory/@item.NotificationCategoryId"
+                                               class="btn btn-sm btn-primary">
+                                                Edit
+                                            </a>
+ *@
+                                            <button class="btn btn-sm btn-danger"
+                                                    onclick="deleteItem(@item.NotificationCategoryId)">
+                                                Del
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+@section Scripts {
+<script>
+
+    // SEARCH FILTER
+    document.getElementById("searchBox").addEventListener("keyup", function () {
+
+        let value = this.value.toLowerCase();
+
+        let rows = document.querySelectorAll("#tbl tbody tr");
+
+        rows.forEach(r => {
+
+            let text = r.innerText.toLowerCase();
+
+            r.style.display = text.includes(value) ? "" : "none";
+
+        });
+
+    });
+
+    // DELETE
+    function deleteItem(id) {
+
+        if (!confirm("Are you sure to delete?")) return;
+
+        fetch('/NotificationCategory/Delete?id=' + id, {
+            method: 'POST'
+        })
+        .then(res => res.json())
+        .then(res => {
+
+            alert(res.message);
+
+            if (res.status === 1) {
+                location.reload();
+            }
+
+        });
+
+    }
+
+</script>
+}

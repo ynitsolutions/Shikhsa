@@ -1,0 +1,244 @@
+﻿@using Shikhsa.ViewModels.DataFilter
+
+
+@model StudentReportPageVM
+
+@{
+    ViewData["Title"] = "Student Promotion List";
+}
+
+<div class="card">
+
+    @* <div class="card-header">
+        <h4>Student Registration Report</h4>
+    </div> *@
+
+    <div class="card-body">
+
+        <form method="post" asp-action="StudentPromotions">
+
+            <div class="row">
+
+                <div class="col-md-2">
+                    <label>Application No</label>
+                    <input asp-for="Filter.ApplicationNo"
+                           class="form-control" />
+                </div>
+
+                <div class="col-md-2">
+                    <label>Student Name</label>
+                    <input asp-for="Filter.StudentName"
+                           class="form-control" />
+                </div>
+
+                <div class="col-md-2">
+                    <label>Father Name</label>
+                    <input asp-for="Filter.FatherName"
+                           class="form-control" />
+                </div>
+                <div class="col-md-2">
+                    <label>Mother Name</label>
+                    <input asp-for="Filter.MotherName"
+                           class="form-control" />
+                </div>
+              
+                <div class="col-md-2">
+
+                    <label>Class</label>
+
+                    <select asp-for="Filter.RegClassId"
+                            class="form-control select2">
+
+                        <option value="">Select</option>
+
+                        @foreach (var item in ViewBag.ClassList)
+                        {
+                            <option value="@item.DataListItemId">
+                                @item.DataListItemText
+                            </option>
+                        }
+
+                    </select>
+
+                </div>
+                <div class="col-md-2">
+
+                    <label>Section</label>
+
+                    <select asp-for="Filter.SectionId"
+                            class="form-control select2">
+
+                        <option value="">Select</option>
+
+                        @foreach (var item in ViewBag.SectionList)
+                        {
+                            <option value="@item.DataListItemId">
+                                @item.DataListItemText
+                            </option>
+                        }
+
+                    </select>
+
+                </div>
+                
+                <div class="col-md-2">
+
+                    <label>Batch</label>
+
+                    <select asp-for="Filter.AdmissionBatchId"
+                            class="form-control select2">
+
+                        <option value="">Select</option>
+
+                        @foreach (var item in ViewBag.BatchList)
+                        {
+                            <option value="@item.BatchId">
+                                @item.AcademicYear
+                            </option>
+                        }
+
+                    </select>
+
+
+
+                </div>
+            </div>
+
+            <div class="card-body">
+
+
+            </div>
+
+           
+
+            <br />
+        @*     <permission controller="Students" action="StudentRegistrations" type="create">
+                <a asp-action="SaveStudentRegistrations" class="btn btn-primary">
+                    @Localizer.Get("New Students")
+                </a>
+            </permission> *@
+            <button type="submit" class="border-0 bg-transparent p-0">
+                <i class="ti ti-search fs-5"></i>
+            </button>
+
+            <button type="submit" formaction="@Url.Action("ExportExcel")" class="border-0 bg-transparent p-0">
+                <i class="ti ti-download"></i>
+            </button>
+            <a href="javascript:void(0);" class="btnStatus" id="btnBulkStatus">
+                <spam class="ti ti-reload"></spam>
+            </a>
+
+
+        </form>
+
+        <hr />
+
+        <div id="gridContainer">
+
+            @await Html.PartialAsync("_StudentPromotions", Model)
+
+        </div>
+
+    </div>
+
+</div>
+@section Scripts
+{
+<script>
+        $(document).on('change', '#chkAll', function () 
+        {
+            $('.student-checkbox').prop('checked', $(this).prop('checked'));
+        });
+
+        $(document).on('change', '.student-checkbox', function () {
+            $('#chkAll').prop(
+                'checked',
+                $('.student-checkbox:checked').length === $('.student-checkbox').length
+            );
+        });
+      
+
+        $(".btnStatus").click(function ()
+    {
+
+        var studentId = $(this).data("studentid");
+
+        $("#StudentIds").val(studentId);
+           var modal =new bootstrap.Modal(document.getElementById('statusModal')
+        );
+        //$("#statusModal").modal("show");
+        modal.show();
+    });
+        $("#btnBulkStatus").click(function () {
+
+        var ids = [];
+
+        $("input[name='selectedStudents']:checked")
+            .each(function () {
+
+                ids.push($(this).val());
+
+            });
+
+        if (ids.length == 0)
+        {
+            alert("Select student first");
+            return;
+        }
+
+          $("#StudentIds").val(ids.join(','));
+               var modal =
+            new bootstrap.Modal(
+                document.getElementById('statusModal')
+            );
+           modal.show();
+
+    });
+        $("#btnSaveStatus").click(function () {
+
+        $.ajax({
+                url: '/Students/PromoteStudents',
+            type: 'POST',
+            data: {
+                StudentIds: $("#StudentIds").val(),
+               
+                ClassId: $("#ClassId").val(),
+                SectionId: $("#SectionId").val(),
+                BatchId: $("#BatchId").val()
+            },
+            success: function (res) {
+
+                if (res.success) {
+                    alert("Saved Successfully!")
+                    // Swal.fire(
+                    //     'Success',
+                    //     res.message,
+                    //     'success'
+                    // ).then(() => {
+
+                    //     location.reload();
+
+                    // });
+                }
+                else {
+                    alert(res.message);
+                    // Swal.fire(
+                    //     'Error',
+                    //     res.message,
+                    //     'error');
+                }
+            }
+        });
+
+    });
+        $('#statusModal').on('shown.bs.modal', function () 
+        {
+
+            $('#ClassId,#SectionId,#BatchId').select2({
+                dropdownParent: $('#statusModal'),
+                width: '100%'
+            });
+
+        });
+</script>
+}

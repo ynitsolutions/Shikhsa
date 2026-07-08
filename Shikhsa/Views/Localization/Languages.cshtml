@@ -1,0 +1,250 @@
+﻿@model List<Language>
+
+@{
+    ViewData["Title"] = @Localizer.Get("Language Management");
+}
+
+<div class="container-fluid py-3 py-md-4">
+
+    <!-- HEADER -->
+    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-2 mb-3">
+        <h3 class="mb-0">Language Management</h3>
+        <button type="button" class="btn btn-primary w-100 w-sm-auto" onclick="addRow()">
+            <i class="bi bi-plus-lg"></i> @Localizer.Get("Add Language")
+        </button>
+    </div>
+
+    <!-- ALERT -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show shadow-sm d-flex align-items-center border-0"
+             role="alert"
+             style="background: linear-gradient(90deg,#d1f5dc,#a8e6b5); color:#0f5132; border-left:5px solid #198754; border-radius:.6rem;">
+            <i class="bi bi-check-circle-fill me-2 fs-5"></i>
+            <div class="flex-grow-1 fw-semibold">@TempData["Success"]</div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- FORM / TABLE -->
+    <form method="post" asp-action="SaveLanguage">
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-2 p-md-3">
+
+                <!-- SEARCH + PAGE SIZE -->
+                <div class="row g-2 align-items-center mb-3">
+                    <div class="col-12 col-sm-8 col-md-9">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                            <input type="text" id="searchInput" class="form-control form-control-sm"
+                                   placeholder="Search by Name or Code..." />
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-4 col-md-3">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-white d-none d-md-inline">Show</span>
+                            <select id="pageSize" class="form-select form-select-sm">
+                                <option value="5">5</option>
+                                <option value="10" selected>10</option>
+                                <option value="25">25</option>
+                                <option value="50">50</option>
+                            </select>
+                            @*  <span class="input-group-text bg-white">/ page</span> *@
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table id="languageTable" class="table table-hover table-bordered align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Name</th>
+                                <th>Code</th>
+                                <th class="text-center">Default</th>
+                                <th class="text-center">Active</th>
+                                <th class="text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (int i = 0; i < Model.Count; i++)
+                            {
+                                <tr>
+                                    <td>
+                                        <input type="hidden" name="[@i].LanguageId" value="@Model[i].LanguageId" />
+                                        <input type="text" name="[@i].LanguageName" value="@Model[i].LanguageName" class="form-control form-control-sm" />
+                                    </td>
+                                    <td>
+                                        <input type="text" name="[@i].LanguageCode" value="@Model[i].LanguageCode" class="form-control form-control-sm" />
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="form-check d-inline-block">
+                                            <input class="form-check-input" type="checkbox" name="[@i].IsDefault" value="true" @(Model[i].IsDefault ? "checked" : "") />
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="form-check d-inline-block">
+                                            <input class="form-check-input" type="checkbox" name="[@i].IsActive" value="true" @(Model[i].IsActive ? "checked" : "") />
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        @if (Model[i].IsActive)
+                                        {
+                                            <a asp-action="Inactive" asp-route-id="@Model[i].LanguageId" class="btn btn-success btn-sm">Active</a>
+                                        }
+                                        else
+                                        {
+                                            <a asp-action="Active" asp-route-id="@Model[i].LanguageId" class="btn btn-danger btn-sm">Inctive</a>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-2 mt-3">
+                    <small id="pageInfo" class="text-muted text-center text-md-start"></small>
+                    <nav>
+                        <ul id="pagination" class="pagination pagination-sm mb-0 flex-wrap justify-content-center"></ul>
+                    </nav>
+                </div>
+            </div>
+
+            <div class="card-footer bg-white border-0 d-flex justify-content-end">
+                <button type="submit" class="btn btn-success w-100 w-sm-auto px-4">
+                    <i class="bi bi-save"></i> Save All
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts
+{
+    <script>
+        let currentPage = 1;
+
+        function getRows() {
+            return Array.from(document.querySelectorAll("#languageTable tbody tr"));
+        }
+
+        function getFilteredRows() {
+            const q = document.getElementById("searchInput").value.trim().toLowerCase();
+            return getRows().filter(r => {
+                if (!q) return true;
+                const inputs = r.querySelectorAll('input[type="text"]');
+                return Array.from(inputs).some(i => (i.value || "").toLowerCase().includes(q));
+            });
+        }
+
+        function renderTable() {
+            const pageSize = parseInt(document.getElementById("pageSize").value, 10);
+            const all = getRows();
+            const filtered = getFilteredRows();
+            const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+            if (currentPage > totalPages) currentPage = totalPages;
+
+            const start = (currentPage - 1) * pageSize;
+            const end = start + pageSize;
+            const visibleSet = new Set(filtered.slice(start, end));
+
+            all.forEach(r => r.style.display = visibleSet.has(r) ? "" : "none");
+
+            // Info text
+            const info = document.getElementById("pageInfo");
+            if (filtered.length === 0) {
+                info.textContent = "No matching records";
+            } else {
+                info.textContent = `Showing ${start + 1}-${Math.min(end, filtered.length)} of ${filtered.length}`;
+            }
+
+            // Pagination buttons
+            const pag = document.getElementById("pagination");
+            pag.innerHTML = "";
+
+            const addItem = (label, page, opts = {}) => {
+                const li = document.createElement("li");
+                li.className = `page-item ${opts.disabled ? "disabled" : ""} ${opts.active ? "active" : ""}`;
+                const a = document.createElement("a");
+                a.className = "page-link";
+                a.href = "#";
+                a.innerHTML = label;
+                a.onclick = (e) => {
+                    e.preventDefault();
+                    if (opts.disabled || opts.active) return;
+                    currentPage = page;
+                    renderTable();
+                };
+                li.appendChild(a);
+                pag.appendChild(li);
+            };
+
+            addItem("&laquo;", currentPage - 1, { disabled: currentPage === 1 });
+
+            // Show up to 5 page numbers around current
+            const maxBtns = 5;
+            let from = Math.max(1, currentPage - 2);
+            let to = Math.min(totalPages, from + maxBtns - 1);
+            from = Math.max(1, to - maxBtns + 1);
+            for (let p = from; p <= to; p++) {
+                addItem(p, p, { active: p === currentPage });
+            }
+
+            addItem("&raquo;", currentPage + 1, { disabled: currentPage === totalPages });
+        }
+
+        function addRow() {
+            const tbody = document.querySelector("#languageTable tbody");
+            const i = tbody.rows.length;
+
+            const html = `
+                <tr>
+                    <td>
+                        <input type="hidden" name="[${i}].LanguageId" value="0" />
+                        <input type="text" name="[${i}].LanguageName" class="form-control form-control-sm" />
+                    </td>
+                    <td>
+                        <input type="text" name="[${i}].LanguageCode" class="form-control form-control-sm" />
+                    </td>
+                    <td class="text-center">
+                        <div class="form-check d-inline-block">
+                            <input class="form-check-input" type="checkbox" name="[${i}].IsDefault" value="true" />
+                        </div>
+                    </td>
+                    <td class="text-center">
+                        <div class="form-check d-inline-block">
+                            <input class="form-check-input" type="checkbox" name="[${i}].IsActive" value="true" checked />
+                        </div>
+                    </td>
+                    <td class="text-center">
+                        <span class="badge bg-info">New</span>
+                    </td>
+                </tr>`;
+            tbody.insertAdjacentHTML("beforeend", html);
+
+            // Jump to last page so the new row is visible
+            const pageSize = parseInt(document.getElementById("pageSize").value, 10);
+            currentPage = Math.ceil(getFilteredRows().length / pageSize);
+            renderTable();
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            document.getElementById("searchInput").addEventListener("input", () => {
+                currentPage = 1;
+                renderTable();
+            });
+            document.getElementById("pageSize").addEventListener("change", () => {
+                currentPage = 1;
+                renderTable();
+            });
+            renderTable();
+
+            // Auto-dismiss success alert
+            setTimeout(() => {
+                document.querySelectorAll('.alert-dismissible').forEach(el => {
+                    if (window.bootstrap) bootstrap.Alert.getOrCreateInstance(el).close();
+                });
+            }, 4000);
+        });
+    </script>
+}

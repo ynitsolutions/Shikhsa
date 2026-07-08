@@ -1,0 +1,293 @@
+﻿@model Shikhsa.Models.StaffLeaveSetting
+
+<div class="card shadow-sm">
+
+    <div class="card-header bg-success text-white">
+
+        <h5 class="mb-0">
+            <i class="ti ti-calendar"></i>
+            Leave & Attendance Settings
+        </h5>
+
+    </div>
+
+    <div class="card-body">
+
+        <div class="row">
+
+            <div class="col-md-4 mb-3">
+
+                <label>Leave Group</label>
+
+                <select asp-for="LeaveGroupId"
+                        asp-items="ViewBag.LeaveGroups"
+                        class="form-select select2">
+
+                    <option value="">Select</option>
+
+                </select>
+
+            </div>
+
+            <div class="col-md-4 mb-3">
+
+                <label>Shift</label>
+
+                <select asp-for="ShiftId"
+                        asp-items="ViewBag.Shifts"
+                        class="form-select select2">
+
+                    <option value="">Select</option>
+
+                </select>
+
+            </div>
+
+            <div class="col-md-4 mb-3">
+
+                <label>Weekly Off</label>
+
+                <select asp-for="WeeklyOffId"
+                        asp-items="ViewBag.WeeklyOffList"
+                        class="form-select select2">
+
+                    <option value="">Select</option>
+
+                </select>
+
+            </div>
+
+        </div>
+
+        <hr />
+
+        <h5 class="text-primary">
+
+            Leave Balance
+
+        </h5>
+
+        <div class="row">
+
+            <div class="col-md-2">
+
+                <label>CL</label>
+
+                <input asp-for="CasualLeave"
+                       class="form-control" />
+
+            </div>
+
+            <div class="col-md-2">
+
+                <label>SL</label>
+
+                <input asp-for="SickLeave"
+                       class="form-control" />
+
+            </div>
+
+            <div class="col-md-2">
+
+                <label>EL</label>
+
+                <input asp-for="EarnedLeave"
+                       class="form-control" />
+
+            </div>
+
+            <div class="col-md-2">
+
+                <label>ML</label>
+
+                <input asp-for="MaternityLeave"
+                       class="form-control" />
+
+            </div>
+
+            <div class="col-md-2">
+
+                <label>PL</label>
+
+                <input asp-for="PaternityLeave"
+                       class="form-control" />
+
+            </div>
+
+            <div class="col-md-2">
+
+                <label>Comp Off</label>
+
+                <input asp-for="CompOff"
+                       class="form-control" />
+
+            </div>
+
+        </div>
+
+        <hr />
+
+        <h5 class="text-primary">
+
+            Attendance
+
+        </h5>
+
+        <div class="row">
+
+            <div class="col-md-3">
+
+                <label>Attendance Mode</label>
+
+                <select asp-for="AttendanceModeId"
+                        asp-items="ViewBag.AttendanceMode"
+                        class="form-select">
+
+                    <option value="">Select</option>
+
+                </select>
+
+            </div>
+
+            <div class="col-md-3">
+
+                <label>Default Status</label>
+
+                <select asp-for="DefaultAttendanceStatusId"
+                        asp-items="ViewBag.AttendanceStatus"
+                        class="form-select">
+
+                    <option value="">Select</option>
+
+                </select>
+
+            </div>
+
+            <div class="col-md-3">
+
+                <label>Grace Minutes</label>
+
+                <input asp-for="GraceMinutes"
+                       class="form-control" />
+
+            </div>
+
+            <div class="col-md-3">
+
+                <label>Late Mark After</label>
+
+                <input asp-for="LateMarkAfterMinutes"
+                       class="form-control" />
+
+            </div>
+
+            <div class="col-md-3 mt-3">
+
+                <label>Half Day After</label>
+
+                <input asp-for="HalfDayAfterMinutes"
+                       class="form-control" />
+
+            </div>
+
+        </div>
+
+        <hr />
+
+        <h5 class="text-primary">
+
+            Biometric
+
+        </h5>
+
+        <div class="row">
+
+            <div class="col-md-4">
+
+                <label>Biometric Device</label>
+
+                <input asp-for="BiometricDeviceId"
+                       class="form-control" />
+
+            </div>
+
+            <div class="col-md-4">
+
+                <label>Machine User ID</label>
+
+                <input asp-for="MachineUserId"
+                       class="form-control" />
+
+            </div>
+
+            <div class="col-md-4">
+
+                <label>&nbsp;</label>
+
+                <div class="form-check">
+
+                    <input asp-for="AutoAttendance"
+                           class="form-check-input" />
+
+                    <label class="form-check-label">
+
+                        Auto Attendance
+
+                    </label>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <hr />
+
+        <h5 class="text-primary">
+
+            Overtime
+
+        </h5>
+
+        <div class="row">
+
+            <div class="col-md-3">
+
+                <div class="form-check">
+
+                    <input asp-for="OvertimeAllowed"
+                           class="form-check-input" />
+
+                    <label class="form-check-label">
+
+                        Overtime Allowed
+
+                    </label>
+
+                </div>
+
+            </div>
+
+            <div class="col-md-3">
+
+                <label>Maximum OT Hours</label>
+
+                <input asp-for="MaxOTHours"
+                       class="form-control" />
+
+            </div>
+
+            <div class="col-md-3">
+
+                <label>OT Rate</label>
+
+                <input asp-for="OTRate"
+                       class="form-control" />
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

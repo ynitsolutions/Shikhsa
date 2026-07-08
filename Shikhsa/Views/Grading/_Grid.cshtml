@@ -1,0 +1,125 @@
+﻿@using Shikhsa.ViewModels
+@model GradingCriteriaVM
+
+<table class="table table-bordered table-hover align-middle"
+       id="tblGrading">
+
+    <thead class="table-primary">
+
+        <tr>
+
+            <th width="60">#</th>
+
+            <th>Term</th>
+
+            <th>Class</th>
+
+            <th>Batch</th>
+
+            <th>Min %</th>
+
+            <th>Max %</th>
+
+            <th>Grade</th>
+
+            <th>Description</th>
+
+            <th>Status</th>
+
+            <th width="120">Action</th>
+
+        </tr>
+
+    </thead>
+
+    <tbody>
+
+        @if (Model.GradingList.Any())
+        {
+            int sr = 1;
+
+            foreach (var item in Model.GradingList)
+            {
+                <tr>
+
+                    <td>@sr</td>
+
+                    <td>@item.Term?.ExamCategoryName</td>
+
+                    <td>@item.Class?.DataListItemText</td>
+
+                    <td>@item.Batch?.AcademicYear</td>
+
+                    <td>@item.MinPercentage</td>
+
+                    <td>@item.MaxPercentage</td>
+
+                    <td>
+
+                        <span class="badge bg-primary">
+
+                            @item.Grade
+
+                        </span>
+
+                    </td>
+
+                    <td>@item.Description</td>
+
+                    <td>
+
+                        @if (item.IsActive)
+                        {
+                            <span class="badge bg-success">
+                                Active
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger">
+                                Inactive
+                            </span>
+                        }
+
+                    </td>
+
+                    <td>
+
+                        <button class="btn btn-warning btn-sm btnEdit"
+                                data-id="@item.GradingCriteriaId">
+
+                            <i class="bi bi-pencil"></i>
+
+                        </button>
+
+                        <button class="btn btn-danger btn-sm btnDelete"
+                                data-id="@item.GradingCriteriaId">
+
+                            <i class="bi bi-trash"></i>
+
+                        </button>
+
+                    </td>
+
+                </tr>
+
+                sr++;
+            }
+
+        }
+        else
+        {
+            <tr>
+
+                <td colspan="10" class="text-center text-muted">
+
+                    No Record Found
+
+                </td>
+
+            </tr>
+        }
+
+    </tbody>
+
+</table>

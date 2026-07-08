@@ -1,0 +1,142 @@
+﻿@model Shikhsa.Models.StaffSalaryHistory
+
+<div class="card shadow-sm">
+
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">
+            <i class="ti ti-currency-rupee"></i>
+            Salary Details
+        </h5>
+    </div>
+
+    <div class="card-body">
+
+        <div class="row">
+
+            <div class="col-md-3 mb-3">
+                <label class="form-label">Effective From <span class="text-danger">*</span></label>
+                <input asp-for="EffectiveFrom"
+                       type="date"
+                       class="form-control" />
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <label class="form-label">Basic Salary</label>
+                <input asp-for="BasicSalary"
+                       id="BasicSalary"
+                       class="form-control salary" />
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <label class="form-label">HRA</label>
+                <input asp-for="HRA"
+                       id="HRA"
+                       class="form-control salary" />
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <label class="form-label">DA</label>
+                <input asp-for="DA"
+                       id="DA"
+                       class="form-control salary" />
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <label class="form-label">Medical</label>
+                <input asp-for="MedicalAllowance"
+                       id="MedicalAllowance"
+                       class="form-control salary" />
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <label class="form-label">Conveyance</label>
+                <input asp-for="ConveyanceAllowance"
+                       id="ConveyanceAllowance"
+                       class="form-control salary" />
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <label class="form-label">Special Allowance</label>
+                <input asp-for="SpecialAllowance"
+                       id="SpecialAllowance"
+                       class="form-control salary" />
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <label class="form-label">Other Allowance</label>
+                <input asp-for="OtherAllowance"
+                       id="OtherAllowance"
+                       class="form-control salary" />
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <label class="form-label">Gross Salary</label>
+                <input asp-for="GrossSalary"
+                       id="GrossSalary"
+                       readonly
+                       class="form-control bg-light fw-bold" />
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <label class="form-label">PF</label>
+                <input asp-for="PFDeduction"
+                       id="PFDeduction"
+                       class="form-control deduction" />
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <label class="form-label">ESIC</label>
+                <input asp-for="ESICDeduction"
+                       id="ESICDeduction"
+                       class="form-control deduction" />
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <label class="form-label">PT</label>
+                <input asp-for="PTDeduction"
+                       id="PTDeduction"
+                       class="form-control deduction" />
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <label class="form-label">TDS</label>
+                <input asp-for="TDSDeduction"
+                       id="TDSDeduction"
+                       class="form-control deduction" />
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <label class="form-label">Other Deduction</label>
+                <input asp-for="OtherDeduction"
+                       id="OtherDeduction"
+                       class="form-control deduction" />
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <label class="form-label">Total Deduction</label>
+                <input asp-for="TotalDeduction"
+                       id="TotalDeduction"
+                       readonly
+                       class="form-control bg-light fw-bold" />
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <label class="form-label">Net Salary</label>
+                <input asp-for="NetSalary"
+                       id="NetSalary"
+                       readonly
+                       class="form-control bg-warning fw-bold" />
+            </div>
+
+            <div class="col-md-9 mb-3">
+                <label class="form-label">Revision Reason</label>
+                <textarea asp-for="RevisionReason"
+                          rows="2"
+                          class="form-control"></textarea>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

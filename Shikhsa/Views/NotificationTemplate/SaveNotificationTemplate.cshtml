@@ -1,0 +1,544 @@
+﻿@using Shikhsa.Models.Notification
+@model Shikhsa.Models.Notification.NotificationTemplate
+
+@{
+    ViewData["Title"] = "Notification Template";
+
+    var categories = ViewBag.Categories as List<NotificationCategory>;
+    var placeholders = ViewBag.Placeholders as List<NotificationPlaceholder>;
+
+    var selectedCategories = ViewBag.SelectedCategories as List<long> ?? new List<long>();
+}
+<form asp-action="SaveNotificationTemplate" method="post">
+
+    <input asp-for="NotificationTemplateId" type="hidden" />
+
+    <div class="card shadow">
+
+        <div class="card-header bg-primary text-white">
+
+            <h5 class="mb-0">
+
+                Notification Template
+
+            </h5>
+
+        </div>
+
+        <div class="card-body">
+
+            <div class="row">
+
+                <div class="col-md-6 mb-3">
+
+                    <label>
+
+                        Template Name
+
+                    </label>
+
+                    <input asp-for="TemplateName"
+                           class="form-control" />
+
+                </div>
+
+                <div class="col-md-6 mb-3">
+
+                    <label>
+
+                        Template Code
+
+                    </label>
+
+                    <input asp-for="TemplateCode"
+                           class="form-control" />
+
+                </div>
+
+            </div>
+
+            <div class="row">
+
+                <div class="col-md-6 mb-3">
+
+                    <label>
+
+                        Channel
+
+                    </label>
+
+                    <select asp-for="Channel"
+                            class="form-select">
+
+                        <option value="1">
+
+                            Email
+
+                        </option>
+
+                        <option value="2">
+
+                            SMS
+
+                        </option>
+
+                        <option value="3">
+
+                            WhatsApp
+
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <div class="col-md-6 mb-3">
+
+                    <label>
+
+                        Categories
+
+                    </label>
+
+                    <select class="form-select select2"
+                            multiple
+                            name="categoryIds">
+
+                        @foreach (var item in categories)
+                        {
+                            if (selectedCategories.Contains(item.NotificationCategoryId))
+                            {
+                                <option selected
+                                        value="@item.NotificationCategoryId">
+
+                                    @item.CategoryName
+
+                                </option>
+                            }
+                            else
+                            {
+                                <option value="@item.NotificationCategoryId">
+
+                                    @item.CategoryName
+
+                                </option>
+                            }
+                        }
+
+                    </select>
+
+                </div>
+
+            </div>
+
+            <div class="mb-3">
+
+                <label>
+
+                    Subject
+
+                </label>
+
+                <input asp-for="Subject"
+                       class="form-control" />
+
+            </div>
+
+            <div class="mb-3">
+
+                <label>
+
+                    Email Body
+
+                </label>
+
+                <div class="row">
+
+                    <!-- Left Panel -->
+                    <div class="col-lg-3">
+
+                        <div class="card shadow-sm">
+
+                            <div class="card-header bg-primary text-white py-2">
+                                <i class="bi bi-tags"></i>
+                                Available Placeholders
+                            </div>
+
+                            <div class="card-body p-2">
+
+                                <input type="text"
+                                       id="txtSearch"
+                                       class="form-control form-control-sm mb-2"
+                                       placeholder="Search Placeholder..." />
+
+                                <div class="placeholder-container">
+
+                                    @foreach (var group in placeholders.GroupBy(x => x.NotificationCategory.CategoryName))
+                                    {
+                                        <div class="mb-2">
+
+                                            <div class="placeholder-category">
+                                                @group.Key
+                                            </div>
+
+                                            @foreach (var item in group)
+                                            {
+                                                <div class="placeholder-item"
+                                                     data-code="@item.PlaceholderCode">
+
+                                                    <div class="fw-semibold">
+                                                        @item.DisplayName
+                                                    </div>
+
+                                                    <small class="text-muted">
+                                                        @item.PlaceholderCode
+                                                    </small>
+
+                                                </div>
+                                            }
+
+                                        </div>
+                                    }
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <!-- Editor -->
+                    <div class="col-lg-9">
+
+                        <label class="fw-bold mb-2">
+                            Email Body
+                        </label>
+
+                        <textarea asp-for="Body"
+                                  id="Body"
+                                  rows="18"
+                                  class="form-control"></textarea>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="form-check">
+
+                <input asp-for="IsActive"
+                       class="form-check-input" />
+
+                <label asp-for="IsActive"
+                       class="form-check-label">
+
+                    Active
+
+                </label>
+
+            </div>
+
+        </div>
+
+        @*<div class="card-footer text-end">
+
+            <a asp-action="Index" class="btn btn-secondary">
+
+                Back
+
+            </a>
+
+            <button class="btn btn-primary">
+
+                Save
+
+            </button>
+
+        </div>*@
+        <div class="card-footer text-end">
+
+            <button type="button"
+                    class="btn btn-info"
+                    id="btnPreview">
+
+                <i class="bi bi-eye"></i>
+
+                Preview
+
+            </button>
+
+            <button type="button"
+                    class="btn btn-success"
+                    id="btnTestEmail">
+
+                <i class="bi bi-envelope"></i>
+
+                Send Test Email
+
+            </button>
+
+            <button type="submit"
+                    class="btn btn-primary">
+
+                Save
+
+            </button>
+
+        </div>
+
+    </div>
+
+</form>
+<div class="modal fade"
+     id="previewModal"
+     tabindex="-1">
+
+    <div class="modal-dialog modal-xl">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h5>
+
+                    Email Preview
+
+                </h5>
+
+                <button class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
+
+            </div>
+
+            <div class="modal-body">
+
+                <iframe id="previewFrame"
+                        style="width:100%;
+                               height:650px;
+                               border:none;">
+                </iframe>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+<div class="modal fade"
+     id="testEmailModal">
+
+    <div class="modal-dialog">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h5>
+
+                    Send Test Email
+
+                </h5>
+
+            </div>
+
+            <div class="modal-body">
+
+                <label>
+
+                    Email Address
+
+                </label>
+
+                <input type="email"
+                       id="txtEmail"
+                       class="form-control" />
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+
+                    Close
+
+                </button>
+
+                <button class="btn btn-success"
+                        id="btnSendEmail">
+
+                    Send
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+<style>
+    .placeholder-container {
+        height: 520px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding-right: 5px;
+    }
+
+    .placeholder-category {
+        background: #0d6efd;
+        color: #fff;
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 6px;
+        position: sticky;
+        top: 0;
+        z-index: 5;
+    }
+
+    .placeholder-item {
+        border: 1px solid #e5e5e5;
+        border-radius: 5px;
+        padding: 6px 8px;
+        margin-bottom: 5px;
+        cursor: pointer;
+        transition: .2s;
+        background: #fff;
+    }
+
+        .placeholder-item:hover {
+            background: #0d6efd;
+            color: #fff;
+            transform: translateX(3px);
+        }
+
+            .placeholder-item:hover small {
+                color: #fff !important;
+            }
+
+    .ck-editor__editable {
+        min-height: 520px;
+    }
+</style>
+@section Scripts{
+<script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/classic/ckeditor.js"></script>
+
+<script>
+
+       let editor;
+
+    ClassicEditor
+    .create(document.querySelector('#Body'))
+    .then(e=>{
+
+    editor=e;
+
+    });
+        $(document).on("click",".placeholder-item",function(){
+
+    var code=$(this).data("code");
+
+    editor.model.change(writer=>{
+
+    editor.model.insertContent(
+
+    writer.createText(code)
+
+    );
+
+    });
+
+    });
+        $("#txtSearch").keyup(function(){
+
+    var value=$(this).val().toLowerCase();
+
+    $(".placeholder-item").each(function(){
+
+    $(this).toggle(
+
+    $(this).text().toLowerCase().indexOf(value)>-1
+
+    );
+
+    });
+
+    });
+        $("#btnPreview").click(function () {
+
+        var html = editor.getData();
+
+        var iframe = document.getElementById("previewFrame");
+
+        iframe.contentWindow.document.open();
+
+        iframe.contentWindow.document.write(html);
+
+        iframe.contentWindow.document.close();
+
+        new bootstrap.Modal(
+            document.getElementById("previewModal")
+        ).show();
+
+    });
+        $("#btnTestEmail").click(function () {
+
+        new bootstrap.Modal(
+            document.getElementById("testEmailModal")
+        ).show();
+
+    });
+        $("#btnSendEmail").click(function () {
+
+        $.ajax({
+
+            url: '/NotificationTemplate/SendTestEmail',
+
+            type: 'POST',
+
+            data: {
+
+                email: $("#txtEmail").val(),
+
+                subject: $("#Subject").val(),
+
+                body: editor.getData()
+
+            },
+
+            success: function (res) {
+
+                if (res.status == 1) {
+
+                    Swal.fire(
+                        "Success",
+                        res.message,
+                        "success"
+                    );
+
+                }
+                else {
+
+                    Swal.fire(
+                        "Error",
+                        res.message,
+                        "error"
+                    );
+
+                }
+
+            }
+
+        });
+
+    });
+
+</script>
+}
