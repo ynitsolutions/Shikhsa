@@ -1,0 +1,167 @@
+﻿@model Shikhsa.ViewModels.CoScholasticPageVM
+
+@{
+    ViewData["Title"] = "Co-Scholastic Master";
+}
+<div class="card mb-4">
+
+    <div class="card-header">
+        <h5>
+            @(Model.CoScholastic.CoScholasticId == 0 ? "Add Co-Scholastic" : "Edit Co-Scholastic")
+        </h5>
+    </div>
+
+    <div class="card-body">
+
+        <form asp-action="SaveCoScholastic" method="post">
+
+            <input asp-for="CoScholastic.CoScholasticId" type="hidden" />
+
+            <div class="row">
+
+                <div class="col-md-6 mb-3">
+
+                    <label asp-for="CoScholastic.Title"></label>
+
+                    <input asp-for="CoScholastic.Title"
+                           class="form-control required nospecialchars" />
+
+                    <span asp-validation-for="CoScholastic.Title"
+                          class="text-danger"></span>
+
+                </div>
+
+                <div class="col-md-6 mb-3">
+
+                    <label asp-for="CoScholastic.SubjectNameInLanguage"></label>
+
+                    <input asp-for="CoScholastic.SubjectNameInLanguage"
+                           class="form-control required textspaceonly" />
+
+                    <span asp-validation-for="CoScholastic.SubjectNameInLanguage"
+                          class="text-danger"></span>
+
+                </div>
+
+            </div>
+
+            <button class="btn btn-primary">
+
+                @(Model.CoScholastic.CoScholasticId == 0 ? "Save" : "Update")
+
+            </button>
+
+            <a asp-action="Index"
+               class="btn btn-secondary">
+
+                Reset
+
+            </a>
+
+        </form>
+
+    </div>
+
+</div>
+<div class="card">
+
+    <div class="card-header">
+        <h5>Co-Scholastic List</h5>
+    </div>
+
+    <div class="card-body">
+
+        <table class="table table-bordered table-striped datatable">
+
+            <thead>
+
+                <tr>
+
+                    <th>#</th>
+
+                    <th>Title</th>
+
+                    <th>Regional Name</th>
+
+                    <th>Status</th>
+
+                    <th width="170">Action</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                @{
+                    int sr = 1;
+                }
+
+                @foreach (var item in Model.CoScholasticList)
+                {
+                    <tr>
+
+                        <td>@sr</td>
+
+                        <td>@item.Title</td>
+
+                        <td>@item.SubjectNameInLanguage</td>
+
+                        <td>
+
+                            @if (item.IsActive)
+                            {
+                                <span class="badge bg-success">
+                                    Active
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">
+                                    Inactive
+                                </span>
+                            }
+
+                        </td>
+
+                        <td>
+
+                            <a asp-action="CoScholastic"
+                               asp-route-id="@item.CoScholasticId"
+                               class="btn btn-sm btn-warning">
+
+                                <spam class="ti ti-pencil"></spam>
+
+                            </a>
+
+                           @*  <a asp-action="Delete"
+                               asp-route-id="@item.Id"
+                               onclick="return confirm('Delete this record?')"
+                               class="btn btn-sm btn-danger">
+
+                                Delete
+
+                            </a> *@
+
+                            <a asp-action="DeleteCoScholastic"
+                               asp-route-id="@item.CoScholasticId"
+                               class="btn btn-sm btn-danger" type="button">
+
+                                <spam class="ti ti-trash"></spam>
+
+                            </a>
+
+                        </td>
+
+                    </tr>
+
+                    sr++;
+                }
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>

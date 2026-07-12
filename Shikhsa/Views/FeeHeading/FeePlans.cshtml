@@ -1,19 +1,21 @@
 ﻿@model Shikhsa.ViewModels.FeePlanIndexViewModel
 @{
     ViewData["Title"] = "Configure Fee Plans";
+    var feeHeadings = ViewBag.FeeHeadingList as List<FeeHeading>;
 }
 
-<h4 class="mb-3">Configure Fee Plans</h4>
+
+<h4 class="mb-3">@Localizer.Get("Configure") @Localizer.Get("Fee") @Localizer.Get("Plans")</h4>
 
 <ul class="nav nav-tabs" id="feePlanTabs" role="tablist">
     <li class="nav-item" role="presentation">
-        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tuition" type="button">🏫 Tuition Fee</button>
+        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tuition" type="button">🏫 @Localizer.Get("Tuition") @Localizer.Get("Fee")</button>
     </li>
     <li class="nav-item" role="presentation">
-        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#transport" type="button">🚌 Transport Fee</button>
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#transport" type="button">🚌 @Localizer.Get("Transport") @Localizer.Get("Fee")</button>
     </li>
     <li class="nav-item" role="presentation">
-        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#hostel" type="button">🏠 Hostel Fee</button>
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#hostel" type="button">🏠 @Localizer.Get("Hostel") @Localizer.Get("Fee")</button>
     </li>
 </ul>
 
@@ -21,39 +23,71 @@
 
     <!-- ================= TUITION TAB ================= -->
     <div class="tab-pane fade show active" id="tuition">
-        <h5>Configure Tuition Fee Plan</h5>
-        <form asp-action="SaveTuition" method="post" class="row g-3 mb-4">
+        <h5> @Localizer.Get("Tuition") @Localizer.Get("Fee") @Localizer.Get("Plan")</h5>
+        <form asp-action="SaveTuitionFee" method="post" class="row g-3 mb-4">
             <input type="hidden" asp-for="NewTuition.TuitionFeePlanId" />
             <div class="col-md-3">
-                <label class="form-label">Fee Heading</label>
-                <input asp-for="NewTuition.FeeHeading" class="form-control" required />
+                <label class="form-label">@Localizer.Get("Fee") @Localizer.Get("Heading")</label>
+              @*   <input asp-for="NewTuition.FeeHeading" class="form-control" required /> *@
+                <select asp-for="NewTuition.FeeHeadingId" class="form-control select2  required" required>
+
+                    <option value="">@Localizer.Get("Select")</option>
+
+                    @foreach (var item in feeHeadings?.Where(x => x.IsActive) ?? Enumerable.Empty<FeeHeading>())
+                    {
+                        <option value="@item.FeeHeadingId">
+                            @item.FeeHeadingName
+                        </option>
+                    }
+
+                </select>
             </div>
             <div class="col-md-3">
-                <label class="form-label">Class</label>
-                <input asp-for="NewTuition.ClassId" class="form-control" placeholder="e.g. Class-I" required />
+                <label class="form-label">@Localizer.Get("Class")</label>
+             @*    <input asp-for="NewTuition.ClassId" class="form-control" placeholder="e.g. Class-I" required /> *@
+                <select asp-for="NewTuition.ClassIds" class="form-control select2  required" multiple>
+                    <option value="">@Localizer.Get("Select")</option>
+                    @foreach (var item in ViewBag.Classes)
+                    {
+                        <option value="@item.DataListItemId" data-name="@item.DataListItemText">@item.DataListItemText</option>
+                    }
+                </select>
             </div>
-            <div class="col-md-2">
+         
+          @*   <div class="col-md-2">
                 <label class="form-label">Medium</label>
                 <input asp-for="NewTuition.Medium" class="form-control" required />
+            </div> *@
+            <div class="col-md-2">
+                <label class="form-label">@Localizer.Get("Fee") @Localizer.Get("Value")</label>
+                <input asp-for="NewTuition.FeeValue" type="text" class="form-control decimal required" required />
             </div>
             <div class="col-md-2">
-                <label class="form-label">Fee Value</label>
-                <input asp-for="NewTuition.FeeValue" type="number" step="0.01" class="form-control" required />
-            </div>
-            <div class="col-md-2">
-                <label class="form-label">Academic Year</label>
-                <input asp-for="NewTuition.AcademicYear" class="form-control" placeholder="2022-2023" required />
+                <label class="form-label">@Localizer.Get("Academic Year")</label>
+              @*   <input asp-for="NewTuition.AcademicYear" class="form-control" placeholder="2022-2023" required /> *@
+                <select asp-for="NewTuition.BatchId" class="form-control select2  required" required>
+
+                    <option value="">@Localizer.Get("Select")</option>
+
+                    @foreach (var item in ViewBag.Batches)
+                    {
+                        <option value="@item.BatchId">
+                            @item.AcademicYear
+                        </option>
+                    }
+
+                </select>
             </div>
             <div class="col-12 text-end">
-                <button type="reset" class="btn btn-outline-secondary">Reset</button>
-                <button type="submit" class="btn btn-primary">Save Tuition Plan</button>
+                <button type="reset" class="btn btn-outline-secondary">@Localizer.Get("Reset")</button>
+                <button type="submit" class="btn btn-primary">@Localizer.Get("Save") @Localizer.Get("Tuition") @Localizer.Get("Plan")</button>
             </div>
         </form>
 
-        <h6>Tuition Fee Plans (@Model.TuitionPlans.Count)</h6>
+        <h6>@Localizer.Get("Tuition") @Localizer.Get("Fee") @Localizer.Get("Plans") (@Model.TuitionPlans.Count)</h6>
         <table class="table table-striped">
             <thead>
-                <tr><th>S.No</th><th>Class</th><th>Fee Heading</th><th>Medium</th><th>Fee Value</th><th>Actions</th></tr>
+                <tr><th>#</th><th>@Localizer.Get("Class")</th><th>@Localizer.Get("Fee") @Localizer.Get("Heading")</th><th>@Localizer.Get("Batch")</th><th>@Localizer.Get("Fee") @Localizer.Get("Value")</th><th>@Localizer.Get("Actions")</th></tr>
             </thead>
             <tbody>
                 @for (int i = 0; i < Model.TuitionPlans.Count; i++)
@@ -61,15 +95,15 @@
                     var p = Model.TuitionPlans[i];
                     <tr>
                         <td>@(i + 1)</td>
-                        <td>@p.ClassId</td>
-                        <td>@p.FeeHeading</td>
-                        <td>@p.Medium</td>
+                        <td>@p.ClassName</td>
+                        <td>@p.FeeHeading.FeeHeadingName</td>
+                        <td>@p.Batch.AcademicYear</td>
                         <td>₹@p.FeeValue</td>
                         <td>
-                            <a asp-action="EditTuition" asp-route-id="@p.TuitionFeePlanId" class="btn btn-sm btn-outline-primary">Edit</a>
-                            <form asp-action="DeleteTuition" asp-route-id="@p.TuitionFeePlanId" method="post" class="d-inline"
+                            <a asp-action="SaveTuitionFee" asp-route-id="@p.TuitionFeePlanId" class="btn btn-sm btn-outline-primary"><spam class="ti ti-pencil"></spam></a>
+                            <form asp-action="DeleteTuitionFee" asp-route-id="@p.TuitionFeePlanId" method="post" class="d-inline"
                                   onsubmit="return confirm('Delete this plan?');">
-                                <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                <button type="submit" class="btn btn-sm btn-outline-danger"> <spam class="ti ti-trash"></spam></button>
                             </form>
                         </td>
                     </tr>
@@ -80,101 +114,172 @@
 
     <!-- ================= TRANSPORT TAB ================= -->
     <div class="tab-pane fade" id="transport">
-        <h5>Configure Transport Fee Plan</h5>
-        <form asp-action="SaveTransport" method="post" class="row g-3 mb-4">
+        <h5>@Localizer.Get("Configure") @Localizer.Get("Transport") @Localizer.Get("Fee") @Localizer.Get("Plan")</h5>
+        <form asp-action="SaveTransportFee" method="post" class="row g-3 mb-4">
             <input type="hidden" asp-for="NewTransport.TransportFeePlanId" />
             <div class="col-md-3">
-                <label class="form-label">Fee Type</label>
-                <input asp-for="NewTransport.FeeHeadingId" class="form-control" required />
+                <label class="form-label">@Localizer.Get("Fee") @Localizer.Get("Type")</label>
+               @*  <input asp-for="NewTransport.FeeHeadingId" class="form-control" required /> *@
+                <select asp-for="NewTransport.FeeHeadingId" class="form-control select2  required" required>
+
+                    <option value="">@Localizer.Get("Select")</option>
+
+                    @foreach (var item in feeHeadings?.Where(x => x.IsActive) ?? Enumerable.Empty<FeeHeading>())
+                    {
+                        <option value="@item.FeeHeadingId">
+                            @item.FeeHeadingName
+                        </option>
+                    }
+
+                </select>
             </div>
             <div class="col-md-3">
-                <label class="form-label">Academic Year</label>
-                <input asp-for="NewTransport.AcademicYear" class="form-control" required />
+                <label class="form-label">@Localizer.Get("Academic") @Localizer.Get("Year")</label>
+               @*  <input asp-for="NewTransport.AcademicYear" class="form-control" required /> *@
+                <select asp-for="NewTransport.BatchId" class="form-control select2  required" required>
+
+                    <option value="">@Localizer.Get("Select")</option>
+
+                    @foreach (var item in ViewBag.Batches)
+                    {
+                        <option value="@item.BatchId">
+                            @item.AcademicYear
+                        </option>
+                    }
+
+                </select>
             </div>
             <div class="col-md-3">
-                <label class="form-label">Transport</label>
-                <input asp-for="NewTransport.TransportId" class="form-control" required />
+                <label class="form-label">@Localizer.Get("Transport")</label>
+             @*    <input asp-for="NewTransport.TransportId" class="form-control" required /> *@
+                <select asp-for="NewTransport.TransportId" class="form-control select2  required">
+                    <option value="">@Localizer.Get("Select")</option>
+                    @foreach (var item in ViewBag.Transports)
+                    {
+                        <option value="@item.DataListItemId" data-name="@item.DataListItemText">@item.DataListItemText</option>
+                    }
+                </select>
             </div>
             <div class="col-md-2">
-                <label class="form-label">Transport Fee</label>
-                <input asp-for="NewTransport.TransportFee" type="number" step="0.01" class="form-control" required />
+                <label class="form-label">@Localizer.Get("Transport") @Localizer.Get("Fee")</label>
+                <input asp-for="NewTransport.TransportFee" type="text"  class="form-control required decimal" required />
             </div>
             <div class="col-md-2">
-                <label class="form-label">Transport Option</label>
-                <select asp-for="NewTransport.TransportOption" class="form-select">
-                    <option>One Way</option>
-                    <option>Two Way</option>
+                <label class="form-label">@Localizer.Get("Transport") @Localizer.Get("Option")</label>
+                <select asp-for="NewTransport.TransportOption" class="form-control select2 required">
+                    <option value="">@Localizer.Get("Select")</option>
+                    <option>@Localizer.Get("One") @Localizer.Get("Way")</option>
+                    <option>@Localizer.Get("Two") @Localizer.Get("Way")</option>
                 </select>
             </div>
             <div class="col-12 text-end">
-                <button type="reset" class="btn btn-outline-secondary">Reset</button>
-                <button type="submit" class="btn btn-success">Save Transport Plan</button>
+                <button type="reset" class="btn btn-outline-secondary">@Localizer.Get("Reset")</button>
+                <button type="submit" class="btn btn-success">@Localizer.Get("Save") @Localizer.Get("Transport") @Localizer.Get("Plan")</button>
             </div>
         </form>
 
-        <h6>Transport Fee Configuration (@Model.TransportPlans.Count)</h6>
+        <h6>@Localizer.Get("Transport") @Localizer.Get("Fee") @Localizer.Get("Configuration") (@Model.TransportPlans.Count)</h6>
         <table class="table table-striped">
             <thead>
-                <tr><th>S.No</th><th>Transport</th><th>Fee Type</th><th>Fee</th><th>Option</th><th>Actions</th></tr>
+                <tr><th>#</th><th>@Localizer.Get("Transport")</th><th>@Localizer.Get("Fee") @Localizer.Get("Type")</th><th>@Localizer.Get("Fee")</th><th>@Localizer.Get("Option")</th><th>@Localizer.Get("Actions")</th></tr>
             </thead>
             <tbody>
-                @for (int i = 0; i < Model.TransportPlans.Count; i++)
+                @if (Model.TransportPlans.Count!=null)
                 {
-                    var p = Model.TransportPlans[i];
-                    <tr>
-                        <td>@(i + 1)</td>
-                        <td>@p.TransportId</td>
-                        <td>@p.FeeHeadingId</td>
-                        <td>₹@p.TransportFee</td>
-                        <td>@p.TransportOption</td>
-                        <td>
-                            <a asp-action="EditTransport" asp-route-id="@p.TransportFeePlanId" class="btn btn-sm btn-outline-primary">Edit</a>
-                            <form asp-action="DeleteTransport" asp-route-id="@p.TransportFeePlanId" method="post" class="d-inline"
-                                  onsubmit="return confirm('Delete this plan?');">
-                                <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
-                            </form>
-                        </td>
-                    </tr>
-                }
+                    @for (int i = 0; i < Model.TransportPlans.Count; i++)
+                    {
+                        var p = Model.TransportPlans[i];
+                        <tr>
+                            <td>@(i + 1)</td>
+                            <td>@p.TransportName</td>
+                            <td>@p.FeeHeading.FeeHeadingName</td>
+                            <td>₹@p.TransportFee</td>
+                            <td>@p.TransportOption</td>
+                            <td>
+                                <a asp-action="SaveTransportFee" asp-route-id="@p.TransportFeePlanId" class="btn btn-sm btn-outline-primary"><spam class="ti ti-pencil"></spam></a>
+                                <form asp-action="DeleteTransportFee" asp-route-id="@p.TransportFeePlanId" method="post" class="d-inline"
+                                      onsubmit="return confirm('Delete this plan?');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger"><spam class="ti ti-trash"></spam></button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+  
+                 }
             </tbody>
         </table>
     </div>
 
     <!-- ================= HOSTEL TAB ================= -->
     <div class="tab-pane fade" id="hostel">
-        <h5>Configure Hostel Fee Plan</h5>
-        <form asp-action="SaveHostel" method="post" class="row g-3 mb-4">
+        <h5>@Localizer.Get("Configure") @Localizer.Get("Hostel") @Localizer.Get("Fee") @Localizer.Get("Plan")</h5>
+        <form asp-action="SaveHostelFee" method="post" class="row g-3 mb-4">
             <input type="hidden" asp-for="NewHostel.HostelFeePlanId" />
             <div class="col-md-3">
-                <label class="form-label">Fee Type</label>
-                <input asp-for="NewHostel.FeeHeadingId" class="form-control" required />
+                <label class="form-label">@Localizer.Get("Fee") @Localizer.Get("Type")</label>
+            @*     <input asp-for="NewHostel.FeeHeadingId" class="form-control" required /> *@
+                <select asp-for="NewHostel.FeeHeadingId" class="form-control select2  required" required>
+
+                    <option value="">@Localizer.Get("Select")</option>
+
+                    @foreach (var item in feeHeadings?.Where(x => x.IsActive) ?? Enumerable.Empty<FeeHeading>())
+                    {
+                        <option value="@item.FeeHeadingId">
+                            @item.FeeHeadingName
+                        </option>
+                    }
+
+                </select>
             </div>
             <div class="col-md-3">
-                <label class="form-label">Hostel</label>
-                <input asp-for="NewHostel.HostelId" class="form-control" required />
+                <label class="form-label">@Localizer.Get("Hostel")</label>
+            @*     <input asp-for="NewHostel.HostelId" class="form-control" required /> *@
+                <select asp-for="NewHostel.HostelId" class="form-control select2  required">
+                    <option value="">@Localizer.Get("Select")</option>
+                    @foreach (var item in ViewBag.Hostels)
+                    {
+                        <option value="@item.DataListItemId" data-name="@item.DataListItemText">@item.DataListItemText</option>
+                    }
+                </select>
             </div>
             <div class="col-md-2">
-                <label class="form-label">Room Type</label>
-                <input asp-for="NewHostel.RoomType" class="form-control" required />
+                <label class="form-label">@Localizer.Get("Room") @Localizer.Get("Type")</label>
+           @*      <input asp-for="NewHostel.RoomType" class="form-control" required /> *@
+                <select asp-for="NewHostel.RoomType" class="form-control select2  required">
+                    <option value="">@Localizer.Get("Select")</option>
+                    @foreach (var item in ViewBag.RoomType)
+                    {
+                        <option value="@item.DataListItemId" data-name="@item.DataListItemText">@item.DataListItemText</option>
+                    }
+                </select>
             </div>
             <div class="col-md-2">
-                <label class="form-label">Meal Plan</label>
-                <input asp-for="NewHostel.MealPlan" class="form-control" required />
+                <label class="form-label">@Localizer.Get("Meal") @Localizer.Get("Plan")</label>
+               @*  <input asp-for="NewHostel.MealPlan" class="form-control" required /> *@
+                <select asp-for="NewHostel.MealPlan" class="form-control select2  required">
+                    <option value="">@Localizer.Get("Select")</option>
+                    @if (ViewBag.MealType!=null){
+                    @foreach (var item in ViewBag.MealType)
+                    {
+                        <option value="@item.DataListItemId" data-name="@item.DataListItemText">@item.DataListItemText</option>
+                    }
+                    }
+                </select>
             </div>
             <div class="col-md-2">
-                <label class="form-label">Hostel Fee</label>
-                <input asp-for="NewHostel.HostelFee" type="number" step="0.01" class="form-control" required />
+                <label class="form-label">@Localizer.Get("Hostel") @Localizer.Get("Fee")</label>
+                <input asp-for="NewHostel.HostelFee" type="text"  class="form-control decimal required" required />
             </div>
             <div class="col-12 text-end">
-                <button type="reset" class="btn btn-outline-secondary">Reset</button>
-                <button type="submit" class="btn btn-danger">Save Hostel Plan</button>
+                <button type="reset" class="btn btn-outline-secondary">@Localizer.Get("Reset")</button>
+                <button type="submit" class="btn btn-danger">@Localizer.Get("Save") @Localizer.Get("Hostel") @Localizer.Get("Plan")</button>
             </div>
         </form>
 
         <h6>Hostel Configuration (@Model.HostelPlans.Count)</h6>
         <table class="table table-striped">
             <thead>
-                <tr><th>S.No</th><th>Hostel</th><th>Room Type</th><th>Meal Plan</th><th>Fee</th><th>Actions</th></tr>
+                <tr><th>#</th><th>Fee</th><th>Hostel</th><th>Room Type</th><th>Meal Plan</th><th>Fee</th><th>Actions</th></tr>
             </thead>
             <tbody>
                 @for (int i = 0; i < Model.HostelPlans.Count; i++)
@@ -182,15 +287,16 @@
                     var p = Model.HostelPlans[i];
                     <tr>
                         <td>@(i + 1)</td>
-                        <td>@p.HostelId</td>
-                        <td>@p.RoomType</td>
-                        <td>@p.MealPlan</td>
+                        <td>@p.FeeHeading.FeeHeadingName</td>
+                        <td>@p.HostelName</td>
+                        <td>@p.RoomTypeName</td>
+                        <td>@p.MealPlanName</td>
                         <td>₹@p.HostelFee</td>
                         <td>
-                            <a asp-action="EditHostel" asp-route-id="@p.HostelFeePlanId" class="btn btn-sm btn-outline-primary">Edit</a>
-                            <form asp-action="DeleteHostel" asp-route-id="@p.HostelFeePlanId" method="post" class="d-inline"
+                            <a asp-action="SaveHostelFee" asp-route-id="@p.HostelFeePlanId" class="btn btn-sm btn-outline-primary"><spam class="ti ti-pencil"></spam></a>
+                            <form asp-action="DeleteHostelFee" asp-route-id="@p.HostelFeePlanId" method="post" class="d-inline"
                                   onsubmit="return confirm('Delete this plan?');">
-                                <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                <button type="submit" class="btn btn-sm btn-outline-danger"><spam class="ti ti-trash"></spam></button>
                             </form>
                         </td>
                     </tr>

@@ -1,4 +1,5 @@
-﻿using Shikhsa.Models;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using Shikhsa.Models;
 
 namespace Shikhsa.ViewModels
 {
@@ -24,5 +25,23 @@ namespace Shikhsa.ViewModels
         public List<Batches> Batches { get; set; } = new();
 
         public List<ScholasticExam> List { get; set; } = new();
+    }
+    public class CoScholasticAreaVM
+    {
+        public CoScholasticArea CoScholasticArea { get; set; } = new();
+
+        // Filter
+        public long? SearchCoScholasticId { get; set; }
+        public int? SearchClassId { get; set; }
+
+        // Dropdown
+        public List<SelectListItem> CoScholasticList { get; set; } = new();
+        public List<DataListItem> ClassList { get; set; } = new();
+    }
+    public class CoScholasticPageVM
+    {
+        public CoScholastic CoScholastic { get; set; } = new();
+
+        public List<CoScholastic> CoScholasticList { get; set; } = new();
     }
 }

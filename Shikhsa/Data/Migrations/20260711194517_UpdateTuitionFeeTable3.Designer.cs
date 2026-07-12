@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Shikhsa.Data;
 
@@ -11,9 +12,11 @@ using Shikhsa.Data;
 namespace Shikhsa.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260711194517_UpdateTuitionFeeTable3")]
+    partial class UpdateTuitionFeeTable3
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -833,82 +836,6 @@ namespace Shikhsa.Data.Migrations
                     b.ToTable("ClassTeacherSubjectAssignments");
                 });
 
-            modelBuilder.Entity("Shikhsa.Models.CoScholastic", b =>
-                {
-                    b.Property<long>("CoScholasticId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("CoScholasticId"));
-
-                    b.Property<string>("AddedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("AddedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("SubjectNameInLanguage")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("CoScholasticId");
-
-                    b.ToTable("CoScholastics");
-                });
-
-            modelBuilder.Entity("Shikhsa.Models.CoScholasticArea", b =>
-                {
-                    b.Property<long>("CoScholasticAreaId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("CoScholasticAreaId"));
-
-                    b.Property<string>("AddedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("AddedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("ClassId")
-                        .HasColumnType("int");
-
-                    b.Property<long>("CoScholasticId")
-                        .HasColumnType("bigint");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("CoScholasticAreaId");
-
-                    b.HasIndex("ClassId");
-
-                    b.HasIndex("CoScholasticId");
-
-                    b.ToTable("CoScholasticAreas");
-                });
-
             modelBuilder.Entity("Shikhsa.Models.Common.EmailLog", b =>
                 {
                     b.Property<long>("EmailLogId")
@@ -1352,11 +1279,13 @@ namespace Shikhsa.Data.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
-                    b.Property<int>("MealPlan")
-                        .HasColumnType("int");
+                    b.Property<string>("MealPlan")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("RoomType")
-                        .HasColumnType("int");
+                    b.Property<string>("RoomType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("nvarchar(max)");
@@ -3009,13 +2938,17 @@ namespace Shikhsa.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("TransportFeePlanId"));
 
+                    b.Property<string>("AcademicYear")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("AddedBy")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("AddedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("BatchId")
+                    b.Property<int?>("BatchId")
                         .HasColumnType("int");
 
                     b.Property<long>("FeeHeadingId")
@@ -3245,21 +3178,6 @@ namespace Shikhsa.Data.Migrations
                     b.Navigation("Subject");
                 });
 
-            modelBuilder.Entity("Shikhsa.Models.CoScholasticArea", b =>
-                {
-                    b.HasOne("Shikhsa.Models.DataListItem", null)
-                        .WithMany()
-                        .HasForeignKey("ClassId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Shikhsa.Models.CoScholastic", null)
-                        .WithMany()
-                        .HasForeignKey("CoScholasticId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("Shikhsa.Models.DataListItem", b =>
                 {
                     b.HasOne("Shikhsa.Models.DataList", "DataList")
@@ -3318,7 +3236,7 @@ namespace Shikhsa.Data.Migrations
                     b.HasOne("Shikhsa.Models.FeeHeading", "FeeHeading")
                         .WithMany()
                         .HasForeignKey("FeeHeadingId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Batch");
@@ -3511,14 +3429,12 @@ namespace Shikhsa.Data.Migrations
                 {
                     b.HasOne("Shikhsa.Models.Batches", "Batch")
                         .WithMany()
-                        .HasForeignKey("BatchId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .HasForeignKey("BatchId");
 
                     b.HasOne("Shikhsa.Models.FeeHeading", "FeeHeading")
                         .WithMany()
                         .HasForeignKey("FeeHeadingId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Batch");

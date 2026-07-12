@@ -26,6 +26,7 @@ namespace Shikhsa.Controllers
      PermissionService permissionService, IWebHostEnvironment env, EmailService email) :base(userManager, permissionService, context, email)
         {
             _repository = repository;
+            _context = context;
         }
         #region Frequency
         public async Task<IActionResult> FeeFrequency(int id = 0)
@@ -115,6 +116,20 @@ namespace Shikhsa.Controllers
                 Text = x.Text
             }).ToList();
         }
+        private async Task TaskBindFeePlansDropdown()
+        {
+            ViewBag.Classes = GetDataListItems("Class");
+            ViewBag.Hostels = GetDataListItems("Hostel List");
+            ViewBag.Transports = GetDataListItems("Transport");
+            ViewBag.RoomType = GetDataListItems("Room Type");
+            ViewBag.MealType = GetDataListItems("Meal Type");
+
+            ViewBag.Batches = await _context.Batches
+                .Where(x => x.IsActive && x.ActiveForAdmission)
+                .ToListAsync();
+            ViewBag.FeeHeadingList = await _repository.GetAllFeeHeadingAsync();
+
+        }
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SaveFeeHeadings(FeeHeadingPageVM model)
@@ -178,13 +193,10 @@ namespace Shikhsa.Controllers
         #region FeePlan
             #region TuitionFeePlan
             public async Task<IActionResult> FeePlans()
-                {
-            ViewBag.Classes = GetDataListItems("Class");
+            {
+            await TaskBindFeePlansDropdown();
 
-           ViewBag.Batches = await _context.Batches
-                .Where(x => x.IsActive && x.ActiveForAdmission)
-                .ToListAsync();
-            ViewBag.FeeHeadingList = await _repository.GetAllFeeHeadingAsync();
+
             var vm = new FeePlanIndexViewModel
                     { 
                         TuitionPlans = await _repository.GetAllTuitionFeePlanAsync(),
@@ -192,32 +204,39 @@ namespace Shikhsa.Controllers
                         HostelPlans = await _repository.GetAllHostelFeePlanAsync()
                     };
                     return View(vm);
-                }
-            [HttpPost]
-            public async Task<IActionResult> SaveTuition(TuitionFeePlan model)
-            {
-                    ResponseModel response;
-                    var currentUser = HttpContext.Session.GetCurrentUser();
-                    string userName = currentUser?.UserName ?? User.Identity?.Name ?? "";
-                    if (model.TuitionFeePlanId == 0)
-                    {
-                        model.AddedDate = DateTime.Now;
-                        model.AddedBy = userName;
-                        response = await _repository.SaveTuitionFeePlanAsync(model);
-
-                    }
-                    else
-                    {
-                        model.UpdatedDate = DateTime.Now;
-                        model.UpdatedBy = userName;
-                        response=await _repository.UpdateTuitionFeePlanAsync(model);
-                    }
-                    TempData[response.Status == 1 ? "Success" : "Error"] = response.Message;
-                    return RedirectToAction(nameof(FeePlans));
             }
+     
 
-            public async Task<IActionResult> SaveTuition(int id)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SaveTuitionFee(FeePlanIndexViewModel vm)
+        {
+            try
             {
+                if (!ModelState.IsValid)
+                {
+                    TempData["Error"] = "Please fill all required fields.";
+                    return RedirectToAction(nameof(FeePlans));
+                }
+
+                var currentUser = HttpContext.Session.GetCurrentUser();
+                string userName = currentUser?.UserName ?? User.Identity?.Name ?? "";
+
+                ResponseModel response = await _repository.SaveOrUpdateTuitionFeePlanAsync(vm.NewTuition, userName);
+
+                TempData[response.Status == 1 ? "Success" : "Error"] = response.Message;
+
+                return RedirectToAction(nameof(FeePlans));
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = ex.Message;
+                return RedirectToAction(nameof(FeePlans));
+            }
+        }
+        public async Task<IActionResult> SaveTuitionFee(int id)
+            {
+                await TaskBindFeePlansDropdown();
                 var vm = new FeePlanIndexViewModel
                 {
                     NewTuition = await _repository.GetTuitionFeePlanByIdAsync(id) ?? new TuitionFeePlan(),
@@ -228,7 +247,7 @@ namespace Shikhsa.Controllers
                 return View("FeePLans", vm);
             }
             [HttpPost]
-            public async Task<IActionResult> DeleteTuition(long id)
+            public async Task<IActionResult> DeleteTuitionFee(long id)
             {
                 var currentUser = HttpContext.Session.GetCurrentUser();
                 string userName = currentUser?.UserName ?? User.Identity?.Name ?? "";
@@ -238,31 +257,48 @@ namespace Shikhsa.Controllers
             }
         #endregion
         #region TransportFeePlan
-             
-        [HttpPost]
-        public async Task<IActionResult> SaveTransport(TransportFeePlan model)
+        public async Task<IActionResult> SaveTransportFee(int id)
         {
-            ResponseModel response;
-            var currentUser = HttpContext.Session.GetCurrentUser();
-            string userName = currentUser?.UserName ?? User.Identity?.Name ?? "";
-            if (model.TransportFeePlanId == 0)
+            await TaskBindFeePlansDropdown();
+            var vm = new FeePlanIndexViewModel
             {
-                model.AddedDate = DateTime.Now;
-                model.AddedBy = userName;
-                response = await _repository.SaveTransportFeePlanAsync(model);
-
-            }
-            else
-            {
-                model.UpdatedDate = DateTime.Now;
-                model.UpdatedBy = userName;
-                response = await _repository.UpdateTransportFeePlanAsync(model);
-            }
-            TempData[response.Status == 1 ? "Success" : "Error"] = response.Message;
-            return RedirectToAction(nameof(FeePlans));
+                NewTransport= await _repository.GetTransportFeePlanByIdAsync(id) ?? new TransportFeePlan(),
+                TuitionPlans = await _repository.GetAllTuitionFeePlanAsync(),
+                TransportPlans = await _repository.GetAllTransportFeePlanAsync(),
+                HostelPlans = await _repository.GetAllHostelFeePlanAsync()
+            };
+            return View("FeePLans", vm);
         }
         [HttpPost]
-        public async Task<IActionResult> DeleteTransport(int id)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SaveTransportFee(FeePlanIndexViewModel vm)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    TempData["Error"] = "Please fill all required fields.";
+                    return RedirectToAction(nameof(FeePlans));
+                }
+
+                var currentUser = HttpContext.Session.GetCurrentUser();
+                string userName = currentUser?.UserName ?? User.Identity?.Name ?? "";
+
+                ResponseModel response = await _repository.SaveUpdateTransportFeePlanAsync(vm.NewTransport, userName);
+
+                TempData[response.Status == 1 ? "Success" : "Error"] = response.Message;
+
+                return RedirectToAction(nameof(FeePlans));
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = ex.Message;
+                return RedirectToAction(nameof(FeePlans));
+            }
+        }
+    
+        [HttpPost]
+        public async Task<IActionResult> DeleteTransportFee(int id)
         {
             var currentUser = HttpContext.Session.GetCurrentUser();
             string userName = currentUser?.UserName ?? User.Identity?.Name ?? "";
@@ -272,27 +308,44 @@ namespace Shikhsa.Controllers
         }
         #endregion
         #region HostelFeePlan
-        [HttpPost]
-        public async Task<IActionResult> SaveHostel(HostelFeePlan model)
+        public async Task<IActionResult> SaveHostelFee(int id)
         {
-            ResponseModel response;
-            var currentUser = HttpContext.Session.GetCurrentUser();
-            string userName = currentUser?.UserName ?? User.Identity?.Name ?? "";
-            if (model.HostelFeePlanId== 0)
+            await TaskBindFeePlansDropdown();
+            var vm = new FeePlanIndexViewModel
             {
-                model.AddedDate = DateTime.Now;
-                model.AddedBy = userName;
-                response = await _repository.SaveHostelFeePlanAsync(model);
+                NewHostel = await _repository.GetHostelFeePlanByIdAsync(id) ?? new HostelFeePlan(),
+                TuitionPlans = await _repository.GetAllTuitionFeePlanAsync(),
+                TransportPlans = await _repository.GetAllTransportFeePlanAsync(),
+                HostelPlans = await _repository.GetAllHostelFeePlanAsync()
+            };
+            return View("FeePLans", vm);
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SaveHostelFee(FeePlanIndexViewModel vm)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    TempData["Error"] = "Please fill all required fields.";
+                    return RedirectToAction(nameof(FeePlans));
+                }
 
+                var currentUser = HttpContext.Session.GetCurrentUser();
+                string userName = currentUser?.UserName ?? User.Identity?.Name ?? "";
+
+                ResponseModel response = await _repository.SaveUpdateHostelFeePlanAsync(vm.NewHostel,userName);
+
+                TempData[response.Status == 1 ? "Success" : "Error"] = response.Message;
+
+                return RedirectToAction(nameof(FeePlans));
             }
-            else
+            catch (Exception ex)
             {
-                model.UpdatedDate = DateTime.Now;
-                model.UpdatedBy = userName;
-                response = await _repository.UpdateHostelFeePlanAsync(model);
+                TempData["Error"] = ex.Message;
+                return RedirectToAction(nameof(FeePlans));
             }
-            TempData[response.Status == 1 ? "Success" : "Error"] = response.Message;
-            return RedirectToAction(nameof(FeePlans));
         }
         [HttpPost]
         public async Task<IActionResult> DeleteHostelFee(int id)

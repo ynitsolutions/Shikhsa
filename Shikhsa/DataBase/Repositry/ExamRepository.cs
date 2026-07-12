@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using Shikhsa.Data;
 using Shikhsa.Models;
+using Shikhsa.Models.Common;
 using Shikhsa.ViewModels;
 
 namespace Shikhsa.DataBase.Repositry
@@ -188,5 +190,148 @@ namespace Shikhsa.DataBase.Repositry
                 return false;
             }
         }
+        #region CoScholasticArea
+
+        public async Task<CoScholasticAreaVM> GetDropdownsAsync()
+        {
+            CoScholasticAreaVM vm = new();
+
+            vm.CoScholasticList = await _context.CoScholastics
+                .Where(x => x.IsActive)
+                .OrderBy(x => x.Title)
+                .Select(x => new SelectListItem
+                {
+                    Value = x.CoScholasticId.ToString(),
+                    Text = x.Title
+                }).ToListAsync();
+
+           
+            return vm;
+        }
+        public async Task<ResponseModel> SaveCoScholasticAreaAsync(CoScholasticArea model, string userId)
+        {
+            ResponseModel response = new();
+
+            try
+            {
+                bool exists = await _context.CoScholasticAreas.AnyAsync(x =>
+                    x.ClassId == model.ClassId
+                    && x.CoScholasticId == model.CoScholasticId
+                    && x.CoScholasticAreaId != model.CoScholasticAreaId
+                    && x.IsActive);
+
+                if (exists)
+                {
+                    response.Status = 0;
+                    response.Message = "This Co-Scholastic is already assigned to the selected class.";
+                    return response;
+                }
+
+                if (model.CoScholasticAreaId == 0)
+                {
+                    model.AddedBy = userId;
+                    model.AddedDate = DateTime.Now;
+                    model.IsActive = true;
+
+                    await _context.CoScholasticAreas.AddAsync(model);
+
+                    response.Message = "Record saved successfully.";
+                }
+                else
+                {
+                    var entity = await _context.CoScholasticAreas
+                        .FirstOrDefaultAsync(x => x.CoScholasticAreaId == model.CoScholasticAreaId);
+
+                    if (entity == null)
+                    {
+                        response.Status = 0;
+                        response.Message = "Record not found.";
+                        return response;
+                    }
+
+                    entity.ClassId = model.ClassId;
+                    entity.CoScholasticId = model.CoScholasticId;
+
+                    entity.UpdatedBy = userId;
+                    entity.UpdatedDate = DateTime.Now;
+
+                    response.Message = "Record updated successfully.";
+                }
+
+                await _context.SaveChangesAsync();
+
+                response.Status = 1;
+            }
+            catch (Exception ex)
+            {
+                response.Status = 0;
+                response.Message = ex.Message;
+            }
+
+            return response;
+        }
+        public async Task<CoScholasticArea?> GetCoScholasticAreaByIdAsync(long id)
+        {
+            return await _context.CoScholasticAreas
+                .FirstOrDefaultAsync(x => x.CoScholasticAreaId == id);
+        }
+
+        public async Task<ResponseModel> DeleteCoScholasticAreaAsync(long id, string userId)
+        {
+            ResponseModel response = new();
+
+            var entity = await _context.CoScholasticAreas.FindAsync(id);
+
+            if (entity == null)
+            {
+                response.Status = 0;
+                response.Message = "Record not found.";
+                return response;
+            }
+
+            entity.IsActive = !entity.IsActive;
+            entity.UpdatedBy = userId;
+            entity.UpdatedDate = DateTime.Now;
+
+            await _context.SaveChangesAsync();
+
+            response.Status = 1;
+            response.Message = entity.IsActive
+                ? "Record activated successfully."
+                : "Record deactivated successfully.";
+
+            return response;
+        }
+        public async Task<object> GetCoScholasticAreaListAsync(long? coScholasticId, int? classId)
+        {
+            var query = from area in _context.CoScholasticAreas
+                        join co in _context.CoScholastics
+                            on area.CoScholasticId equals co.CoScholasticId
+                        join cls in _context.DataListItems
+                            on area.ClassId equals cls.DataListItemId
+                        select new
+                        {
+                            area.CoScholasticAreaId,
+                            area.CoScholasticId,
+                            area.ClassId,
+                            area.IsActive,
+
+                            CoScholastic = co.Title + " : " + co.SubjectNameInLanguage,
+
+                            ClassName = cls.DataListItemText
+                        };
+
+            if (coScholasticId.HasValue && coScholasticId > 0)
+                query = query.Where(x => x.CoScholasticId == coScholasticId);
+
+            if (classId.HasValue && classId > 0)
+                query = query.Where(x => x.ClassId == classId);
+
+            return await query
+                .OrderBy(x => x.ClassName)
+                .ThenBy(x => x.CoScholastic)
+                .ToListAsync();
+        }
+        #endregion
     }
 }

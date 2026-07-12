@@ -1,0 +1,269 @@
+﻿@model Shikhsa.ViewModels.CoScholasticAreaVM
+
+@{
+    ViewData["Title"] = "Co-Scholastic Area";
+    var list = ViewBag.List as IEnumerable<dynamic>;
+}
+
+<div class="container-fluid">
+
+    <!-- Form -->
+    <div class="card shadow-sm mb-3">
+
+        <div class="card-header text-white">
+            <h5 class="mb-0">
+                @(Model.CoScholasticArea.CoScholasticAreaId == 0 ? "Add Co-Scholastic Area" : "Edit Co-Scholastic Area")
+            </h5>
+        </div>
+
+        <div class="card-body">
+
+            <form asp-action="SaveCoScholasticArea" method="post">
+
+                @Html.AntiForgeryToken()
+
+                <input asp-for="CoScholasticArea.CoScholasticAreaId" type="hidden" />
+
+                <div class="row">
+
+                    <div class="col-md-5 mb-3">
+
+                        <label asp-for="CoScholasticArea.CoScholasticId" class="form-label"></label>
+
+                        <select asp-for="CoScholasticArea.CoScholasticId"
+                                asp-items="Model.CoScholasticList"
+                                class="form-control select2 required">
+
+                            <option value="">Select</option>
+
+                        </select>
+
+                        <span asp-validation-for="CoScholasticArea.CoScholasticId"
+                              class="text-danger"></span>
+
+                    </div>
+
+                    <div class="col-md-5 mb-3">
+
+                        <label asp-for="CoScholasticArea.ClassId" class="form-label"></label>
+
+                        @* <select asp-for="CoScholasticArea.ClassId"
+                                asp-items="Model.ClassList"
+                                class="form-select">
+
+                            <option value="">-- Select Class --</option>
+
+                        </select> *@
+                        <select asp-for="CoScholasticArea.ClassId" class="form-control select2 required">
+                            <option value="">@Localizer.Get("Select")</option>
+                            @foreach (var item in Model.ClassList)
+                            {
+                                <option value="@item.DataListItemId" data-name="@item.DataListItemText">@item.DataListItemText</option>
+                            }
+                        </select>
+
+                        <span asp-validation-for="CoScholasticArea.ClassId"
+                              class="text-danger"></span>
+
+                    </div>
+
+                    <div class="col-md-2 d-flex align-items-end">
+
+                        <button type="submit" class="btn btn-success w-100">
+
+                            @(Model.CoScholasticArea.CoScholasticAreaId == 0 ? "Save" : "Update")
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- Filter -->
+
+    <div class="card shadow-sm">
+
+        <div class="card-header">
+            <h5 class="mb-0">Search</h5>
+        </div>
+
+        <div class="card-body">
+
+            <form method="get">
+
+                <div class="row">
+
+                    <div class="col-md-5">
+
+                        <label>Co-Scholastic</label>
+
+                        <select asp-for="SearchCoScholasticId"
+                                asp-items="Model.CoScholasticList"
+                                class="form-control select2">
+
+                            <option value="">All</option>
+
+                        </select>
+
+                    </div>
+
+                    <div class="col-md-5">
+
+                        <label>Class</label>
+
+                       @*  <select asp-for="SearchClassId"
+                                asp-items="Model.ClassList"
+                                class="form-select">
+
+                            <option value="">All</option>
+
+                        </select> *@
+                        <select asp-for="SearchClassId" class="form-control select2">
+                            <option value="">@Localizer.Get("Select")</option>
+                            @foreach (var item in Model.ClassList)
+                            {
+                                <option value="@item.DataListItemId" data-name="@item.DataListItemText">@item.DataListItemText</option>
+                            }
+                        </select>
+
+                    </div>
+
+                    <div class="col-md-2 d-flex align-items-end">
+
+                        <button class="btn btn-primary w-100">
+
+                            Search
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </form>
+
+            <hr />
+
+            <table class="table table-bordered table-striped">
+
+                <thead class="table-light">
+
+                    <tr>
+
+                        <th width="70">#</th>
+
+                        <th>Co-Scholastic</th>
+
+                        <th>Class</th>
+
+                        <th width="90">Status</th>
+
+                        <th width="180">Action</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    @if (list != null && list.Any())
+                    {
+                        int sr = 1;
+
+                        foreach (var item in list)
+                        {
+                            <tr>
+
+                                <td>@sr</td>
+
+                                <td>@item.CoScholastic</td>
+
+                                <td>@item.ClassName</td>
+
+                                <td>
+
+                                    @if (item.IsActive)
+                                    {
+                                        <span class="badge bg-success">
+                                            Active
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">
+                                            Inactive
+                                        </span>
+                                    }
+
+                                </td>
+
+                                <td>
+
+                                    <a asp-action="CoScholasticArea"
+                                       asp-route-id="@item.CoScholasticAreaId"
+                                       asp-route-searchClassId="@Model.SearchClassId"
+                                       asp-route-searchCoScholasticId="@Model.SearchCoScholasticId"
+                                       class="btn btn-warning btn-sm">
+
+                                        <spam class="ti ti-pencil"></spam>
+
+                                    </a>
+
+                                    <form asp-action="DeleteCoScholasticArea"
+                                          method="post"
+                                          class="d-inline">
+
+                                        @Html.AntiForgeryToken()
+
+                                        <input type="hidden"
+                                               name="id"
+                                               value="@item.CoScholasticAreaId" />
+
+                                        <button class="btn btn-sm @(item.IsActive ? "btn-danger" : "btn-success")">
+
+                                            <spam class="ti ti-pencil"></spam>
+
+                                        </button>
+
+                                    </form>
+
+                                </td>
+
+                            </tr>
+
+                            sr++;
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+
+                            <td colspan="5" class="text-center">
+
+                                No Record Found
+
+                            </td>
+
+                        </tr>
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

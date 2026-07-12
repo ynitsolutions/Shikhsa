@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Shikhsa.Attributes;
 using Shikhsa.Data;
 using Shikhsa.DataBase.Repositry;
+using Shikhsa.Helpers;
 using Shikhsa.Models;
 using Shikhsa.Services;
 using Shikhsa.ViewModels;
@@ -17,12 +18,7 @@ namespace Shikhsa.Controllers
         private readonly RoleManager<ApplicationRole> _roleManager;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ExamRepository _repository;
-        public ExamController(
-     ApplicationDbContext context,
-     RoleManager<ApplicationRole> roleManager,
-     UserManager<ApplicationUser> userManager,
-     PermissionService permissionService, IWebHostEnvironment env, EmailService email,ExamRepository examRepository
- ) :
+        public ExamController(ApplicationDbContext context,RoleManager<ApplicationRole> roleManager,UserManager<ApplicationUser> userManager,PermissionService permissionService, IWebHostEnvironment env, EmailService email,ExamRepository examRepository):
             base(userManager, permissionService, context, email)
         {
             _context = context;
@@ -232,6 +228,155 @@ namespace Shikhsa.Controllers
                
             }
             return RedirectToAction("ScholasticExams");
+        }
+        #endregion
+        #region CoScholastic
+        public async Task<IActionResult> CoScholastic(int id = 0)
+        {
+            CoScholasticPageVM vm = new();
+
+            vm.CoScholasticList = await _context.CoScholastics
+                .OrderBy(x => x.Title)
+                .ToListAsync();
+
+            if (id > 0)
+            {
+                vm.CoScholastic = await _context.CoScholastics.FindAsync(id) ?? new CoScholastic();
+            }
+
+            return View(vm);
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SaveCoScholastic(CoScholasticPageVM vm)
+        {
+            var currentUser = HttpContext.Session.GetCurrentUser();
+            string userName = currentUser?.UserName ?? User.Identity?.Name ?? "";
+            if (!ModelState.IsValid)
+            {
+                vm.CoScholasticList = await _context.CoScholastics
+                    .OrderBy(x => x.Title)
+                    .ToListAsync();
+
+                return View("Index", vm);
+            }
+
+            if (vm.CoScholastic.CoScholasticId == 0)
+            {
+                vm.CoScholastic.AddedBy = userName;
+                vm.CoScholastic.IsActive = true;
+
+                _context.CoScholastics.Add(vm.CoScholastic);
+
+               SuccessMessage("Co-Scholastic saved successfully.");
+            }
+            else
+            {
+                var db = await _context.CoScholastics.FindAsync(vm.CoScholastic.CoScholasticId);
+
+                if (db == null)
+                    return NotFound();
+
+                db.Title = vm.CoScholastic.Title;
+                db.SubjectNameInLanguage = vm.CoScholastic.SubjectNameInLanguage;
+                db.UpdatedDate = DateTime.Now;
+                db.UpdatedBy = userName;
+               SuccessMessage("Co-Scholastic updated successfully.");
+            }
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(CoScholastic));
+        }
+
+        public async Task<IActionResult> DeleteCoScholastic(int id)
+        {
+            var data = await _context.CoScholastics.FindAsync(id);
+            var currentUser = HttpContext.Session.GetCurrentUser();
+            string userName = currentUser?.UserName ?? User.Identity?.Name ?? "";
+            if (data == null)
+                return RedirectToAction(nameof(CoScholastic));
+
+            data.IsActive = !data.IsActive;
+            data.UpdatedDate = DateTime.Now;
+            data.UpdatedBy = userName;
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(CoScholastic));
+        }
+        #endregion
+        #region CoSchalasticArea
+        //public async Task<IActionResult> CoScholasticArea()
+        //{
+        //    CoScholasticAreaVM vm = new();
+        //     vm = await _repository.GetDropdownsAsync();
+        //    vm.ClassList = GetDataListItems("Class");
+        //    return View(vm);
+        //}
+        public async Task<IActionResult> CoScholasticArea(long? id, long? coScholasticId, int? classId)
+        {
+            CoScholasticAreaVM vm = new();
+                vm = await _repository.GetDropdownsAsync();
+               vm.ClassList = GetDataListItems("Class");
+
+            if (id.HasValue)
+            {
+                vm.CoScholasticArea = await _repository.GetCoScholasticAreaByIdAsync(id.Value);
+            }
+
+            ViewBag.List = await _repository.GetCoScholasticAreaListAsync(coScholasticId, classId);
+
+            return View(vm);
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SaveCoScholasticArea(CoScholasticAreaVM model)
+        {
+            if (!ModelState.IsValid)
+            {
+                var vm = await _repository.GetDropdownsAsync();
+                model.ClassList = vm.ClassList;
+                model.CoScholasticList = vm.CoScholasticList;
+
+                return View("Index", model);
+            }
+            var currentUser = HttpContext.Session.GetCurrentUser();
+            string userName = currentUser?.UserName ?? User.Identity?.Name ?? "";
+            var result = await _repository.SaveCoScholasticAreaAsync(model.CoScholasticArea, userName);
+
+            return RedirectToAction(nameof(CoScholasticArea));
+        }
+        [HttpGet]
+        public async Task<IActionResult> SaveCoScholasticArea(long id)
+        {
+            var data = await _repository.GetCoScholasticAreaByIdAsync(id);
+
+            if (data == null)
+                return Json(null);
+
+            return Json(data);
+        }
+        [SkipPermission]
+        [HttpGet]
+        public async Task<IActionResult> GetList(long? coScholasticId, int? classId)
+        {
+            var data = await _repository.GetCoScholasticAreaListAsync(coScholasticId, classId);
+
+            return Json(new
+            {
+                data
+            });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteCoScholasticArea(long id)
+        {
+            var currentUser = HttpContext.Session.GetCurrentUser();
+            string userName = currentUser?.UserName ?? User.Identity?.Name ?? "";
+
+            var result = await _repository.DeleteCoScholasticAreaAsync(id, userName);
+
+            return RedirectToAction(nameof(CoScholasticArea));
         }
         #endregion
     }

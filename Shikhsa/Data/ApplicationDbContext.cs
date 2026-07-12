@@ -84,9 +84,9 @@ namespace Shikhsa.Data
         public DbSet<TuitionFeePlan> TuitionFeePlans  { get; set; }
         public DbSet<TransportFeePlan> TransportFeePlans { get; set; }
         public DbSet<HostelFeePlan> HostelFeePlans { get; set; }
-        //public DbSet<MenuPermissionItem> MenuPermissionItems { get; set; }
+        public DbSet<CoScholasticArea> CoScholasticAreas { get; set; }
 
-        //public DbSet<RolePermissionItem> RolePermissionItems { get; set; }
+        public DbSet<CoScholastic> CoScholastics { get; set; }
         //public DbSet<PermissionItem> PermissionItems { get; set; }
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -194,7 +194,13 @@ namespace Shikhsa.Data
             builder.Entity<NotificationTemplateCategory>().HasOne(x => x.NotificationCategory).WithMany(x => x.NotificationTemplateCategories).HasForeignKey(x => x.NotificationCategoryId).OnDelete(DeleteBehavior.NoAction);
             builder.Entity<FeeFrequency>().HasData(new FeeFrequency{    FrequencyId = 1,    Value = "ONETIME",    Text = "One Time",    DisplayOrder = 1,    IsActive = true, AddedDate = new DateTime(2025, 1, 1) }, new FeeFrequency{    FrequencyId = 2,    Value = "MONTHLY",    Text = "Monthly",    DisplayOrder = 2,    IsActive = true, AddedDate = new DateTime(2025, 1, 1) }, new FeeFrequency{    FrequencyId = 3,    Value = "QUARTERLY",    Text = "Quarterly",    DisplayOrder = 3,    IsActive = true, AddedDate = new DateTime(2025, 1, 1) },new FeeFrequency{    FrequencyId = 4,    Value = "HALFYEARLY",    Text = "Half Yearly",    DisplayOrder = 4,    IsActive = true, AddedDate = new DateTime(2025, 1, 1) },new FeeFrequency{    FrequencyId = 5,    Value = "YEARLY",    Text = "Yearly",    DisplayOrder = 5,    IsActive = true, AddedDate = new DateTime(2025, 1, 1) } );
             builder.Entity<MenuPermissionItem>().HasOne(x => x.SubMenu).WithMany().HasForeignKey(x => x.SubMenuId).OnDelete(DeleteBehavior.Cascade);
-
+            builder.Entity<TuitionFeePlan>().HasOne(x => x.Batch).WithMany().HasForeignKey(x => x.BatchId).OnDelete(DeleteBehavior.Restrict);
+            builder.Entity<TuitionFeePlan>().HasOne(x => x.FeeHeading).WithMany().HasForeignKey(x => x.FeeHeadingId).OnDelete(DeleteBehavior.Restrict);
+            builder.Entity<TransportFeePlan>().HasOne(x => x.Batch).WithMany().HasForeignKey(x => x.BatchId).OnDelete(DeleteBehavior.Restrict);
+            builder.Entity<TransportFeePlan>().HasOne(x => x.FeeHeading).WithMany().HasForeignKey(x => x.FeeHeadingId).OnDelete(DeleteBehavior.Restrict);
+            builder.Entity<HostelFeePlan>().HasOne(x => x.FeeHeading).WithMany().HasForeignKey(x => x.FeeHeadingId).OnDelete(DeleteBehavior.Restrict);
+            builder.Entity<CoScholasticArea>().HasOne<CoScholastic>().WithMany().HasForeignKey(x => x.CoScholasticId).OnDelete(DeleteBehavior.Restrict);
+            builder.Entity<CoScholasticArea>().HasOne<DataListItem>().WithMany().HasForeignKey(x => x.ClassId).HasPrincipalKey(x => x.DataListItemId).OnDelete(DeleteBehavior.Restrict);
 
         }
         public override int SaveChanges()

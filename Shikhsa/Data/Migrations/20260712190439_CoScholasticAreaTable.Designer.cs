@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Shikhsa.Data;
 
@@ -11,9 +12,11 @@ using Shikhsa.Data;
 namespace Shikhsa.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260712190439_CoScholasticAreaTable")]
+    partial class CoScholasticAreaTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -835,11 +838,11 @@ namespace Shikhsa.Data.Migrations
 
             modelBuilder.Entity("Shikhsa.Models.CoScholastic", b =>
                 {
-                    b.Property<long>("CoScholasticId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
+                        .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("CoScholasticId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("AddedBy")
                         .HasColumnType("nvarchar(max)");
@@ -866,18 +869,18 @@ namespace Shikhsa.Data.Migrations
                     b.Property<DateTime?>("UpdatedDate")
                         .HasColumnType("datetime2");
 
-                    b.HasKey("CoScholasticId");
+                    b.HasKey("Id");
 
                     b.ToTable("CoScholastics");
                 });
 
             modelBuilder.Entity("Shikhsa.Models.CoScholasticArea", b =>
                 {
-                    b.Property<long>("CoScholasticAreaId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
+                        .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("CoScholasticAreaId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("AddedBy")
                         .HasColumnType("nvarchar(max)");
@@ -888,11 +891,18 @@ namespace Shikhsa.Data.Migrations
                     b.Property<int>("ClassId")
                         .HasColumnType("int");
 
-                    b.Property<long>("CoScholasticId")
-                        .HasColumnType("bigint");
-
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
+
+                    b.Property<string>("SubjectNameInLanguage")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("nvarchar(max)");
@@ -900,11 +910,7 @@ namespace Shikhsa.Data.Migrations
                     b.Property<DateTime?>("UpdatedDate")
                         .HasColumnType("datetime2");
 
-                    b.HasKey("CoScholasticAreaId");
-
-                    b.HasIndex("ClassId");
-
-                    b.HasIndex("CoScholasticId");
+                    b.HasKey("Id");
 
                     b.ToTable("CoScholasticAreas");
                 });
@@ -3243,21 +3249,6 @@ namespace Shikhsa.Data.Migrations
                     b.Navigation("Staff");
 
                     b.Navigation("Subject");
-                });
-
-            modelBuilder.Entity("Shikhsa.Models.CoScholasticArea", b =>
-                {
-                    b.HasOne("Shikhsa.Models.DataListItem", null)
-                        .WithMany()
-                        .HasForeignKey("ClassId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Shikhsa.Models.CoScholastic", null)
-                        .WithMany()
-                        .HasForeignKey("CoScholasticId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("Shikhsa.Models.DataListItem", b =>
