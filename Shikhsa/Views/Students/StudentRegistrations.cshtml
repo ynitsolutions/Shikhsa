@@ -160,7 +160,7 @@
                                 <input type="checkbox"
                                        name="Filter.SelectedColumns"
                                        value="ApplicationNo"
-                                       checked />
+                                      checked="@(Model.Filter.SelectedColumns?.Contains("ApplicationNo") == true)" />
                                 Application No
                             </label>
                         </div>
@@ -170,7 +170,7 @@
                                 <input type="checkbox"
                                        name="Filter.SelectedColumns"
                                        value="StudentName"
-                                       checked />
+                                   checked="@(Model.Filter.SelectedColumns?.Contains("StudentName") == true)" />
                                 Student Name
                             </label>
                         </div>
@@ -180,7 +180,7 @@
                                 <input type="checkbox"
                                        name="Filter.SelectedColumns"
                                        value="FatherName"
-                                       checked />
+                                         checked="@(Model.Filter.SelectedColumns?.Contains("FatherName") == true)"  />
                                 Father Name
                             </label>
                         </div>
@@ -189,7 +189,7 @@
                                 <input type="checkbox"
                                        name="Filter.SelectedColumns"
                                        value="MotherName"
-                                      />
+                                   checked="@(Model.Filter.SelectedColumns?.Contains("MotherName") == true)" />
                                 Mother Name
                             </label>
                         </div>
@@ -198,7 +198,7 @@
                                 <input type="checkbox"
                                        name="Filter.SelectedColumns"
                                        value="GuardianName"
-                                        />
+                                   checked="@(Model.Filter.SelectedColumns?.Contains("GuardianName") == true)" />
                                 Guardian Name
                             </label>
                         </div>
@@ -207,7 +207,7 @@
                                 <input type="checkbox"
                                        name="Filter.SelectedColumns"
                                        value="LocalAddress"
-                                        />
+                                   checked="@(Model.Filter.SelectedColumns?.Contains("LocalAddress") == true)" />
                                Local Address
                             </label>
                         </div>
@@ -216,7 +216,7 @@
                                 <input type="checkbox"
                                        name="Filter.SelectedColumns"
                                        value="PermanentAddress"
-                                        />
+                                   checked="@(Model.Filter.SelectedColumns?.Contains("PermanentAddress") == true)" />
                                Permanent Address
                             </label>
                         </div>
@@ -227,7 +227,7 @@
                                 <input type="checkbox"
                                        name="Filter.SelectedColumns"
                                        value="FatherMobile"
-                                       checked />
+                                   checked="@(Model.Filter.SelectedColumns?.Contains("FatherMobile") == true)" />
                                 Mobile
                             </label>
                         </div>
@@ -236,7 +236,7 @@
                             <label>
                                 <input type="checkbox"
                                        name="Filter.SelectedColumns"
-                                       value="DOB" />
+                                   value="DOB" checked="@(Model.Filter.SelectedColumns?.Contains("DOB") == true)" />
                                 DOB
                             </label>
                         </div>
@@ -245,7 +245,7 @@
                             <label>
                                 <input type="checkbox"
                                        name="Filter.SelectedColumns"
-                                       value="AadhaarNumber" />
+                                   value="AadhaarNumber" checked="@(Model.Filter.SelectedColumns?.Contains("AadhaarNumer") == true)" />
                                 Aadhaar
                             </label>
                         </div>

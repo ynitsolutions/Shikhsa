@@ -87,7 +87,8 @@ namespace Shikhsa.Data
         public DbSet<CoScholasticArea> CoScholasticAreas { get; set; }
 
         public DbSet<CoScholastic> CoScholastics { get; set; }
-        //public DbSet<PermissionItem> PermissionItems { get; set; }
+        public DbSet<Tbl_ExamObtainedMarks> ExamObtainedMarks { get; set; }
+        public DbSet<StudentExamSummary> StudentExamSummaries { get; set; }
         protected override void OnModelCreating(ModelBuilder builder)
         {
 
@@ -201,7 +202,22 @@ namespace Shikhsa.Data
             builder.Entity<HostelFeePlan>().HasOne(x => x.FeeHeading).WithMany().HasForeignKey(x => x.FeeHeadingId).OnDelete(DeleteBehavior.Restrict);
             builder.Entity<CoScholasticArea>().HasOne<CoScholastic>().WithMany().HasForeignKey(x => x.CoScholasticId).OnDelete(DeleteBehavior.Restrict);
             builder.Entity<CoScholasticArea>().HasOne<DataListItem>().WithMany().HasForeignKey(x => x.ClassId).HasPrincipalKey(x => x.DataListItemId).OnDelete(DeleteBehavior.Restrict);
-
+            builder.Entity<ScholasticExam>() .HasOne(x => x.Class) .WithMany() .HasForeignKey(x => x.ClassId) .HasPrincipalKey(x => x.DataListItemId) .OnDelete(DeleteBehavior.Restrict);
+            builder.Entity<ScholasticExam>().HasOne(x => x.ExamTypes).WithMany().HasForeignKey(x => x.ExamType).HasPrincipalKey(x => x.DataListItemId).OnDelete(DeleteBehavior.Restrict);
+            builder.Entity<ScholasticExam>().HasOne(x => x.Subject).WithMany().HasForeignKey(x => x.SubjectId).OnDelete(DeleteBehavior.Restrict);
+            builder.Entity<ScholasticExam>().HasOne<Batches>().WithMany().HasForeignKey(x => x.BatchId).OnDelete(DeleteBehavior.Restrict);
+            builder.Entity<ScholasticExam>().HasOne<ExamCategory>().WithMany().HasForeignKey(x => x.ExamCategoryId).OnDelete(DeleteBehavior.Restrict);
+            builder.Entity<ScholasticExam>(entity => {entity.HasKey(x => x.Id); entity.HasOne(x => x.Batch).WithMany().HasForeignKey(x => x.BatchId).HasPrincipalKey(x => x.BatchId).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(x => x.Subject).WithMany().HasForeignKey(x => x.SubjectId).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(x => x.Class).WithMany().HasForeignKey(x => x.ClassId).HasPrincipalKey(x => x.DataListItemId).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(x => x.ExamTypes).WithMany().HasForeignKey(x => x.ExamType).HasPrincipalKey(x => x.DataListItemId).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(x => x.ExamCategory).WithMany().HasForeignKey(x => x.ExamCategoryId).OnDelete(DeleteBehavior.Restrict);
+            });
+           builder.Entity<StudentExamSummary>().HasIndex(x => new{x.BatchId,x.ClassId,x.SectionId,x.ExamCategoryId,x.StudentId}).IsUnique();
+            builder.Entity<StudentExamSummary>(entity =>
+            {
+                entity.HasOne(s => s.Class).WithMany().HasForeignKey(s => s.ClassId).OnDelete(DeleteBehavior.NoAction);entity.HasOne(s => s.Section).WithMany().HasForeignKey(s => s.SectionId).OnDelete(DeleteBehavior.NoAction);entity.HasOne(s => s.Student).WithMany().HasForeignKey(s => s.StudentId).OnDelete(DeleteBehavior.NoAction);entity.HasOne(s => s.Batch).WithMany().HasForeignKey(s => s.BatchId).OnDelete(DeleteBehavior.NoAction);entity.HasOne(s => s.ExamCategory).WithMany().HasForeignKey(s => s.ExamCategoryId).OnDelete(DeleteBehavior.NoAction);
+            });
         }
         public override int SaveChanges()
         {

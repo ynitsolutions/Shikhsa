@@ -28,4 +28,25 @@ namespace Shikhsa.ViewModels
         public HostelFeePlan NewHostel { get; set; } = new();
         public List<HostelFeePlan> HostelPlans { get; set; } = new();
     }
+    //public class FeeCollectionVM
+    //{
+    //    public int ClassId { get; set; }
+
+    //    public int BatchId { get; set; }
+
+    //    public long StudentId { get; set; }
+
+    //    public int DueFeeBatch { get; set; }
+
+    //    public bool ShowFeeDetails { get; set; }
+
+    //    public List<SelectListItem> ClassList { get; set; } = new();
+
+    //    public List<SelectListItem> BatchList { get; set; } = new();
+
+    //    public List<StudentDropdownVM> StudentList { get; set; } = new();
+
+    //    public List<StudentFeeVM> FeeList { get; set; } = new();
+    //}
+
 }

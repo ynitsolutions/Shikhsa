@@ -11,8 +11,10 @@ namespace Shikhsa.Models
         [Required]
         public string ExamName { get; set; }
 
-        
-        public string? SubjectIds { get; set; }
+        public int SubjectId { get; set; }
+        /// <summary>
+        /// public string? SubjectIds { get; set; }
+        /// </summary>
 
         [Required]
         public int ClassId { get; set; }
@@ -41,5 +43,10 @@ namespace Shikhsa.Models
 
         [NotMapped]
         public string? BatchName { get; set; }
+        public virtual SubjectMasters Subject { get; set; }
+        public virtual Batches Batch { get; set; }
+        public virtual ExamCategory ExamCategory { get; set; }
+        public virtual DataListItem Class { get; set; }
+        public virtual DataListItem ExamTypes { get; set; }
     }
 }

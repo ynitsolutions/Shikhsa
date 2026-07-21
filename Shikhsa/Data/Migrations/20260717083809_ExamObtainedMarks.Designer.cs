@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Shikhsa.Data;
 
@@ -11,9 +12,11 @@ using Shikhsa.Data;
 namespace Shikhsa.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260717083809_ExamObtainedMarks")]
+    partial class ExamObtainedMarks
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1734,8 +1737,6 @@ namespace Shikhsa.Data.Migrations
 
                     b.HasIndex("ExamCategoryId");
 
-                    b.HasIndex("ExamType");
-
                     b.HasIndex("SubjectId");
 
                     b.ToTable("scholasticExams");
@@ -2520,69 +2521,6 @@ namespace Shikhsa.Data.Migrations
                     b.HasIndex("StaffId");
 
                     b.ToTable("StaffSalaryHistory");
-                });
-
-            modelBuilder.Entity("Shikhsa.Models.StudentExamSummary", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
-
-                    b.Property<string>("AddedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("AddedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("BatchId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ClassId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ExamCategoryId")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsFreeze")
-                        .HasColumnType("bit");
-
-                    b.Property<int?>("RankInClass")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Remarks")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("SectionId")
-                        .HasColumnType("int");
-
-                    b.Property<long>("StudentId")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ClassId");
-
-                    b.HasIndex("ExamCategoryId");
-
-                    b.HasIndex("SectionId");
-
-                    b.HasIndex("StudentId");
-
-                    b.HasIndex("BatchId", "ClassId", "SectionId", "ExamCategoryId", "StudentId")
-                        .IsUnique();
-
-                    b.ToTable("StudentExamSummaries");
                 });
 
             modelBuilder.Entity("Shikhsa.Models.SubjectMasters", b =>
@@ -3547,12 +3485,6 @@ namespace Shikhsa.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Shikhsa.Models.DataListItem", "ExamTypes")
-                        .WithMany()
-                        .HasForeignKey("ExamType")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("Shikhsa.Models.SubjectMasters", "Subject")
                         .WithMany()
                         .HasForeignKey("SubjectId")
@@ -3564,8 +3496,6 @@ namespace Shikhsa.Data.Migrations
                     b.Navigation("Class");
 
                     b.Navigation("ExamCategory");
-
-                    b.Navigation("ExamTypes");
 
                     b.Navigation("Subject");
                 });
@@ -3668,49 +3598,6 @@ namespace Shikhsa.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Staff");
-                });
-
-            modelBuilder.Entity("Shikhsa.Models.StudentExamSummary", b =>
-                {
-                    b.HasOne("Shikhsa.Models.Batches", "Batch")
-                        .WithMany()
-                        .HasForeignKey("BatchId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("Shikhsa.Models.DataListItem", "Class")
-                        .WithMany()
-                        .HasForeignKey("ClassId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("Shikhsa.Models.ExamCategory", "ExamCategory")
-                        .WithMany()
-                        .HasForeignKey("ExamCategoryId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("Shikhsa.Models.DataListItem", "Section")
-                        .WithMany()
-                        .HasForeignKey("SectionId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("Shikhsa.Models.Tbl_Students", "Student")
-                        .WithMany()
-                        .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("Batch");
-
-                    b.Navigation("Class");
-
-                    b.Navigation("ExamCategory");
-
-                    b.Navigation("Section");
-
-                    b.Navigation("Student");
                 });
 
             modelBuilder.Entity("Shikhsa.Models.Tbl_ExamObtainedMarks", b =>

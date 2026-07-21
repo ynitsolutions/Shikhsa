@@ -58,7 +58,10 @@ namespace Shikhsa.Models
             public int? RegClassId { get; set; }
             public long? ParentId { get; set; }
             public int? Status { get; set; }
-
+            public bool IsTranspot { get; set; }
+            public bool IsHostel { get; set; } 
+            public int? TranspotId { get; set; }
+        public int? HostelId { get; set; }
         [ForeignKey("ParentId")]
             public virtual Tbl_Parents? Parent { get; set; }
 
@@ -192,7 +195,11 @@ namespace Shikhsa.Models
         public int? AdmitSectionId { get; set; }
         public int? AdmitBatchId { get; set; }
         public string? UserId { get; set; }
-
+        public bool IsTranspot { get; set; }
+        public bool IsHostel { get; set; }
+        public int? TranspotId { get; set; }
+        public int? HostelId { get; set; }
+        public string? ScholarNumber { get; set; }
         public long StudentRegisterId { get; set; }
 
         [ForeignKey("ParentId")]

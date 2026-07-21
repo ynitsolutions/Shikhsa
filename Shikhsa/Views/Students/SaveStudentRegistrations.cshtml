@@ -20,7 +20,7 @@
     </permission>
          @*    <button type="submit" class="btn btn-success">Save </button> *@
             <permission controller="Students" action="StudentRegistrations" type="view">
-            <a asp-action="StudentRegistration" class="btn btn-secondary"> Back </a>
+                <a asp-action="SaveStudentRegistrations" class="btn btn-secondary"> Back </a>
             </permission>
         </div>
 
@@ -301,7 +301,108 @@
                             <span asp-validation-for="HandicapDetails" class="text-danger"></span>
 
                         </div>
+                        <!--Transport-->
+                        <div class="col-12 col-md-6 col-lg-4">
 
+                            <label class="form-label d-block">
+
+                                @Localizer.Get("Tranport Facility") ?
+
+                            </label>
+
+                            <div class="form-check form-switch">
+
+                                <input asp-for="IsTranspot" class="form-check-input" type="checkbox" id="IsTranspot" />
+
+                                <label class="form-check-label" for="IsTranspot">
+
+                                    @Localizer.Get("Yes")
+
+                                </label>
+
+                            </div>
+
+                        </div>
+                        <div class="col-12 col-md-6 col-lg-4"
+                             id="divTranspotDetails"
+                             style="display:none;">
+
+                            <label asp-for="TranspotId"
+                                   class="form-label">
+
+                                @Localizer.Get("Transpot")
+
+                            </label>
+
+                        
+                            <select asp-for="TranspotId" class="form-control select2 required">
+
+                                <option value="">
+                                    @Localizer.Get("Select")
+                                </option>
+
+                                @foreach (var item in ViewBag.TranspotList)
+                                {
+                                    <option value="@item.DataListItemId">
+                                        @item.DataListItemText
+                                    </option>
+                                }
+
+                            </select>
+                            <span asp-validation-for="TranspotId" class="text-danger"></span>
+
+                        </div>
+                        <!--Hostel-->
+                        <div class="col-12 col-md-6 col-lg-4">
+
+                            <label class="form-label d-block">
+
+                                @Localizer.Get("Hostel Facility") ?
+
+                            </label>
+
+                            <div class="form-check form-switch">
+
+                                <input asp-for="IsHostel" class="form-check-input" type="checkbox" id="IsHostel" />
+
+                                <label class="form-check-label" for="IsHostel">
+
+                                    @Localizer.Get("Yes")
+
+                                </label>
+
+                            </div>
+
+                        </div>
+                        <div class="col-12 col-md-6 col-lg-4"
+                             id="divHostelDetails"
+                             style="display:none;">
+
+                            <label asp-for="HostelId"
+                                   class="form-label">
+
+                                @Localizer.Get("Hostel")
+
+                            </label>
+
+
+                            <select asp-for="HostelId" class="form-control select2 required">
+
+                                <option value="">
+                                    @Localizer.Get("Select")
+                                </option>
+
+                                @foreach (var item in ViewBag.HostelList)
+                                {
+                                    <option value="@item.DataListItemId">
+                                        @item.DataListItemText
+                                    </option>
+                                }
+
+                            </select>
+                            <span asp-validation-for="HostelId" class="text-danger"></span>
+
+                        </div>
                         <!-- Identification Mark -->
 
                         <div class="col-12 col-md-6 col-lg-4">
@@ -520,7 +621,7 @@
                                 <label class="form-label">
                                      @Localizer.Get(" Mother Email")
                                 </label>
-                                <input asp-for="Parent.MotherEmail" class="form-control text-only" placeholder="Mother Email" />
+                                <input asp-for="Parent.MotherEmail" class="form-control" type="email" placeholder="Mother Email" />
                                @*  <input type="email"
                                        id="MotherEmail"
                                        name="MotherEmail"
@@ -628,7 +729,7 @@
                                       @Localizer.Get("Guardian Mobile")
                                 </label>
                                 <input asp-for="Parent.GuardianContactNo"
-                                       class="form-control text-only required"
+                                       class="form-control indianmobile required"
                                        placeholder="Guardian Contact No" />
                                 @* <input type="text"
                                        id="GuardianContactNo"
@@ -897,11 +998,23 @@
         $(document).ready(function () {
 
             toggleHandicap();
+            toggleTranport();
+            toggleHostel();
             TogglePreviousSchoolTab();
 
             $("#IsHandicap").change(function () {
 
                 toggleHandicap();
+
+            });
+            $("#IsTranspot").change(function () {
+
+               toggleTranport();
+
+            });
+            $("#IsHostel").change(function () {
+
+               toggleHostel();
 
             });
 
@@ -1075,6 +1188,36 @@
                 $("#divHandicapDetails").hide();
 
                 $("#HandicapDetails").val("");
+
+            }
+        }
+          function toggleTranport() {
+
+            if ($("#IsTranspot").is(":checked")) {
+
+                $("#divTranspotDetails").show();
+
+            }
+            else {
+
+                $("#divTranspotDetails").hide();
+
+                $("#TranspotId").val("").trigger('change');
+
+            }
+        }
+         function toggleHostel() {
+
+            if ($("#IsHostel").is(":checked")) {
+
+                $("#divHostelDetails").show();
+
+            }
+            else {
+
+                $("#divHostelDetails").hide();
+
+                $("#HostelId").val("").trigger('change');
 
             }
         }

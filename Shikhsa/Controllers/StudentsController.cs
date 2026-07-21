@@ -39,6 +39,8 @@ namespace Shikhsa.Controllers
             ViewBag.ReligionList = GetDataListItems("Religion");
             ViewBag.BoardList = GetDataListItems("Board");
             ViewBag.ClassList = GetDataListItems("Class");
+            ViewBag.TranspotList = GetDataListItems("Transport");
+            ViewBag.HostelList = GetDataListItems("Hostel List");
             ViewBag.GenderList = GetDataListItems("Gender");
             ViewBag.StatusList = GetDataListItems("Status");
             ViewBag.SectionList = GetDataListItems("Section");
@@ -65,8 +67,11 @@ namespace Shikhsa.Controllers
             ViewBag.GenderList = GetDataListItems("Gender");
             ViewBag.StatusList = GetDataListItems("Status");
             ViewBag.SectionList = GetDataListItems("Section");
+            ViewBag.TranspotList = GetDataListItems("Transport");
+            ViewBag.HostelList = GetDataListItems("Hostel List");
             model.Students =  await _repo.GetStudentReport(model.Filter);
-
+            
+           
             return View(model);
         }
        
@@ -81,6 +86,9 @@ namespace Shikhsa.Controllers
             ViewBag.GenderList = GetDataListItems("Gender");
             ViewBag.StatusList = GetDataListItems("Status");
             ViewBag.SectionList = GetDataListItems("Section");
+
+            ViewBag.TranspotList = GetDataListItems("Transport");
+            ViewBag.HostelList = GetDataListItems("Hostel List");
             ViewBag.InitialClassId = (await GetSchoolInfo())?.InitialClassId;
             if (id > 0)
             {
@@ -425,6 +433,10 @@ namespace Shikhsa.Controllers
                     dbStudent.GenderId = model.GenderId;
                     dbStudent.IsHandicap = model.IsHandicap;
                     dbStudent.HandicapDetails = model.HandicapDetails;
+                    dbStudent.IsTranspot = model.IsTranspot;
+                    dbStudent.TranspotId = model.TranspotId;
+                    dbStudent.HostelId = model.HostelId;
+                    dbStudent.IsHostel = model.IsHostel;
                     dbStudent.IdentificationMark = model.IdentificationMark;
                     dbStudent.AdmissionBatchId = model.AdmissionBatchId;
                     dbStudent.ParentId = parent.ParentId;

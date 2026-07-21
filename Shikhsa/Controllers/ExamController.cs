@@ -9,6 +9,7 @@ using Shikhsa.Helpers;
 using Shikhsa.Models;
 using Shikhsa.Services;
 using Shikhsa.ViewModels;
+using System.Security.Claims;
 
 namespace Shikhsa.Controllers
 {
@@ -177,20 +178,33 @@ namespace Shikhsa.Controllers
 
             return RedirectToAction("ScholasticExams");
         }
+        //[HttpGet]
+        //public IActionResult SaveScholasticExams(int id)
+        //{
+        //    ScholasticExamVM vm = new ScholasticExamVM();
+        //     vm = _repository.Edit(id);
+
+        //    if (vm == null)
+        //        return NotFound();
+        //    vm.SelectedSubjects = vm.Exam.SubjectIds
+        //           .Split(',')
+        //           .Select(int.Parse)
+        //           .ToList();
+        //    vm.Classes = GetDataListItems("Class");
+        //    vm.ExamType = GetDataListItems("Exam Type");
+        //    return View("ScholasticExams", vm);
+        //}
         [HttpGet]
         public IActionResult SaveScholasticExams(int id)
         {
-            ScholasticExamVM vm = new ScholasticExamVM();
-             vm = _repository.Edit(id);
+            var vm = _repository.Edit(id);
 
             if (vm == null)
                 return NotFound();
-            vm.SelectedSubjects = vm.Exam.SubjectIds
-                   .Split(',')
-                   .Select(int.Parse)
-                   .ToList();
+
             vm.Classes = GetDataListItems("Class");
             vm.ExamType = GetDataListItems("Exam Type");
+
             return View("ScholasticExams", vm);
         }
         [SkipPermission]
@@ -378,6 +392,129 @@ namespace Shikhsa.Controllers
 
             return RedirectToAction(nameof(CoScholasticArea));
         }
+        #endregion
+        #region Exam Marks Entry
+
+        [HttpGet]
+        public IActionResult ExamMarksEntry()
+        {
+            var vm = _repository.GetFillMarksViewModel();
+
+            return View(vm);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [SkipPermission]
+        public IActionResult BatchChanged(ExamMarksEntryVM vm)
+        {
+            vm = _repository.GetFillMarksViewModel();
+
+            vm.BatchId = Request.Form["BatchId"].ToString() == ""
+                ? 0
+                : Convert.ToInt32(Request.Form["BatchId"]);
+
+            vm.StaffId = Request.Form["StaffId"].ToString() == ""
+                ? 0
+                : Convert.ToInt64(Request.Form["StaffId"]);
+
+            vm.Classes = _repository.GetClasses(vm.BatchId, vm.StaffId);
+
+            return View("ExamMarksEntry", vm);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [SkipPermission]
+        public IActionResult ClassChanged(ExamMarksEntryVM vm)
+        {
+            vm = _repository.GetFillMarksViewModel();
+
+            vm.BatchId = Convert.ToInt32(Request.Form["BatchId"]);
+            vm.StaffId = Convert.ToInt64(Request.Form["StaffId"]);
+            vm.ClassId = Convert.ToInt32(Request.Form["ClassId"]);
+
+            vm.Classes = _repository.GetClasses(vm.BatchId, vm.StaffId);
+
+            vm.Sections = _repository.GetSections(
+                vm.BatchId,
+                vm.StaffId,
+                vm.ClassId);
+
+            return View("ExamMarksEntry", vm);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [SkipPermission]
+        public IActionResult SectionChanged(ExamMarksEntryVM vm)
+        {
+            vm = _repository.GetFillMarksViewModel();
+
+            vm.BatchId = Convert.ToInt32(Request.Form["BatchId"]);
+            vm.StaffId = Convert.ToInt64(Request.Form["StaffId"]);
+            vm.ClassId = Convert.ToInt32(Request.Form["ClassId"]);
+            vm.SectionId = Convert.ToInt32(Request.Form["SectionId"]);
+
+            vm.Classes = _repository.GetClasses(vm.BatchId, vm.StaffId);
+
+            vm.Sections = _repository.GetSections(
+                vm.BatchId,
+                vm.StaffId,
+                vm.ClassId);
+            vm.ExamCategories = _context.ExamCategories.Where(x => x.IsActive).ToList();
+
+            return View("ExamMarksEntry", vm);
+        }
+
+        [HttpPost]
+        [SkipPermission]
+        [ValidateAntiForgeryToken]
+        public IActionResult LoadStudents(ExamMarksEntryVM vm)
+        {
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            bool isAdmin =
+                User.IsInRole("Admin") ||
+                User.IsInRole("Principal") ||
+                User.IsInRole("YN IT Solutions");
+
+            //  vm = _repository.LoadStudents(vm, userId, isAdmin);
+            vm = _repository.LoadStudents(vm);
+            return View("ExamMarksEntry", vm);
+        }
+
+        [HttpPost]
+        [SkipPermission]
+        [ValidateAntiForgeryToken]
+        public IActionResult Save(ExamMarksEntryVM vm)
+        {
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            bool isAdmin =
+                User.IsInRole("Admin") ||
+                User.IsInRole("Principal") ||
+                User.IsInRole("YN IT Solutions");
+
+            int result = _repository.Save(vm, userId, isAdmin);
+
+            if (result > 0)
+            {
+                TempData["Success"] = "Marks saved successfully.";
+            }
+            else
+            {
+                TempData["Error"] = "Unable to save marks.";
+            }
+
+            //vm = _repository.LoadStudents(vm, userId, isAdmin);
+            vm = _repository.LoadStudents(vm);
+
+            return View("ExamMarksEntry", vm);
+        }
+
+        #endregion
+        #region Co-Scholastic Entry
         #endregion
     }
 }

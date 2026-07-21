@@ -1,0 +1,669 @@
+﻿@model Shikhsa.ViewModels.ExamMarksEntryVM
+
+@{
+    ViewData["Title"] = "Exam Marks Entry";
+}
+<style>
+    .table-scroll {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: auto;
+    max-height: 600px;   /* Vertical Scroll */
+    white-space: nowrap;
+}
+
+.table-scroll table {
+    width: max-content;
+    min-width: 100%;
+}
+
+.card,
+.card-body {
+    overflow: hidden;
+}
+
+    .toggle-freeze {
+        border: none;
+        background: none;
+        padding: 0;
+    }
+
+        .toggle-freeze i {
+            font-size: 20px;
+            cursor: pointer;
+            transition: .2s;
+        }
+
+            .toggle-freeze i:hover {
+                transform: scale(1.15);
+            }
+</style>
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">
+
+        @TempData["Success"]
+
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">
+
+        @TempData["Error"]
+
+    </div>
+}
+<form asp-action="LoadStudents" asp-controller="Exam" method="post">
+
+    @Html.AntiForgeryToken()
+
+    <div class="card shadow-sm mb-3">
+
+       @*  <div class="card-header bg-primary text-white">
+
+            <h5 class="mb-0">
+                @Localizer.Get("Exam") @Localizer.Get("Marks") @Localizer.Get("Entry")
+            </h5>
+
+        </div> *@
+
+        <div class="card-body">
+
+            <div class="row">
+
+                <!-- Batch -->
+
+                <div class="col-md-2 mb-3">
+
+                    <label class="form-label"> @Localizer.Get("Batch")</label>
+
+                    <select asp-for="BatchId"
+                            class="form-select select2" onchange="this.form.action='@Url.Action("BatchChanged", "Exam")';this.form.submit();"
+                            asp-items="@(new SelectList(Model.Batches, "BatchId", "AcademicYear"))">
+
+                        <option value="">Select Batch</option>
+
+                    </select>
+
+                </div>
+
+                <!-- Staff -->
+
+                <div class="col-md-2 mb-3">
+
+                    <label class="form-label">@Localizer.Get("Staff")</label> 
+
+                    <select asp-for="StaffId"
+                            class="form-select select2" onchange="this.form.action='@Url.Action("BatchChanged", "Exam")';this.form.submit();"
+                            asp-items="@(new SelectList(Model.Staffs, "StaffId", "FullName"))">
+
+                        <option value="">@Localizer.Get("Select")</option>
+
+                    </select>
+
+                </div>
+
+                <!-- Class -->
+
+                <div class="col-md-2 mb-3">
+
+                    <label class="form-label">@Localizer.Get("Class")</label>
+
+                    <select asp-for="ClassId"
+                            class="form-select select2" onchange="this.form.action='@Url.Action("ClassChanged", "Exam")';this.form.submit();"
+                            asp-items="@(new SelectList(Model.Classes, "DataListItemId", "DataListItemText"))">
+
+                        <option value="">@Localizer.Get("Select")</option>
+
+                    </select>
+
+                </div>
+
+                <!-- Section -->
+
+                <div class="col-md-2 mb-3">
+
+                    <label class="form-label">@Localizer.Get("Section")</label>
+
+                    <select asp-for="SectionId"
+                            class="form-select select2" onchange="this.form.action='@Url.Action("SectionChanged", "Exam")';this.form.submit();"
+                            asp-items="@(new SelectList(Model.Sections, "DataListItemId", "DataListItemText"))">
+
+                        <option value="">@Localizer.Get("Select Section")</option>
+
+                    </select>
+
+                </div>
+
+                <!-- Term -->
+
+                <div class="col-md-2 mb-3">
+
+                    <label asp-for="ExamCategoryId" class="form-label">
+                        @Localizer.Get("Term")
+                    </label>
+
+                    <select asp-for="ExamCategoryId"
+                            class="form-select select2" 
+                            asp-items="@(new SelectList(Model.ExamCategories, "ExamCategoryId", "ExamCategoryName"))">
+
+                        <option value="">@Localizer.Get("Select")</option>
+
+                    </select>
+
+                </div>
+
+                <!-- Exam Type -->
+
+                <div class="col-md-2 mb-3" hidden>
+
+                    <label asp-for="ExamType" class="form-label">
+                        Exam Type
+                    </label>
+
+                    <select asp-for="ExamType"
+                            class="form-select select2"
+                            asp-items="@(new SelectList(Model.ExamTypes, "DataListItemId", "DataListItemText"))">
+
+                        <option value="">Select Type</option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+            <div class="row">
+
+                <div class="col-md-12 text-end">
+
+                    <button type="submit"
+                            class="btn btn-primary">
+
+                        <i class="fa fa-search"></i>
+
+                        Load Students
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    @if (Model.Columns != null && Model.Columns.Any())
+    {
+        <div class="card shadow-sm">
+
+          @*   <div class="card-header bg-success text-white">
+
+                <h5 class="mb-0">
+                    Student Marks Entry
+                </h5>
+
+            </div> *@
+
+            <div class="card-body p-0">
+
+@*                 <div class="table-responsive">
+
+                    <table id="tblMarks"
+                           class="table table-bordered table-striped table-hover align-middle mb-0"> *@
+                <div class="table-scroll">
+                    <table id="tblMarks"
+                           class="table table-bordered table-striped table-hover align-middle mb-0">
+                        <thead class="table-dark">
+
+                            <tr>
+
+                                <th style="min-width:70px">
+                                   #
+                                </th>
+
+                                <th style="min-width:120px">
+                                    @Localizer.Get("Application No")
+                                </th>
+
+                                <th style="min-width:250px">
+                                    @Localizer.Get("Student") @Localizer.Get("Name")
+                                </th>
+
+                                @for (int c = 0; c < Model.Columns.Count; c++)
+                                {
+                                    <th class="text-center"
+                                        style="min-width:140px">
+
+                                        <div class="fw-bold">
+
+                                            @Model.Columns[c].SubjectName
+
+                                        </div>
+
+                                        <small>
+
+                                            @Model.Columns[c].ExamName
+
+                                        </small>
+
+                                        <br />
+
+                                        <span class="badge bg-primary">
+
+                                            Max :
+                                            @Model.Columns[c].MaxMarks
+
+                                        </span>
+
+                                        <input type="hidden"
+                                               asp-for="Columns[c].ExamId" />
+
+                                        <input type="hidden"
+                                               asp-for="Columns[c].SubjectId" />
+
+                                        <input type="hidden"
+                                               asp-for="Columns[c].MaxMarks" />
+
+                                    </th>
+                                }
+                                <th style="min-width:220px">
+                                    Remarks
+                                </th>
+                                <th style="min-width:220px">
+                                   Total
+                                </th>
+                                <th style="min-width:220px">
+                                  %
+                                </th>
+                                <th style="min-width:220px">
+                                  Rank in Class
+                                </th>
+                                <th style="min-width:220px">
+                                   Freeze
+                                </th>
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            @if (Model.Students != null && Model.Students.Any())
+                            {
+                                @for (int i = 0; i < Model.Students.Count; i++)
+                                {
+                                    <tr>
+
+                                        <td>
+
+                                          @*   @Model.Students[i].RollNo *@
+                                          @(i+1)
+
+                                            <input type="hidden" asp-for="Students[i].StudentId" />
+                                            <input type="hidden" asp-for="Students[i].RollNo" />
+                                            <input type="hidden" asp-for="Students[i].AdmissionNo" />
+                                            <input type="hidden" asp-for="Students[i].StudentName" />
+
+                                        </td>
+
+                                        <td>
+
+                                            @Model.Students[i].AdmissionNo
+
+                                        </td>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          
+                                        <td>
+
+                                            @Model.Students[i].StudentName
+
+                                        </td>
+
+                                        @for (int j = 0; j < Model.Columns.Count; j++)
+                                        {
+                                            <td>
+
+                                                <input type="hidden"
+                                                       asp-for="Students[i].Marks[j].ExamObtainedMarkId" />
+
+                                                <input type="hidden"
+                                                       asp-for="Students[i].Marks[j].ExamId" />
+
+                                                <input type="hidden"
+                                                       asp-for="Students[i].Marks[j].SubjectId" />                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+
+                                                @if (Model.Students[i].Marks[j].IsFreeze)
+                                                {
+                                                    <input asp-for="Students[i].Marks[j].Marks"
+                                                           class="form-control form-control-sm text-end mark-input decimal" data-max="@Model.Columns[j].MaxMarks"
+                                                           readonly />
+
+                                                    <div class="form-check mt-1">
+
+                                                        <input asp-for="Students[i].Marks[j].IsAbsent"
+                                                               class="form-check-input"
+                                                               disabled />
+
+                                                        <label class="form-check-label">
+
+                                                            AB
+
+                                                        </label>
+
+                                                    </div>
+
+                                                    <input type="hidden"
+                                                           asp-for="Students[i].Marks[j].IsAbsent" />
+
+                                                    <input type="hidden"
+                                                           asp-for="Students[i].Marks[j].IsFreeze" />
+
+                                                }
+                                                else
+                                                {
+                                                    <input asp-for="Students[i].Marks[j].Marks"
+                                                           type="number"
+                                                           min="0"
+                                                           max="@Model.Columns[j].MaxMarks"
+                                                           data-max="@Model.Columns[j].MaxMarks"
+                                                           step="0.01"
+                                                           readonly="@(Model.Students[i].IsFreeze ? "readonly" : null)"
+                                                           class="form-control form-control-sm text-end mark-input decimal" />
+
+                                                    <div class="form-check mt-1">
+                                                        a
+                                                       @*  <input asp-for="Students[i].Marks[j].IsAbsent" class="form-check-input" /> *@
+                                                        <input asp-for="Students[i].Marks[j].IsAbsent"
+                                                               class="form-check-input absent-input"
+                                                               disabled="@(Model.Students[i].IsFreeze ? "disabled" : null)" />
+
+                                                        <label class="form-check-label">
+
+                                                            AB
+
+                                                        </label>
+
+                                                    </div>
+
+                                                    <input type="hidden"
+                                                           asp-for="Students[i].Marks[j].IsFreeze" />
+                                                }
+
+                                              @*   <input asp-for="Students[i].Marks[j].Remarks"
+                                                       class="form-control form-control-sm mt-1"
+                                                       placeholder="Remarks" /> *@
+
+                                            </td>
+                                        }
+                                        <td>
+                                            <input asp-for="Students[i].Remarks"
+                                                   class="form-control form-control-sm"
+                                                   placeholder="Remarks" readonly="@(Model.Students[i].IsFreeze ? "readonly" : null)" />
+                                        </td>
+                                        <td>
+                                            <input asp-for="Students[i].Total"
+                                                   class="form-control form-control-sm total"
+                                                   placeholder="total"  readonly/>
+                                        </td>
+                                        <td>
+                                            <input asp-for="Students[i].Percent"
+                                                   class="form-control form-control-sm percent"
+                                                   placeholder="Percent" readonly/>
+                                        </td>
+                                        <td>
+                                            <input asp-for="Students[i].RankInClass"
+                                                   class="form-control form-control-sm rank"
+                                                   placeholder="Rank In Class" readonly/>
+                                        </td>
+                                        <td class="text-center">
+
+                                            @if (Model.IsClassTeacher.GetValueOrDefault())
+                                            {
+                                                <input asp-for="Students[i].IsFreeze" class="freeze-value" type="hidden" />
+
+                                                <button type="button" class="btn btn-sm btn-link toggle-freeze p-0">
+
+                                                    <i class="freeze-icon fa-solid @(Model.Students[i].IsFreeze ? "fa-lock text-danger" : "fa-lock-open text-success") fs-5"></i>
+
+                                                </button>
+                                            }
+                                            else
+                                            {
+                                                @Html.HiddenFor(x => x.Students[i].IsFreeze)
+
+                                                <i class="fa-solid @(Model.Students[i].IsFreeze ? "fa-lock text-danger" : "fa-lock-open text-success") fs-5"></i>
+                                            }
+
+                                        </td>
+                                    </tr>
+                                }
+                            }
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+            <div class="card-footer">
+
+                <button type="submit"
+                        formaction="@Url.Action("Save", "Exam")"
+                        class="btn btn-success">
+
+                    <i class="fa fa-save"></i>
+
+                    Save Marks
+
+                </button>
+
+            </div>
+
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-warning mt-3">
+
+            Please select Batch, Staff, Class, Section, Term and Exam Type
+            then click
+            <strong>Load Students</strong>.
+
+        </div>
+    }
+
+</form>
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('#tblMarks').DataTable({
+                paging: true,
+                ordering: true,
+                searching: true,
+                info: false,
+                scrollX: true,
+                scrollCollapse: true
+
+            });
+        });
+                       $(document).on("click",".toggle-freeze",function(){
+
+            let hidden=$(this).closest("td").find(".freeze-value");
+
+            let value=hidden.val()==="True" || hidden.val()==="true";
+
+            value=!value;
+
+            hidden.val(value);
+
+            if(value)
+            {
+                $(this).html('<i class="fa-solid fa-lock text-danger fs-5"></i>');
+
+                $(this).closest("tr")
+                       .find(".mark-input,.remark-input,.absent-check")
+                       .prop("readonly",true)
+                       .prop("disabled",true);
+            }
+            else
+            {
+                $(this).html('<i class="fa-solid fa-lock-open text-success fs-5"></i>');
+
+                $(this).closest("tr")
+                       .find(".mark-input,.remark-input")
+                       .prop("readonly",false);
+
+                $(this).closest("tr")
+                       .find(".absent-check")
+                       .prop("disabled",false);
+            }
+
+        });
+    </script>
+    <script>
+
+        $(function () {
+
+            calculateAll();
+
+            $(document).on("keyup change", ".mark-input", function () {
+
+                calculateRow($(this).closest("tr"));
+
+                calculateRank();
+
+            });
+
+        });
+
+
+        function calculateAll() {
+
+            $("#tblMarks tbody tr").each(function () {
+
+                calculateRow($(this));
+
+            });
+
+            calculateRank();
+
+        }
+
+
+        function calculateRow(row) {
+
+            var total = 0;
+
+            var maxMarks = 0;
+
+            row.find(".mark-input").each(function () {
+
+                var mark = parseFloat($(this).val());
+               var max = Number(this.dataset.max);
+
+                if (isNaN(mark))
+                    mark = 0;
+
+                if (mark > max)
+                    mark = max;
+
+                total += mark;
+
+                maxMarks += max;
+
+            });
+
+            var percent = 0;
+
+            if (maxMarks > 0)
+                percent = (total * 100) / maxMarks;
+                        console.log("Total :", total);
+        console.log("Max :", maxMarks);
+        console.log("Percent :", percent);
+
+            row.find(".total").val(total.toFixed(2));
+
+            row.find(".percent").val(percent.toFixed(2));
+
+            row.find(".grade").val(getGrade(percent));
+
+        }
+
+
+        function getGrade(percent) {
+
+            for (var i = 0; i < grades.length; i++) {
+
+                if (percent >= grades[i].min &&
+                    percent <= grades[i].max) {
+
+                    return grades[i].grade;
+
+                }
+
+            }
+
+            return "";
+
+        }
+
+
+        function calculateRank() {
+
+            var students = [];
+
+            $("#tblMarks tbody tr").each(function () {
+
+                students.push({
+
+                    row: $(this),
+
+                    total: parseFloat($(this).find(".total").val()) || 0
+
+                });
+
+            });
+
+            students.sort(function (a, b) {
+
+                return b.total - a.total;
+
+            });
+
+            var rank = 1;
+
+            for (var i = 0; i < students.length; i++) {
+
+                if (i > 0 &&
+                    students[i].total < students[i - 1].total) {
+
+                    rank = i + 1;
+
+                }
+
+                students[i].row.find(".rank").val(rank);
+
+            }
+
+        }
+
+        const grades = [
+
+            { min: 91, max: 100, grade: "A1" },
+            { min: 81, max: 90, grade: "A2" },
+            { min: 71, max: 80, grade: "B1" },
+            { min: 61, max: 70, grade: "B2" },
+            { min: 51, max: 60, grade: "C1" },
+            { min: 41, max: 50, grade: "C2" },
+            { min: 33, max: 40, grade: "D" },
+            { min: 0, max: 32, grade: "E" }
+
+        ];
+
+    </script>
+}
