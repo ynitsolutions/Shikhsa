@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using ClosedXML.Excel;
+using DocumentFormat.OpenXml.InkML;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -6,7 +8,11 @@ using Shikhsa.Data;
 using Shikhsa.Models;
 using Shikhsa.Models.Common;
 using Shikhsa.ViewModels;
+using System.ComponentModel;
 using System.Security.Claims;
+using System.IO;
+
+
 
 namespace Shikhsa.DataBase.Repositry
 {
@@ -200,7 +206,24 @@ namespace Shikhsa.DataBase.Repositry
             }
         }
 
+        public T FillStudentFilters<T>(T vm) where T : StudentFilterVM
+        {
+            vm.Batches = _context.Batches
+                .Where(x => x.IsActive && x.ActiveForAdmission)
+                .OrderByDescending(x => x.BatchId)
+                .ToList();
+            vm.Staffs = GetStaffList();
 
+            if (vm.BatchId > 0 && vm.StaffId > 0)
+                vm.Classes = GetClasses(vm.BatchId, vm.StaffId);
+
+            if (vm.ClassId > 0)
+                vm.Sections = GetSections(vm.BatchId,
+                                          vm.StaffId,
+                                          vm.ClassId);
+
+            return vm;
+        }
         public ScholasticExamVM Edit(int id)
         {
             var vm = GetViewModel();
@@ -790,13 +813,13 @@ namespace Shikhsa.DataBase.Repositry
             //----------------------------------------------------
             // Students
             //----------------------------------------------------
-
+            int Admitted = _context.DataListItems.Where(x => x.DataListItemValue == "Admitted" && x.IsActive).Select(x => x.DataListItemId).FirstOrDefault();
             var students = _context.Tbl_Students
                 .Where(x =>
                     x.AdmitBatchId == vm.BatchId &&
                     x.AdmitClassId == vm.ClassId &&
                     x.AdmitSectionId == vm.SectionId &&
-                    x.IsActive)
+                    x.IsActive && x.Status == Admitted)
                 .OrderBy(x => x.FirstName)
                 .ThenBy(x => x.MiddleName)
                 .ThenBy(x => x.LastName)
@@ -1198,7 +1221,7 @@ namespace Shikhsa.DataBase.Repositry
 
                     bool studentFreeze = summary.IsFreeze;
 
-           
+
                     foreach (var mark in student.Marks)
                     {
                         //--------------------------------------------------
@@ -1269,7 +1292,7 @@ namespace Shikhsa.DataBase.Repositry
                         }
                     }
                     //--------------------------------------------------
-             
+
                 } // Student Loop End
 
                 //--------------------------------------------------
@@ -1311,5 +1334,702 @@ namespace Shikhsa.DataBase.Repositry
             }
         }
         #endregion
+        #region
+        public CoScholasticGradeEntryVM LoadStudents(CoScholasticGradeEntryVM vm)
+        {
+            // Dynamic Columns
+            bool isClassTeacher = _context.ClassTeachers.Any(x =>
+                x.BatchId == vm.BatchId &&
+                x.ClassId == vm.ClassId &&
+                x.SectionId == vm.SectionId &&
+                x.StaffId == vm.StaffId &&
+                x.IsActive);
+
+            vm.IsClassTeacher = isClassTeacher;
+            vm.Columns = _context.CoScholasticAreas
+                .Where(x => x.ClassId == vm.ClassId && x.IsActive)
+                .OrderBy(x => x.CoScholastic.Title)
+                .Select(x => new CoScholasticColumnVM
+                {
+                    CoScholasticAreaId = x.CoScholasticAreaId,
+                    CoScholasticId = x.CoScholasticId,
+                    Title = x.CoScholastic.Title,
+                    SubjectNameInLanguage = x.CoScholastic.SubjectNameInLanguage
+                })
+                .ToList();
+            int Admitted = _context.DataListItems.Where(x => x.DataListItemValue == "Admitted" && x.IsActive).Select(x => x.DataListItemId).FirstOrDefault();
+            var students = _context.Tbl_Students
+                .Where(x =>
+                    x.AdmitBatchId == vm.BatchId &&
+                    x.AdmitClassId == vm.ClassId &&
+                    x.AdmitSectionId == vm.SectionId &&
+                    x.IsActive && x.Status == Admitted)
+                .OrderBy(x => x.FirstName)
+                .ThenBy(x => x.MiddleName)
+                .ThenBy(x => x.LastName)
+                .ToList();
+
+            var grades = _context.CoScholasticGrades
+                .Where(x => x.BatchId == vm.BatchId
+                         && x.ClassId == vm.ClassId
+                         && x.SectionId == vm.SectionId
+                         && x.ExamCategoryId == vm.ExamCategoryId)
+                .ToList();
+
+            vm.Students = students.Select(student =>
+            {
+                var row = new CoScholasticStudentVM
+                {
+                    StudentId = student.StudentId,
+                    AdmissionNo = student.ApplicationNo,
+                    StudentName = student.FirstName + " " + student.MiddleName + " " + student.LastName,
+                    IsFreeze = grades.Any(x =>
+                          x.StudentId == student.StudentId &&
+                          x.IsFreeze)
+                };
+
+                foreach (var column in vm.Columns)
+                {
+                    var grade = grades.FirstOrDefault(x =>
+                        x.StudentId == student.StudentId &&
+                        x.CoScholasticAreaId == column.CoScholasticAreaId);
+
+                    row.Grades.Add(new StudentCoScholasticGradeVM
+                    {
+                        GradeEntryId = grade?.GradeEntryId ?? 0,
+                        StudentId = student.StudentId,
+                        CoScholasticAreaId = column.CoScholasticAreaId,
+                        ExamCategoryId = vm.ExamCategoryId,
+                        Grade = grade?.Grade ?? "",
+
+                    });
+                }
+
+                return row;
+            }).ToList();
+
+            return vm;
+        }
+        public CoScholasticGradeEntryVM GetcoscholasticMarksViewModel()
+        {
+            CoScholasticGradeEntryVM vm = new();
+
+            vm.Batches = _context.Batches
+                .Where(x => x.IsActive && x.ActiveForAdmission)
+                .OrderByDescending(x => x.BatchId)
+                .ToList();
+
+            vm.Classes = new List<DataListItem>();
+
+            vm.Sections = new List<DataListItem>();
+
+            vm.Staffs = GetStaffList();
+            vm.Students = new List<CoScholasticStudentVM>();
+            return vm;
+        }
+        public int SaveCoscholastic(CoScholasticGradeEntryVM vm)
+        {
+            try
+            {
+                foreach (var student in vm.Students)
+                {
+                    foreach (var grade in student.Grades)
+                    {
+                        var dbGrade = _context.CoScholasticGrades
+                            .FirstOrDefault(x =>
+                                x.BatchId == vm.BatchId &&
+                                x.ClassId == vm.ClassId &&
+                                x.SectionId == vm.SectionId &&
+                                x.ExamCategoryId == vm.ExamCategoryId &&
+                                x.StudentId == student.StudentId &&
+                                x.CoScholasticAreaId == grade.CoScholasticAreaId);
+
+                        if (dbGrade == null)
+                        {
+                            dbGrade = new CoScholasticGrade
+                            {
+                                BatchId = vm.BatchId,
+                                ClassId = vm.ClassId,
+                                SectionId = vm.SectionId,
+                                ExamCategoryId = vm.ExamCategoryId,
+                                StudentId = student.StudentId,
+                                CoScholasticAreaId = grade.CoScholasticAreaId,
+                                Grade = grade.Grade,
+                                AddedDate = DateTime.Now,
+                                AddedBy = GetUserName(),
+                                IsActive = true,
+                                IsFreeze = student.IsFreeze
+                            };
+
+                            _context.CoScholasticGrades.Add(dbGrade);
+                        }
+                        else
+                        {
+                            dbGrade.Grade = grade.Grade;
+                            dbGrade.IsFreeze = student.IsFreeze;
+                            dbGrade.UpdatedDate = DateTime.Now;
+                            dbGrade.UpdatedBy = GetUserName();
+                        }
+                    }
+                }
+
+                return _context.SaveChanges();
+            }
+            catch
+            {
+                return 0;
+            }
+        }
+        #endregion
+        private string GetUserName()
+        {
+            return _httpContextAccessor.HttpContext?.User?.Identity?.Name ?? "System";
+        }
+
+        public byte[] ExportCoScholasticExcel(CoScholasticGradeEntryVM vm)
+        {
+            // Dynamic Columns
+            var columns = _context.CoScholasticAreas
+                .Where(x => x.ClassId == vm.ClassId && x.IsActive)
+                .OrderBy(x => x.CoScholastic.Title)
+                .Select(x => new
+                {
+                    x.CoScholasticAreaId,
+                    x.CoScholastic.Title,
+                    x.CoScholastic.SubjectNameInLanguage
+                })
+                .ToList();
+
+            int admitted = _context.DataListItems
+                .Where(x => x.DataListItemValue == "Admitted" && x.IsActive)
+                .Select(x => x.DataListItemId)
+                .FirstOrDefault();
+
+            var students = _context.Tbl_Students
+                .Where(x =>
+                    x.AdmitBatchId == vm.BatchId &&
+                    x.AdmitClassId == vm.ClassId &&
+                    x.AdmitSectionId == vm.SectionId &&
+                    x.Status == admitted &&
+                    x.IsActive)
+                .OrderBy(x => x.FirstName)
+                .ThenBy(x => x.MiddleName)
+                .ThenBy(x => x.LastName)
+                .ToList();
+
+            var grades = _context.CoScholasticGrades
+                .Where(x =>
+                    x.BatchId == vm.BatchId &&
+                    x.ClassId == vm.ClassId &&
+                    x.SectionId == vm.SectionId &&
+                    x.ExamCategoryId == vm.ExamCategoryId)
+                .ToList();
+
+            using var workbook = new XLWorkbook();
+
+            var ws = workbook.Worksheets.Add("Co-Scholastic Grades");
+
+            int row = 1;
+            int col = 1;
+
+            // Header
+            ws.Cell(row, col++).Value = "Sr.";
+            ws.Cell(row, col++).Value = "Admission No";
+            ws.Cell(row, col++).Value = "Student Name";
+
+            foreach (var area in columns)
+            {
+                ws.Cell(row, col).Value =
+                    $"{area.Title}\n{area.SubjectNameInLanguage}";
+
+                ws.Cell(row, col).Style.Alignment.WrapText = true;
+
+                col++;
+            }
+
+            ws.Cell(row, col).Value = "Freeze";
+
+            // Header Style
+            var header = ws.Range(1, 1, 1, col);
+
+            header.Style.Font.Bold = true;
+            header.Style.Font.FontColor = XLColor.White;
+            header.Style.Fill.BackgroundColor = XLColor.DarkBlue;
+            header.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+            header.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+
+            row++;
+            //=====================================
+            // Student Data
+            //=====================================
+
+            int sr = 1;
+
+            foreach (var student in students)
+            {
+                col = 1;
+
+                ws.Cell(row, col++).Value = sr++;
+
+                ws.Cell(row, col++).Value = student.ApplicationNo;
+
+                ws.Cell(row, col++).Value =
+                    $"{student.FirstName} {student.MiddleName} {student.LastName}".Replace("  ", " ").Trim();
+
+                foreach (var area in columns)
+                {
+                    var grade = grades.FirstOrDefault(x =>
+                        x.StudentId == student.StudentId &&
+                        x.CoScholasticAreaId == area.CoScholasticAreaId);
+
+                    // Selected Grade (A/B/C/D)
+                    ws.Cell(row, col++).Value = grade?.Grade ?? "";
+                }
+
+                // Freeze Status
+                bool isFreeze = grades.Any(x =>
+                    x.StudentId == student.StudentId &&
+                    x.IsFreeze);
+
+                ws.Cell(row, col).Value = isFreeze ? "Yes" : "No";
+
+                row++;
+            }
+
+            //=====================================
+            // Formatting
+            //=====================================
+
+            var usedRange = ws.RangeUsed();
+
+            usedRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+            usedRange.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
+
+            ws.Columns().AdjustToContents();
+            ws.Rows().AdjustToContents();
+
+            ws.SheetView.FreezeRows(1);
+
+            //=====================================
+            // Return Excel
+            //=====================================
+
+            using var stream = new MemoryStream();
+
+            workbook.SaveAs(stream);
+
+            return stream.ToArray();
+        }
+        public byte[] ExportExamMarksExcel(ExamMarksEntryVM vm)
+        {
+            #region Load Subject Columns
+
+            var columns = _context.scholasticExams
+                .Where(x => x.BatchId == vm.BatchId
+                         && x.ClassId == vm.ClassId
+                         && x.ExamCategoryId == vm.ExamCategoryId
+                         && x.IsActive)
+                .OrderBy(x => x.Subject.SubjectName)
+                .ThenBy(x => x.ExamType)
+                .Select(x => new ExamMarkColumnVM
+                {
+                    ExamId = x.Id,
+                    SubjectId = x.SubjectId,
+                    SubjectName = x.Subject.SubjectName,
+                    ExamName = x.ExamCategory.ExamCategoryName,
+
+                    // Apni navigation property ke hisab se change karna
+                    ExamTypeName = x.ExamTypes.DataListItemText,
+
+                    MaxMarks = x.MaxMarks
+                })
+                .ToList();
+
+            #endregion
+
+            #region Load Students
+
+            int admitted = _context.DataListItems
+                .Where(x => x.DataListItemValue == "Admitted" && x.IsActive)
+                .Select(x => x.DataListItemId)
+                .FirstOrDefault();
+
+            var students = _context.Tbl_Students
+                .Where(x =>
+                    x.AdmitBatchId == vm.BatchId &&
+                    x.AdmitClassId == vm.ClassId &&
+                    x.AdmitSectionId == vm.SectionId &&
+                    x.Status == admitted &&
+                    x.IsActive)
+                .OrderBy(x => x.FirstName)
+                .ThenBy(x => x.MiddleName)
+                .ThenBy(x => x.LastName)
+                .ToList();
+
+            #endregion
+
+            #region Load Marks
+
+            var examIds = columns
+                .Select(x => x.ExamId)
+                .ToList();
+
+            var marks = _context.ExamObtainedMarks
+                .Where(x =>
+                    x.BatchId == vm.BatchId &&
+                    x.ClassId == vm.ClassId &&
+                    x.SectionId == vm.SectionId &&
+                    examIds.Contains(x.ExamId))
+                .ToList();
+
+            #endregion
+
+            #region Load Grading Criteria
+
+            var grading = _context.GradingCriteria
+                .Where(x =>
+                    x.BatchId == vm.BatchId &&
+                    x.ClassId == vm.ClassId &&
+                    x.TermId == vm.ExamCategoryId &&
+                    x.IsActive)
+                .OrderByDescending(x => x.MinPercentage)
+                .ToList();
+
+            #endregion
+
+            #region Workbook
+
+            using var workbook = new XLWorkbook();
+
+            var ws = workbook.Worksheets.Add("Exam Marks Report");
+
+            int row = 1;
+            int col = 1;
+
+            #endregion
+
+            #region School Title
+
+            int lastColumn = columns.Count + 8;
+
+            ws.Range(row, 1, row, lastColumn).Merge();
+
+            ws.Cell(row, 1).Value = "STUDENT EXAM MARKS REPORT";
+
+            ws.Range(row, 1, row, lastColumn).Style.Font.Bold = true;
+            ws.Range(row, 1, row, lastColumn).Style.Font.FontSize = 16;
+            ws.Range(row, 1, row, lastColumn).Style.Font.FontColor = XLColor.White;
+
+            ws.Range(row, 1, row, lastColumn).Style.Fill.BackgroundColor =
+                XLColor.FromHtml("#1F4E78");
+
+            ws.Range(row, 1, row, lastColumn)
+                .Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+            row++;
+
+            #endregion
+
+            #region Report Information
+
+            ws.Cell(row, 1).Value = "Batch";
+            ws.Cell(row, 2).Value = vm.Batches
+                .FirstOrDefault(x => x.BatchId == vm.BatchId)?.AcademicYear;
+
+            ws.Cell(row, 3).Value = "Class";
+            ws.Cell(row, 4).Value = vm.Classes
+                .FirstOrDefault(x => x.DataListItemId == vm.ClassId)?.DataListItemText;
+
+            ws.Cell(row, 5).Value = "Section";
+            ws.Cell(row, 6).Value = vm.Sections
+                .FirstOrDefault(x => x.DataListItemId == vm.SectionId)?.DataListItemText;
+
+            ws.Cell(row, 7).Value = "Term";
+            ws.Cell(row, 8).Value = vm.ExamCategories
+                .FirstOrDefault(x => x.ExamCategoryId == vm.ExamCategoryId)?.ExamCategoryName;
+
+            ws.Range(row, 1, row, 8).Style.Font.Bold = true;
+
+            row += 2;
+
+            #endregion
+            #region Header
+
+            col = 1;
+
+            ws.Cell(row, col++).Value = "Sr.";
+            ws.Cell(row, col++).Value = "Admission No";
+            ws.Cell(row, col++).Value = "Student Name";
+
+            foreach (var subject in columns)
+            {
+                string header = $"{subject.ExamName}_{subject.SubjectName}";
+
+                if (!string.IsNullOrWhiteSpace(subject.ExamTypeName))
+                {
+                    header += $"_{subject.ExamTypeName}";
+                }
+
+                header += $" ({subject.MaxMarks})";
+
+                ws.Cell(row, col).Value = header;
+
+                ws.Cell(row, col).Style.Alignment.WrapText = true;
+                ws.Cell(row, col).Style.Alignment.Horizontal =
+                    XLAlignmentHorizontalValues.Center;
+
+                ws.Cell(row, col).Style.Alignment.Vertical =
+                    XLAlignmentVerticalValues.Center;
+
+                ws.Cell(row, col).Style.Font.Bold = true;
+
+                col++;
+            }
+
+            ws.Cell(row, col++).Value = "Total";
+            ws.Cell(row, col++).Value = "%";
+            ws.Cell(row, col++).Value = "Grade";
+            ws.Cell(row, col++).Value = "Rank";
+            ws.Cell(row, col).Value = "Freeze";
+
+            var headerRange = ws.Range(row, 1, row, col);
+
+            headerRange.Style.Fill.BackgroundColor = XLColor.FromHtml("#1F4E78");
+            headerRange.Style.Font.FontColor = XLColor.White;
+            headerRange.Style.Font.Bold = true;
+            headerRange.Style.Alignment.Horizontal =
+                XLAlignmentHorizontalValues.Center;
+            headerRange.Style.Alignment.Vertical =
+                XLAlignmentVerticalValues.Center;
+
+            row++;
+
+            #endregion
+
+            #region Student Data
+
+            int sr = 1;
+
+            foreach (var student in students)
+            {
+                col = 1;
+
+                ws.Cell(row, col++).Value = sr++;
+
+                ws.Cell(row, col++).Value = student.ApplicationNo;
+
+                string studentName =
+                    $"{student.FirstName} {student.MiddleName} {student.LastName}"
+                    .Replace("  ", " ")
+                    .Trim();
+
+                ws.Cell(row, col++).Value = studentName;
+
+                decimal totalObtained = 0;
+                decimal totalMaxMarks = 0;
+
+                bool isFreeze = false;
+
+                foreach (var subject in columns)
+                {
+                    var mark = marks.FirstOrDefault(x =>
+                        x.StudentId == student.StudentId &&
+                        x.ExamId == subject.ExamId);
+
+                    if (mark != null)
+                    {
+                        decimal obtained = mark.ObtainedMarks ?? 0;
+
+                        decimal percent = 0;
+
+                        if (subject.MaxMarks > 0)
+                        {
+                            percent = Math.Round(
+                                (obtained * 100M) / subject.MaxMarks,
+                                2);
+                        }
+
+                        string grade = grading
+                            .FirstOrDefault(x =>
+                                percent >= x.MinPercentage &&
+                                percent <= x.MaxPercentage)
+                            ?.Grade ?? "";
+
+                        ws.Cell(row, col).Value =
+                            $"{obtained:0.##} - {percent:0.00}% - {grade}";
+
+                        totalObtained += obtained;
+                        totalMaxMarks += subject.MaxMarks;
+
+                        if (mark.IsFreeze)
+                            isFreeze = true;
+                    }
+                    else
+                    {
+                        ws.Cell(row, col).Value = "";
+
+                        totalMaxMarks += subject.MaxMarks;
+                    }
+
+                    col++;
+                }
+
+                // Total
+
+                ws.Cell(row, col++).Value = totalObtained;
+
+                // Percentage
+
+                decimal overallPercent = 0;
+
+                if (totalMaxMarks > 0)
+                {
+                    overallPercent = Math.Round(
+                        (totalObtained * 100M) / totalMaxMarks,
+                        2);
+                }
+
+                ws.Cell(row, col++).Value = overallPercent;
+
+                // Overall Grade
+
+                string overallGrade = grading
+                    .FirstOrDefault(x =>
+                        overallPercent >= x.MinPercentage &&
+                        overallPercent <= x.MaxPercentage)
+                    ?.Grade ?? "";
+
+                ws.Cell(row, col++).Value = overallGrade;
+
+                // Rank (Part-3 me fill hoga)
+
+                ws.Cell(row, col++).Value = "";
+
+                // Freeze
+
+                ws.Cell(row, col).Value =
+                    isFreeze ? "Yes" : "No";
+
+                row++;
+            }
+
+            #endregion
+            #region Rank Calculation
+
+            int totalColumn = columns.Count + 4;   // Total Column
+            int rankColumn = columns.Count + 7;    // Rank Column
+
+            var rankList = new List<(int RowNo, decimal Total)>();
+
+            // Student Data starts after:
+            // Row1 = Title
+            // Row2 = Batch/Class/Section
+            // Row3 = Blank
+            // Row4 = Header
+            // Row5 = Student Data
+
+            int dataStartRow = 5;
+
+            for (int r = dataStartRow; r < row; r++)
+            {
+                decimal total = ws.Cell(r, totalColumn).GetValue<decimal>();
+
+                rankList.Add((r, total));
+            }
+
+            rankList = rankList
+                .OrderByDescending(x => x.Total)
+                .ToList();
+
+            int rank = 1;
+
+            for (int i = 0; i < rankList.Count; i++)
+            {
+                if (i > 0 &&
+                    rankList[i].Total < rankList[i - 1].Total)
+                {
+                    rank = i + 1;
+                }
+
+                ws.Cell(rankList[i].RowNo, rankColumn).Value = rank;
+            }
+
+            #endregion
+
+            #region Formatting
+
+            int lastColumns = columns.Count + 8;
+
+            var usedRange = ws.Range(1, 1, row - 1, lastColumns);
+
+            // Borders
+
+            usedRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+            usedRange.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
+
+            // Alignment
+
+            usedRange.Style.Alignment.Vertical =
+                XLAlignmentVerticalValues.Center;
+
+            usedRange.Style.Alignment.Horizontal =
+                XLAlignmentHorizontalValues.Center;
+
+            // Alternate Row Color
+
+            for (int r = dataStartRow; r < row; r++)
+            {
+                if ((r - dataStartRow) % 2 == 0)
+                {
+                    ws.Range(r, 1, r, lastColumns)
+                      .Style.Fill.BackgroundColor =
+                      XLColor.FromHtml("#F8F9FA");
+                }
+            }
+
+            // Total Column
+
+            ws.Column(totalColumn).Style.Font.Bold = true;
+
+            // Percentage Column
+
+            ws.Column(totalColumn + 1).Style.NumberFormat.Format = "0.00";
+
+            // Auto Fit
+
+            ws.Columns().AdjustToContents();
+
+            // Minimum Width
+
+            ws.Column(2).Width = 18;
+            ws.Column(3).Width = 30;
+
+            for (int i = 4; i <= columns.Count + 3; i++)
+            {
+                if (ws.Column(i).Width < 25)
+                    ws.Column(i).Width = 25;
+            }
+
+            // Freeze Header
+
+            ws.SheetView.FreezeRows(4);
+
+            // Auto Filter
+
+            ws.Range(4, 1, 4, lastColumns).SetAutoFilter();
+
+            #endregion
+
+            #region Return File
+
+            using var stream = new MemoryStream();
+
+            workbook.SaveAs(stream);
+
+            return stream.ToArray();
+
+            #endregion
+        }
     }
+   
 }

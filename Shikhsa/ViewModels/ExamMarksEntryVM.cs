@@ -3,35 +3,19 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Shikhsa.ViewModels
 {
-    public class ExamMarksEntryVM
+    public class ExamMarksEntryVM: StudentFilterVM
     {
        
-        public int BatchId { get; set; }
 
-        public long StaffId { get; set; }
-
-        public int ClassId { get; set; }
-
-        public int SectionId { get; set; }
-
-        public int ExamCategoryId { get; set; }
 
         public int ExamType { get; set; }
-        public bool? IsClassTeacher { get; set; }
 
         public List<ExamCategory> ExamCategories { get; set; } = new();
 
         public List<DataListItem> ExamTypes { get; set; } = new();
         // Dropdown
 
-        public List<Batches> Batches { get; set; } = new();
-
-        public List<StaffMaster> Staffs { get; set; } = new();
-
-        public List<DataListItem> Classes { get; set; } = new();
-
-        public List<DataListItem> Sections { get; set; } = new();
-
+      
         // Dynamic Columns
 
         public List<ExamMarkColumnVM> Columns { get; set; } = new();
@@ -53,6 +37,7 @@ namespace Shikhsa.ViewModels
         public decimal MaxMarks { get; set; }
 
         public decimal MinMarks { get; set; }
+        public string ExamTypeName { get; set; } = "";
 
         public int DisplayOrder { get; set; }
     }
@@ -88,5 +73,27 @@ namespace Shikhsa.ViewModels
         public bool IsFreeze { get; set; }
 
         //public string? Remarks { get; set; }
+    }
+    public class StudentFilterVM
+    {
+        public int BatchId { get; set; }
+
+        public long StaffId { get; set; }
+
+        public int ClassId { get; set; }
+
+        public int SectionId { get; set; }
+        public int ExamCategoryId { get; set; }
+        public bool? IsClassTeacher { get; set; }
+
+        // Dropdowns
+        public List<Batches> Batches { get; set; } = new();
+
+        public List<StaffMaster> Staffs { get; set; } = new();
+
+        public List<DataListItem> Classes { get; set; } = new();
+
+        public List<DataListItem> Sections { get; set; } = new();
+        public List<ExamCategory> ExamCategories { get; set; } = new();
     }
 }

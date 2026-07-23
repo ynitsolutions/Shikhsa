@@ -38,6 +38,9 @@ namespace Shikhsa.Models
         public int ClassId { get; set; }
         [NotMapped]
         public string? ClassName { get; set; }
+        //
+        [ForeignKey(nameof(CoScholasticId))]
+        public virtual CoScholastic CoScholastic { get; set; }
     }
     public class CoScholastic : BaseEntity
     {

@@ -1,0 +1,691 @@
+﻿@model Shikhsa.ViewModels.CoScholasticGradeEntryVM
+
+@{
+    ViewData["Title"] = "Co-Scholastic Grade Entry";
+}
+
+<div class="container-fluid">
+
+    <form method="post" asp-action="LoadCoScholasticStudents">
+
+        @Html.AntiForgeryToken()
+
+        <div class="card shadow-sm mb-3">
+
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fa fa-graduation-cap"></i>
+                    Co-Scholastic Grade Entry
+                </h5>
+            </div>
+
+            <div class="card-body">
+
+                <div class="row">
+
+                    <!-- Batch -->
+
+                    <div class="col-md-2 mb-3">
+
+                        <label class="form-label"> @Localizer.Get("Batch")</label>
+
+                        <select asp-for="BatchId"
+                                class="form-select select2"
+                                asp-items="@(new SelectList(Model.Batches, "BatchId", "AcademicYear"))">
+
+                            <option value="">Select Batch</option>
+
+                        </select>
+
+                    </div>
+
+                    <!-- Staff -->
+
+                    <div class="col-md-2 mb-3">
+
+                        <label class="form-label">@Localizer.Get("Staff")</label>
+
+
+                        <select asp-for="StaffId"
+                                class="form-select select2" onchange="this.form.action='@Url.Action("CoScholasticBatchChanged", "Exam")';this.form.submit();"
+                                asp-items="@(new SelectList(Model.Staffs, "StaffId", "FullName"))">
+
+                            <option value="">@Localizer.Get("Select")</option>
+
+                        </select>
+
+                    </div>
+
+                    <!-- Class -->
+
+                    <div class="col-md-2 mb-3">
+
+                        <label class="form-label">@Localizer.Get("Class")</label>
+
+                        <select asp-for="ClassId"
+                                class="form-select select2" onchange="this.form.action='@Url.Action("CoScholasticClassChanged", "Exam")';this.form.submit();"
+                                asp-items="@(new SelectList(Model.Classes, "DataListItemId", "DataListItemText"))">
+
+                            <option value="">@Localizer.Get("Select")</option>
+
+                        </select>
+
+                    </div>
+
+                    <!-- Section -->
+
+                    <div class="col-md-2 mb-3">
+
+                        <label class="form-label">@Localizer.Get("Section")</label>
+
+                        <select asp-for="SectionId"
+                                class="form-select select2" onchange="this.form.action='@Url.Action("CoScholasticSectionChanged", "Exam")';this.form.submit();"
+                                asp-items="@(new SelectList(Model.Sections, "DataListItemId", "DataListItemText"))">
+
+                            <option value="">@Localizer.Get("Select Section")</option>
+
+                        </select>
+
+                    </div>
+                    <!-- Term -->
+
+                    <div class="col-md-2 mb-3">
+
+                        <label asp-for="ExamCategoryId" class="form-label">
+                            @Localizer.Get("Term")
+                        </label>
+
+                        <select asp-for="ExamCategoryId"
+                                class="form-select select2"
+                                asp-items="@(new SelectList(Model.ExamCategories, "ExamCategoryId", "ExamCategoryName"))">
+
+                            <option value="">@Localizer.Get("Select")</option>
+
+                        </select>
+
+                    </div>
+
+                    <!-- Exam Type -->
+                    <!-- Load Button -->
+
+                    <div class="col-md-2 mb-3 d-flex align-items-end">
+
+                        <button type="submit"
+                                asp-action="LoadCoScholasticStudents"
+                                class="btn btn-success w-100">
+
+                            <i class="fa fa-search"></i>
+
+                            Load Students
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+        @if(Model!=null)
+        {
+         @if (Model.Students != null && Model.Students.Any())
+        {
+            <div class="card shadow">
+
+                <div class="card-header bg-secondary text-white">
+
+                    <h6 class="mb-0">
+                        Student Grade Entry
+                    </h6>
+
+                </div>
+
+                <div class="card-body p-0">
+
+                        <div class="table-scroll">
+
+                            <table class="table table-bordered table-striped table-hover align-middle mb-0"
+                                   id="tblMarks">
+
+                            <thead class="table-dark">
+
+                                <tr>
+
+                                    <th style="width:70px">
+                                        Sr.
+                                    </th>
+
+                                    <th style="width:130px">
+                                        Admission No
+                                    </th>
+
+                                    <th style="min-width:220px">
+                                        Student Name
+                                    </th>
+
+                                    @for (int c = 0; c < Model.Columns.Count; c++)
+                                    {
+                                            <th class="text-center" style="min-width:170px">
+
+                                            @Model.Columns[c].Title
+
+                                            <br />
+
+                                            <small class="text-warning">
+
+                                                @Model.Columns[c].SubjectNameInLanguage
+
+                                            </small>
+
+                                        </th>
+                                    }
+
+                                        <th class="text-center" style="min-width:170px">
+
+                                            @if (Model.IsClassTeacher.GetValueOrDefault())
+                                            {
+                                                <button type="button"
+                                                        class="btn btn-link btn-sm p-0"
+                                                        id="toggleAllFreeze"
+                                                        title="Freeze / Unfreeze All">
+
+                                                    <i id="toggleAllFreezeIcon"
+                                                       class="fa-solid fa-lock-open text-success fs-5"></i>
+
+                                                </button>
+                                            }
+                                            else
+                                            {
+                                                <span>Action</span>
+                                            }
+
+                                        </th>
+
+                                </tr>
+
+                            </thead>
+
+                            <tbody>
+                                @for (int i = 0; i < Model.Students.Count; i++)
+                                {
+                                    <tr>
+
+                                        <td class="text-center">
+
+                                            @(i + 1)
+
+                                            <input type="hidden"
+                                                   asp-for="Students[i].StudentId" />
+
+                                        </td>
+
+                                        <td>
+
+                                            @Model.Students[i].AdmissionNo
+
+                                        </td>
+
+                                        <td>
+
+                                            @Model.Students[i].StudentName
+
+                                        </td>
+
+                                        @for (int j = 0; j < Model.Columns.Count; j++)
+                                        {
+                                           @*  <td>
+
+                                                <input type="hidden"
+                                                       asp-for="Students[i].Grades[j].GradeEntryId" />
+
+                                                <input type="hidden"
+                                                       asp-for="Students[i].Grades[j].CoScholasticAreaId" />
+
+                                                <select asp-for="Students[i].Grades[j].Grade"
+                                                        class="form-select form-select-sm"
+                                                        disabled="@Model.Students[i].IsFreeze">
+
+                                                    <option value="">Select</option>
+
+                                                    <option value="A+">A+</option>
+
+                                                    <option value="A">A</option>
+
+                                                    <option value="B+">B+</option>
+
+                                                    <option value="B">B</option>
+
+                                                    <option value="C">C</option>
+
+                                                    <option value="D">D</option>
+
+                                                    <option value="E">E</option>
+
+                                                </select>
+
+                                            </td> *@ 
+                                                 <td style="min-width:170px">
+                                                    <input type="hidden" asp-for="Students[i].Grades[j].GradeEntryId" />
+                                                    <input type="hidden" asp-for="Students[i].Grades[j].CoScholasticAreaId" />
+
+                                                    <div class="d-flex justify-content-center gap-2">
+
+                                                        @* @foreach (var grade in new[] { "A", "B", "C", "D" })
+                                                        {
+                                                            if (Model.Students[i].Grades[j].Grade == grade)
+                                                            {
+                                                                <input type="radio"
+                                                                       name="Students[@i].Grades[@j].Grade"
+                                                                       value="@grade"
+                                                                       checked />
+                                                            }
+                                                            else
+                                                            {
+                                                                <input type="radio"
+                                                                       name="Students[@i].Grades[@j].Grade"
+                                                                       value="@grade" />
+                                                            }
+
+                                                            <label>@grade</label>
+                                                        } *@
+                                                        @foreach (var grade in new[] { "A", "B", "C", "D" })
+                                                        {
+                                                            var id = $"g_{i}_{j}_{grade}";
+
+                                                            <input type="radio"
+                                                                   id="@id"
+                                                                   name="Students[@i].Grades[@j].Grade"
+                                                                   value="@grade"
+                                                                   checked="@(Model.Students[i].Grades[j].Grade == grade)" />
+
+                                                            <label for="@id">@grade</label>
+                                                        }
+                                                    </div>
+
+                                                </td>
+                                        }
+
+                                    @*     <td class="text-center">
+
+                                            @if (Model.Students[i].IsFreeze)
+                                            {
+                                                <span class="badge bg-danger">
+
+                                                    <i class="fa fa-lock"></i>
+
+                                                    Un-Freeze
+
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-success">
+
+                                                    <i class="fa fa-unlock"></i>
+
+                                                   Freeze
+
+                                                </span>
+                                            }
+
+                                        </td> *@
+                                            <td class="text-center">
+
+                                                @if (Model.IsClassTeacher.GetValueOrDefault())
+                                                {
+                                                    <input asp-for="Students[i].IsFreeze" class="freeze-value" type="hidden" />
+
+                                                   @*  <button type="button" class="btn btn-sm btn-link toggle-freeze p-0">
+
+                                                        <i class="freeze-icon fa-solid @(Model.Students[i].IsFreeze ? "fa-lock text-danger" : "fa-lock-open text-success") fs-5"></i>
+
+                                                    </button> *@
+                                                    <button type="button"
+                                                            class="btn btn-sm btn-link toggle-freeze p-0">
+
+                                                        <i class="freeze-icon fa-solid @(Model.Students[i].IsFreeze ? "fa-lock text-danger" : "fa-lock-open text-success") fs-5"></i>
+
+                                                    </button>
+                                                }
+                                                else
+                                                {
+                                                    @Html.HiddenFor(x => x.Students[i].IsFreeze)
+
+                                                   @*  <i class="fa-solid @(Model.Students[i].IsFreeze ? "fa-lock text-danger" : "fa-lock-open text-success") fs-5"></i> *@
+                                                }
+
+                                            </td>
+                                    </tr>
+                                }
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            @*     <div class="card-footer text-end">
+
+                    <button type="submit"
+                                asp-action="CoScholasticMarkEntry"
+                            class="btn btn-primary">
+
+                        <i class="fa fa-save"></i>
+
+                        Save Grades
+
+                    </button>
+
+                </div> *@
+                    <div class="card-footer d-flex justify-content-end gap-2">
+
+                        <button type="submit"
+                                asp-action="ExportCoScholasticExcel"
+                                class="btn btn-success">
+
+                            <i class="fa fa-file-excel"></i>
+                            Export Excel
+
+                        </button>
+
+                        <button type="submit"
+                                asp-action="CoScholasticMarkEntry"
+                                class="btn btn-primary">
+
+                            <i class="fa fa-save"></i>
+                            Save Grades
+
+                        </button>
+
+                    </div>
+
+            </div>
+        }
+        }
+    </form>
+
+</div>
+@section Scripts {
+
+    <partial name="_ValidationScriptsPartial" />
+
+    <style>
+
+        .table-scroll {
+            width: 100%;
+            overflow-x: auto;
+            overflow-y: auto;
+            max-height: 70vh;
+        }
+
+            .table-scroll table {
+                width: max-content;
+                min-width: 100%;
+            }
+
+        table thead th {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            white-space: nowrap;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        table tbody td {
+            vertical-align: middle;
+            white-space: nowrap;
+        }
+
+        /* Sticky Columns */
+
+/*         table th:nth-child(1),
+        table td:nth-child(1) {
+            position: sticky;
+            left: 0;
+            z-index: 10;
+            background: white;
+            text-align: center;
+            min-width: 60px;
+        }
+
+        table th:nth-child(2),
+        table td:nth-child(2) {
+            position: sticky;
+            left: 60px;
+            z-index: 10;
+            background: white;
+            min-width: 120px;
+        }
+
+        table th:nth-child(3),
+        table td:nth-child(3) {
+            position: sticky;
+            left: 180px;
+            z-index: 10;
+            background: white;
+            min-width: 220px;
+        }
+
+        table thead th:nth-child(1),
+        table thead th:nth-child(2),
+        table thead th:nth-child(3) {
+            z-index: 30;
+        } */
+
+        .form-select-sm {
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .card-header h5,
+        .card-header h6 {
+            margin-bottom: 0;
+        }
+
+        .badge {
+            font-size: .75rem;
+        }
+
+        .table-hover tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .btn {
+            min-width: 120px;
+        }
+
+    </style>
+
+    <script>
+         $(document).ready(function () {
+            $('#tblMarks').DataTable({
+                paging: true,
+                ordering: true,
+                searching: true,
+                info: false
+            });
+        });
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const selects = document.querySelectorAll("select.form-select-sm");
+
+            selects.forEach(function (ddl) {
+
+                setColor(ddl);
+
+                ddl.addEventListener("change", function () {
+
+                    setColor(this);
+
+                });
+
+            });
+
+            function setColor(control) {
+
+                control.classList.remove(
+                    "border-success",
+                    "border-primary",
+                    "border-warning",
+                    "border-danger"
+                );
+
+                switch (control.value) {
+
+                    case "A+":
+                    case "A":
+                        control.classList.add("border-success");
+                        break;
+
+                    case "B+":
+                    case "B":
+                        control.classList.add("border-primary");
+                        break;
+
+                    case "C":
+                        control.classList.add("border-warning");
+                        break;
+
+                    case "D":
+                    case "E":
+                        control.classList.add("border-danger");
+                        break;
+                }
+
+            }
+
+        });
+          function updateHeaderFreezeIcon() {
+
+            var total = $(".freeze-value").length;
+
+            var freeze = $(".freeze-value").filter(function () {
+                return $(this).val() == "True" || $(this).val() == "true";
+            }).length;
+
+            if (freeze == total && total > 0) {
+
+                $("#toggleAllFreezeIcon")
+                    .removeClass("fa-lock-open text-success")
+                    .addClass("fa-lock text-danger");
+
+            }
+            else {
+
+                $("#toggleAllFreezeIcon")
+                    .removeClass("fa-lock text-danger")
+                    .addClass("fa-lock-open text-success");
+
+            }
+        }
+
+         function setFreezeRow(tr, freeze) 
+         {
+
+            tr.find(".freeze-value").val(freeze);
+
+            // Radio disable mat karo, sirf click rok do
+            tr.find("input[type=radio]")
+                .css("pointer-events", freeze ? "none" : "auto")
+                .css("cursor", freeze ? "not-allowed" : "pointer")
+                .css("opacity", freeze ? "0.6" : "1");
+
+            tr.toggleClass("table-secondary", freeze);
+
+            var icon = tr.find(".freeze-icon");
+
+            if (freeze) {
+
+                icon.removeClass("fa-lock-open text-success")
+                    .addClass("fa-lock text-danger");
+
+            }
+            else {
+
+                icon.removeClass("fa-lock text-danger")
+                    .addClass("fa-lock-open text-success");
+
+            }
+        }
+        $(document).on("click", ".toggle-freeze", function () 
+        {
+
+            var tr = $(this).closest("tr");
+
+            var freeze = tr.find(".freeze-value").val();
+
+            freeze = (freeze === "True" || freeze === "true");
+
+            freeze = !freeze;
+
+            setFreezeRow(tr, freeze);
+
+            updateHeaderFreezeIcon();
+
+        });
+         $(document).on("click", "#toggleAllFreeze", function () {
+
+            var freezeAll = !$("#toggleAllFreezeIcon").hasClass("fa-lock");
+
+            $("tbody tr").each(function () {
+
+                setFreezeRow($(this), freezeAll);
+
+            });
+
+            updateHeaderFreezeIcon();
+
+        });
+        function updateHeaderFreezeIcon() 
+        {
+
+            var rows = $(".freeze-value");
+
+            if (rows.length === 0)
+                return;
+
+            var total = rows.length;
+
+            var freezeCount = rows.filter(function () {
+
+                return $(this).val() === "True" || $(this).val() === "true";
+
+            }).length;
+
+            var icon = $("#toggleAllFreezeIcon");
+
+            if (freezeCount === total) {
+
+                icon.removeClass("fa-lock-open text-success")
+                    .addClass("fa-lock text-danger");
+
+            }
+            else {
+
+                icon.removeClass("fa-lock text-danger")
+                    .addClass("fa-lock-open text-success");
+
+            }
+        }
+         $(function () {
+
+            $("tbody tr").each(function () {
+
+                var freeze = $(this).find(".freeze-value").val();
+
+                freeze = (freeze === "True" || freeze === "true");
+
+                setFreezeRow($(this), freeze);
+
+            });
+
+            updateHeaderFreezeIcon();
+
+        });
+    </script>
+
+}

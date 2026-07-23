@@ -1,6 +1,7 @@
 ﻿using DocumentFormat.OpenXml.Office2010.Excel;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Shikhsa.Attributes;
 using Shikhsa.Data;
@@ -403,69 +404,100 @@ namespace Shikhsa.Controllers
             return View(vm);
         }
 
+        //[HttpPost]
+        //[ValidateAntiForgeryToken]
+        //[SkipPermission]
+        //public IActionResult BatchChanged(ExamMarksEntryVM vm)
+        //{
+        //    vm = _repository.GetFillMarksViewModel();
+
+        //    vm.BatchId = Request.Form["BatchId"].ToString() == ""
+        //        ? 0
+        //        : Convert.ToInt32(Request.Form["BatchId"]);
+
+        //    vm.StaffId = Request.Form["StaffId"].ToString() == ""
+        //        ? 0
+        //        : Convert.ToInt64(Request.Form["StaffId"]);
+
+        //    vm.Classes = _repository.GetClasses(vm.BatchId, vm.StaffId);
+
+        //    return View("ExamMarksEntry", vm);
+        //}
         [HttpPost]
         [ValidateAntiForgeryToken]
         [SkipPermission]
         public IActionResult BatchChanged(ExamMarksEntryVM vm)
         {
-            vm = _repository.GetFillMarksViewModel();
-
-            vm.BatchId = Request.Form["BatchId"].ToString() == ""
-                ? 0
-                : Convert.ToInt32(Request.Form["BatchId"]);
-
-            vm.StaffId = Request.Form["StaffId"].ToString() == ""
-                ? 0
-                : Convert.ToInt64(Request.Form["StaffId"]);
-
-            vm.Classes = _repository.GetClasses(vm.BatchId, vm.StaffId);
+            vm = PrepareFilters(new ExamMarksEntryVM());
 
             return View("ExamMarksEntry", vm);
         }
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         [SkipPermission]
         public IActionResult ClassChanged(ExamMarksEntryVM vm)
         {
-            vm = _repository.GetFillMarksViewModel();
-
-            vm.BatchId = Convert.ToInt32(Request.Form["BatchId"]);
-            vm.StaffId = Convert.ToInt64(Request.Form["StaffId"]);
-            vm.ClassId = Convert.ToInt32(Request.Form["ClassId"]);
-
-            vm.Classes = _repository.GetClasses(vm.BatchId, vm.StaffId);
-
-            vm.Sections = _repository.GetSections(
-                vm.BatchId,
-                vm.StaffId,
-                vm.ClassId);
+            vm = PrepareFilters(new ExamMarksEntryVM());
 
             return View("ExamMarksEntry", vm);
         }
 
+        //[HttpPost]
+        //[ValidateAntiForgeryToken]
+        //[SkipPermission]
+        //public IActionResult ClassChanged(ExamMarksEntryVM vm)
+        //{
+        //    vm = _repository.GetFillMarksViewModel();
+
+        //    vm.BatchId = Convert.ToInt32(Request.Form["BatchId"]);
+        //    vm.StaffId = Convert.ToInt64(Request.Form["StaffId"]);
+        //    vm.ClassId = Convert.ToInt32(Request.Form["ClassId"]);
+
+        //    vm.Classes = _repository.GetClasses(vm.BatchId, vm.StaffId);
+
+        //    vm.Sections = _repository.GetSections(
+        //        vm.BatchId,
+        //        vm.StaffId,
+        //        vm.ClassId);
+
+        //    return View("ExamMarksEntry", vm);
+        //}
         [HttpPost]
         [ValidateAntiForgeryToken]
         [SkipPermission]
         public IActionResult SectionChanged(ExamMarksEntryVM vm)
         {
-            vm = _repository.GetFillMarksViewModel();
+            vm = PrepareFilters(new ExamMarksEntryVM());
 
-            vm.BatchId = Convert.ToInt32(Request.Form["BatchId"]);
-            vm.StaffId = Convert.ToInt64(Request.Form["StaffId"]);
-            vm.ClassId = Convert.ToInt32(Request.Form["ClassId"]);
-            vm.SectionId = Convert.ToInt32(Request.Form["SectionId"]);
-
-            vm.Classes = _repository.GetClasses(vm.BatchId, vm.StaffId);
-
-            vm.Sections = _repository.GetSections(
-                vm.BatchId,
-                vm.StaffId,
-                vm.ClassId);
-            vm.ExamCategories = _context.ExamCategories.Where(x => x.IsActive).ToList();
+            vm.ExamCategories = _context.ExamCategories
+                .Where(x => x.IsActive)
+                .OrderBy(x => x.DisplayOrder)
+                .ToList();
 
             return View("ExamMarksEntry", vm);
         }
+        //[HttpPost]
+        //[ValidateAntiForgeryToken]
+        //[SkipPermission]
+        //public IActionResult SectionChanged(ExamMarksEntryVM vm)
+        //{
+        //    vm = _repository.GetFillMarksViewModel();
+
+        //    vm.BatchId = Convert.ToInt32(Request.Form["BatchId"]);
+        //    vm.StaffId = Convert.ToInt64(Request.Form["StaffId"]);
+        //    vm.ClassId = Convert.ToInt32(Request.Form["ClassId"]);
+        //    vm.SectionId = Convert.ToInt32(Request.Form["SectionId"]);
+
+        //    vm.Classes = _repository.GetClasses(vm.BatchId, vm.StaffId);
+
+        //    vm.Sections = _repository.GetSections(
+        //        vm.BatchId,
+        //        vm.StaffId,
+        //        vm.ClassId);
+        //    vm.ExamCategories = _context.ExamCategories.Where(x => x.IsActive).ToList();
+
+        //    return View("ExamMarksEntry", vm);
+        //}
 
         [HttpPost]
         [SkipPermission]
@@ -512,9 +544,146 @@ namespace Shikhsa.Controllers
 
             return View("ExamMarksEntry", vm);
         }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [SkipPermission]
+        public IActionResult ExportExcel(ExamMarksEntryVM vm)
+        {
+            var file = _repository.ExportExamMarksExcel(vm);
 
+            return File(
+                file,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                $"ExamMarks_{DateTime.Now:yyyyMMddHHmmss}.xlsx");
+        }
         #endregion
+        private T PrepareFilters<T>(T vm) where T : StudentFilterVM
+        {
+            vm.BatchId = string.IsNullOrWhiteSpace(Request.Form["BatchId"])
+                            ? 0
+                            : Convert.ToInt32(Request.Form["BatchId"]);
+
+            vm.StaffId = string.IsNullOrWhiteSpace(Request.Form["StaffId"])
+                            ? 0
+                            : Convert.ToInt64(Request.Form["StaffId"]);
+
+            vm.ClassId = string.IsNullOrWhiteSpace(Request.Form["ClassId"])
+                            ? 0
+                            : Convert.ToInt32(Request.Form["ClassId"]);
+
+            vm.SectionId = string.IsNullOrWhiteSpace(Request.Form["SectionId"])
+                            ? 0
+                            : Convert.ToInt32(Request.Form["SectionId"]);
+
+            return _repository.FillStudentFilters(vm);
+        }
         #region Co-Scholastic Entry
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [SkipPermission]
+        public IActionResult CoScholasticBatchChanged(CoScholasticGradeEntryVM vm)
+        {
+            vm = PrepareFilters(new CoScholasticGradeEntryVM());
+
+            return View("CoScholasticMarkEntry", vm);
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [SkipPermission]
+        public IActionResult CoScholasticClassChanged(CoScholasticGradeEntryVM vm)
+        {
+            vm = PrepareFilters(new CoScholasticGradeEntryVM());
+
+            return View("CoScholasticMarkEntry", vm);
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [SkipPermission]
+        public IActionResult CoScholasticSectionChanged(CoScholasticGradeEntryVM vm)
+        {
+            vm = PrepareFilters(new CoScholasticGradeEntryVM());
+
+            vm.ExamCategories = _context.ExamCategories
+                .Where(x => x.IsActive)
+                .OrderBy(x => x.DisplayOrder)
+                .ToList();
+
+            return View("CoScholasticMarkEntry", vm);
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [SkipPermission]
+        public IActionResult LoadCoScholasticStudents(CoScholasticGradeEntryVM vm)
+        {
+            vm = PrepareFilters(vm);
+
+            vm.ExamCategories = _context.ExamCategories
+                .Where(x => x.IsActive)
+                .ToList();
+
+            vm = _repository.LoadStudents(vm);
+
+            return View("CoScholasticMarkEntry", vm);
+        }
+        [HttpGet]
+        public IActionResult CoScholasticMarkEntry()
+        {
+            var vm = _repository.GetcoscholasticMarksViewModel();
+
+            return View(vm);
+        }
+        [HttpPost]
+        [SkipPermission]
+        [ValidateAntiForgeryToken]
+        public IActionResult CoScholasticMarkEntry(CoScholasticGradeEntryVM vm)
+        {
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            bool isAdmin =
+                User.IsInRole("Admin") ||
+                User.IsInRole("Principal") ||
+                User.IsInRole("YN IT Solutions");
+
+            int result = _repository.SaveCoscholastic(vm);
+
+            if (result > 0)
+            {
+                TempData["Success"] = "Marks saved successfully.";
+            }
+            else
+            {
+                TempData["Error"] = "Unable to save marks.";
+            }
+
+            //vm = _repository.LoadStudents(vm, userId, isAdmin);
+            vm = _repository.LoadStudents(vm);
+
+            return View("CoScholasticMarkEntry", vm);
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [SkipPermission]
+        public IActionResult ExportCoScholasticExcel(CoScholasticGradeEntryVM vm)
+        {
+            try
+            {
+                var fileBytes = _repository.ExportCoScholasticExcel(vm);
+
+                string fileName =
+                    $"CoScholasticGradeEntry_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+
+                return File(
+                    fileBytes,
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    fileName);
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = ex.Message;
+
+                return RedirectToAction(nameof(CoScholasticMarkEntry));
+            }
+        }
         #endregion
     }
 }

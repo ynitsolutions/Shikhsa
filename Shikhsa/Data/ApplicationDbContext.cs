@@ -89,6 +89,7 @@ namespace Shikhsa.Data
         public DbSet<CoScholastic> CoScholastics { get; set; }
         public DbSet<Tbl_ExamObtainedMarks> ExamObtainedMarks { get; set; }
         public DbSet<StudentExamSummary> StudentExamSummaries { get; set; }
+        public DbSet<CoScholasticGrade> CoScholasticGrades { get; set; }
         protected override void OnModelCreating(ModelBuilder builder)
         {
 
@@ -218,6 +219,7 @@ namespace Shikhsa.Data
             {
                 entity.HasOne(s => s.Class).WithMany().HasForeignKey(s => s.ClassId).OnDelete(DeleteBehavior.NoAction);entity.HasOne(s => s.Section).WithMany().HasForeignKey(s => s.SectionId).OnDelete(DeleteBehavior.NoAction);entity.HasOne(s => s.Student).WithMany().HasForeignKey(s => s.StudentId).OnDelete(DeleteBehavior.NoAction);entity.HasOne(s => s.Batch).WithMany().HasForeignKey(s => s.BatchId).OnDelete(DeleteBehavior.NoAction);entity.HasOne(s => s.ExamCategory).WithMany().HasForeignKey(s => s.ExamCategoryId).OnDelete(DeleteBehavior.NoAction);
             });
+            builder.Entity<CoScholasticArea>().HasOne(x => x.CoScholastic).WithMany().HasForeignKey(x => x.CoScholasticId).HasPrincipalKey(x => x.CoScholasticId).OnDelete(DeleteBehavior.Restrict);
         }
         public override int SaveChanges()
         {

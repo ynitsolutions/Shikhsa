@@ -73,4 +73,29 @@ namespace Shikhsa.Models
         public virtual DataListItem Section { get; set; }
 
     }
+    public class CoScholasticGrade : BaseEntity
+    {
+        [Key]
+        public long GradeEntryId { get; set; }
+
+        public int BatchId { get; set; }
+
+        public int ClassId { get; set; }
+
+        public int SectionId { get; set; }
+
+        public int ExamCategoryId { get; set; }
+
+        public long StudentId { get; set; }
+
+        public long CoScholasticAreaId { get; set; }
+
+        [StringLength(5)]
+        public string Grade { get; set; } = "";
+        public bool IsFreeze { get; set; } = false; 
+
+        public Tbl_StudentsRegistrations Student { get; set; }
+
+        public CoScholasticArea CoScholasticArea { get; set; }
+    }
 }
