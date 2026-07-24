@@ -19,10 +19,11 @@ namespace Shikhsa.Controllers
         private readonly ILogger<AccountController> _logger;
         private readonly PermissionService _permissionService;
         private readonly EmailService _email;
+        private readonly LookupService _lookup;
         public AccountController(
             SignInManager<ApplicationUser> signInManager,
             UserManager<ApplicationUser> userManager,
-            ILogger<AccountController> logger, PermissionService permissionService, ApplicationDbContext context, EmailService email) : base(userManager, permissionService, context,email)
+            ILogger<AccountController> logger, PermissionService permissionService, ApplicationDbContext context, EmailService email, LookupService lookup) : base(userManager, permissionService, context, email,lookup)
         {
             _signInManager = signInManager;
             _userManager = userManager;
@@ -30,6 +31,7 @@ namespace Shikhsa.Controllers
             _permissionService = permissionService;
             _context = context;
             _email = email;
+            _lookup = lookup;
         }
 
         // ── GET: /Account/Login ────────────────────────────

@@ -26,14 +26,14 @@ namespace Shikhsa.Controllers
         private readonly StaffUserRepository _repositoryUser;
         private readonly IWebHostEnvironment _environment;
         private readonly FileUploadHelper _uploadHelper;
-
+        private readonly LookupService _lookup;
         public StaffController(
             ApplicationDbContext context,
             IConfiguration configuration,
             StaffRepository repository,
             UserManager<ApplicationUser> userManager,
  PermissionService permissionService, IWebHostEnvironment env, EmailService email,
-            IWebHostEnvironment environment, FileUploadHelper uploadHelper, StaffUserRepository repositoryUser, RoleManager<ApplicationRole> roleManager) : base(userManager, permissionService, context, email)
+            IWebHostEnvironment environment, FileUploadHelper uploadHelper, StaffUserRepository repositoryUser, RoleManager<ApplicationRole> roleManager, LookupService lookup) : base(userManager, permissionService, context, email, lookup)
         {
             _context = context;
             _configuration = configuration;
@@ -42,6 +42,7 @@ namespace Shikhsa.Controllers
             _uploadHelper = uploadHelper;
             _repositoryUser = repositoryUser;
             _roleManager = roleManager;
+            _lookup = lookup;
         }
         public async Task<IActionResult> Staffs(StaffFilterVM filter)
         {

@@ -7,10 +7,11 @@ using Microsoft.EntityFrameworkCore;
 using Shikhsa.Data;
 using Shikhsa.Models;
 using Shikhsa.Models.Common;
+using Shikhsa.Repositories;
 using Shikhsa.ViewModels;
 using System.ComponentModel;
-using System.Security.Claims;
 using System.IO;
+using System.Security.Claims;
 
 
 
@@ -22,7 +23,8 @@ namespace Shikhsa.DataBase.Repositry
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly RoleManager<ApplicationRole> _roleManager;
-        public ExamRepository(ApplicationDbContext context, UserManager<ApplicationUser> userManager, RoleManager<ApplicationRole> roleManager, IHttpContextAccessor httpContextAccessor)
+        private readonly LookupRepository _lookupRepository;
+        public ExamRepository(ApplicationDbContext context, UserManager<ApplicationUser> userManager, RoleManager<ApplicationRole> roleManager, IHttpContextAccessor httpContextAccessor, LookupRepository lookupRepository)
         {
             _context = context;
 
@@ -30,7 +32,7 @@ namespace Shikhsa.DataBase.Repositry
 
             _roleManager = roleManager;
             _httpContextAccessor = httpContextAccessor;
-
+            _lookupRepository = lookupRepository;
         }
         public ScholasticExamVM GetViewModel()
         {
@@ -718,7 +720,7 @@ namespace Shikhsa.DataBase.Repositry
         //    return vm;
         //}
 
-        public ExamMarksEntryVM LoadStudents(ExamMarksEntryVM vm)
+        public async Task<ExamMarksEntryVM> LoadStudents(ExamMarksEntryVM vm)
         {
             //----------------------------------------------------
             // Logged In User
@@ -731,25 +733,26 @@ namespace Shikhsa.DataBase.Repositry
 
             if (!isAdmin)
             {
-                string userId = _httpContextAccessor.HttpContext.User
+                var userId = _httpContextAccessor.HttpContext.User
                     .FindFirstValue(ClaimTypes.NameIdentifier);
 
-                vm.StaffId = _context.StaffMasters
-                    .Where(x => x.UserId == userId && x.IsActive)
-                    .Select(x => x.StaffId)
-                    .FirstOrDefault();
+                var staff = await _lookupRepository.GetStaffByUserIdAsync(userId);
+
+                if (staff != null)
+                {
+                    vm.StaffId = staff.StaffId;
+                }
             }
 
             //----------------------------------------------------
             // Class Teacher
             //----------------------------------------------------
 
-            bool isClassTeacher = _context.ClassTeachers.Any(x =>
-                x.BatchId == vm.BatchId &&
-                x.ClassId == vm.ClassId &&
-                x.SectionId == vm.SectionId &&
-                x.StaffId == vm.StaffId &&
-                x.IsActive);
+            bool isClassTeacher = await _lookupRepository.IsClassTeacherAsync(
+    vm.BatchId,
+    vm.ClassId,
+    vm.SectionId,
+    vm.StaffId);
 
             vm.IsClassTeacher = isClassTeacher;
 
@@ -813,17 +816,21 @@ namespace Shikhsa.DataBase.Repositry
             //----------------------------------------------------
             // Students
             //----------------------------------------------------
-            int Admitted = _context.DataListItems.Where(x => x.DataListItemValue == "Admitted" && x.IsActive).Select(x => x.DataListItemId).FirstOrDefault();
-            var students = _context.Tbl_Students
-                .Where(x =>
-                    x.AdmitBatchId == vm.BatchId &&
-                    x.AdmitClassId == vm.ClassId &&
-                    x.AdmitSectionId == vm.SectionId &&
-                    x.IsActive && x.Status == Admitted)
-                .OrderBy(x => x.FirstName)
-                .ThenBy(x => x.MiddleName)
-                .ThenBy(x => x.LastName)
-                .ToList();
+            //int Admitted = _context.DataListItems.Where(x => x.DataListItemValue == "Admitted" && x.IsActive).Select(x => x.DataListItemId).FirstOrDefault();
+            //var students = _context.Tbl_Students
+            //    .Where(x =>
+            //        x.AdmitBatchId == vm.BatchId &&
+            //        x.AdmitClassId == vm.ClassId &&
+            //        x.AdmitSectionId == vm.SectionId &&
+            //        x.IsActive && x.Status == Admitted)
+            //    .OrderBy(x => x.FirstName)
+            //    .ThenBy(x => x.MiddleName)
+            //    .ThenBy(x => x.LastName)
+            //    .ToList();
+            var students = await  _lookupRepository.GetStudentsAsync(
+    vm.BatchId,
+    vm.ClassId,
+    vm.SectionId);
 
             //----------------------------------------------------
             // Existing Marks
@@ -908,14 +915,6 @@ namespace Shikhsa.DataBase.Repositry
 
                 vm.Students.Add(row);
             }
-            vm.Batches = _context.Batches
-               .Where(x => x.IsActive && x.ActiveForAdmission)
-               .OrderByDescending(x => x.BatchId)
-               .ToList();
-
-            vm.Staffs = GetStaffList();
-            vm.Classes = GetClasses(vm.BatchId, vm.StaffId);
-            vm.Sections = GetSections(vm.BatchId, vm.StaffId, vm.ClassId);
             vm.ExamCategories = _context.ExamCategories.Where(x => x.IsActive).ToList();
             return vm;
         }
@@ -1335,15 +1334,10 @@ namespace Shikhsa.DataBase.Repositry
         }
         #endregion
         #region
-        public CoScholasticGradeEntryVM LoadStudents(CoScholasticGradeEntryVM vm)
+        public async Task<CoScholasticGradeEntryVM> LoadStudents(CoScholasticGradeEntryVM vm)
         {
             // Dynamic Columns
-            bool isClassTeacher = _context.ClassTeachers.Any(x =>
-                x.BatchId == vm.BatchId &&
-                x.ClassId == vm.ClassId &&
-                x.SectionId == vm.SectionId &&
-                x.StaffId == vm.StaffId &&
-                x.IsActive);
+            bool isClassTeacher = await _lookupRepository.IsClassTeacherAsync(vm.BatchId,vm.ClassId,vm.SectionId,vm.StaffId);
 
             vm.IsClassTeacher = isClassTeacher;
             vm.Columns = _context.CoScholasticAreas
@@ -1357,17 +1351,7 @@ namespace Shikhsa.DataBase.Repositry
                     SubjectNameInLanguage = x.CoScholastic.SubjectNameInLanguage
                 })
                 .ToList();
-            int Admitted = _context.DataListItems.Where(x => x.DataListItemValue == "Admitted" && x.IsActive).Select(x => x.DataListItemId).FirstOrDefault();
-            var students = _context.Tbl_Students
-                .Where(x =>
-                    x.AdmitBatchId == vm.BatchId &&
-                    x.AdmitClassId == vm.ClassId &&
-                    x.AdmitSectionId == vm.SectionId &&
-                    x.IsActive && x.Status == Admitted)
-                .OrderBy(x => x.FirstName)
-                .ThenBy(x => x.MiddleName)
-                .ThenBy(x => x.LastName)
-                .ToList();
+            var students = await _lookupRepository.GetStudentsAsync(vm.BatchId,vm.ClassId,vm.SectionId);
 
             var grades = _context.CoScholasticGrades
                 .Where(x => x.BatchId == vm.BatchId
@@ -1410,6 +1394,9 @@ namespace Shikhsa.DataBase.Repositry
 
             return vm;
         }
+        
+        
+        
         public CoScholasticGradeEntryVM GetcoscholasticMarksViewModel()
         {
             CoScholasticGradeEntryVM vm = new();

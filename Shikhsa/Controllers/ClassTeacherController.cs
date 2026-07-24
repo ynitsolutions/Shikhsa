@@ -22,11 +22,14 @@ namespace Shikhsa.Controllers
         private readonly ClassTeacherRepository _repository;
         private readonly RoleManager<ApplicationRole> _roleManager;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly LookupService _lookup;
+
         public ClassTeacherController(ClassTeacherRepository repository, RoleManager<ApplicationRole> roleManager,
-     UserManager<ApplicationUser> userManager, EmailService email, ApplicationDbContext context, PermissionService permissionService
-     ) :base(userManager, permissionService, context, email)
+     UserManager<ApplicationUser> userManager, EmailService email, ApplicationDbContext context, PermissionService permissionService, LookupService lookup  
+     ) :base(userManager, permissionService, context, email,lookup)
         {
             _repository = repository;
+            _lookup=lookup;
         }
 
         #region Index

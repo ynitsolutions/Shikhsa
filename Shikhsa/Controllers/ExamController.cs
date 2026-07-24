@@ -10,7 +10,9 @@ using Shikhsa.Helpers;
 using Shikhsa.Models;
 using Shikhsa.Services;
 using Shikhsa.ViewModels;
+using Shikhsa.ViewModels.DataFilter;
 using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace Shikhsa.Controllers
 {
@@ -20,13 +22,15 @@ namespace Shikhsa.Controllers
         private readonly RoleManager<ApplicationRole> _roleManager;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ExamRepository _repository;
-        public ExamController(ApplicationDbContext context,RoleManager<ApplicationRole> roleManager,UserManager<ApplicationUser> userManager,PermissionService permissionService, IWebHostEnvironment env, EmailService email,ExamRepository examRepository):
-            base(userManager, permissionService, context, email)
+        private readonly LookupService _lookup;
+        public ExamController(ApplicationDbContext context,RoleManager<ApplicationRole> roleManager,UserManager<ApplicationUser> userManager,PermissionService permissionService, IWebHostEnvironment env, EmailService email,ExamRepository examRepository,LookupService lookupService):
+            base(userManager, permissionService, context, email,lookupService)
         {
             _context = context;
             _roleManager = roleManager;
             _repository = examRepository;
-           
+            _lookup = lookupService;
+
         }
         #region Exam Terms
         public async Task<IActionResult> ExamCategory(int? id)
@@ -397,11 +401,65 @@ namespace Shikhsa.Controllers
         #region Exam Marks Entry
 
         [HttpGet]
-        public IActionResult ExamMarksEntry()
+        public async Task<IActionResult> ExamMarksEntry()
         {
-            var vm = _repository.GetFillMarksViewModel();
+       
+            ExamMarksEntryVM vm = new();
 
+            await _lookup.BindAsync(vm, User);
+            vm.Columns=new List<ExamMarkColumnVM>();
+            vm.ExamCategories =await _context.ExamCategories
+                  .OrderBy(x => x.ExamCategoryName)
+                  .ToListAsync();
+            Console.WriteLine(vm);
             return View(vm);
+           
+        }
+        [HttpPost]
+        [SkipPermission]
+        public async Task<IActionResult> GetTeacherFilter([FromBody] TeacherFilterRequests request)
+        {
+            var vm = new StudentFilterVM
+            {
+                BatchId = request.BatchId,
+                StaffId = request.StaffId,
+                ClassId = request.ClassId,
+                SectionId = request.SectionId
+               
+            };
+
+            await _lookup.BindAsync(vm, User,request.ChangedBy);
+
+            return Json(new
+            {
+                batchId = vm.BatchId,
+                staffId = vm.StaffId,
+                classId = vm.ClassId,
+                sectionId = vm.SectionId,
+
+                lockBatch = vm.LockBatch,
+                lockStaff = vm.LockStaff,
+                lockClass = vm.LockClass,
+                lockSection = vm.LockSection,
+
+                staffs = vm.Staffs.Select(x => new
+                {
+                    staffId = x.StaffId,
+                    fullName = x.FullName
+                }),
+
+                classes = vm.Classes.Select(x => new
+                {
+                    id = x.DataListItemId,
+                    name = x.DataListItemText
+                }),
+
+                sections = vm.Sections.Select(x => new
+                {
+                    id = x.DataListItemId,
+                    name = x.DataListItemText
+                })
+            });
         }
 
         //[HttpPost]
@@ -409,117 +467,64 @@ namespace Shikhsa.Controllers
         //[SkipPermission]
         //public IActionResult BatchChanged(ExamMarksEntryVM vm)
         //{
-        //    vm = _repository.GetFillMarksViewModel();
-
-        //    vm.BatchId = Request.Form["BatchId"].ToString() == ""
-        //        ? 0
-        //        : Convert.ToInt32(Request.Form["BatchId"]);
-
-        //    vm.StaffId = Request.Form["StaffId"].ToString() == ""
-        //        ? 0
-        //        : Convert.ToInt64(Request.Form["StaffId"]);
-
-        //    vm.Classes = _repository.GetClasses(vm.BatchId, vm.StaffId);
+        //    vm = PrepareFilters(new ExamMarksEntryVM());
 
         //    return View("ExamMarksEntry", vm);
         //}
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        [SkipPermission]
-        public IActionResult BatchChanged(ExamMarksEntryVM vm)
-        {
-            vm = PrepareFilters(new ExamMarksEntryVM());
-
-            return View("ExamMarksEntry", vm);
-        }
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        [SkipPermission]
-        public IActionResult ClassChanged(ExamMarksEntryVM vm)
-        {
-            vm = PrepareFilters(new ExamMarksEntryVM());
-
-            return View("ExamMarksEntry", vm);
-        }
-
         //[HttpPost]
         //[ValidateAntiForgeryToken]
         //[SkipPermission]
         //public IActionResult ClassChanged(ExamMarksEntryVM vm)
         //{
-        //    vm = _repository.GetFillMarksViewModel();
-
-        //    vm.BatchId = Convert.ToInt32(Request.Form["BatchId"]);
-        //    vm.StaffId = Convert.ToInt64(Request.Form["StaffId"]);
-        //    vm.ClassId = Convert.ToInt32(Request.Form["ClassId"]);
-
-        //    vm.Classes = _repository.GetClasses(vm.BatchId, vm.StaffId);
-
-        //    vm.Sections = _repository.GetSections(
-        //        vm.BatchId,
-        //        vm.StaffId,
-        //        vm.ClassId);
+        //    vm = PrepareFilters(new ExamMarksEntryVM());
 
         //    return View("ExamMarksEntry", vm);
         //}
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        [SkipPermission]
-        public IActionResult SectionChanged(ExamMarksEntryVM vm)
-        {
-            vm = PrepareFilters(new ExamMarksEntryVM());
 
-            vm.ExamCategories = _context.ExamCategories
-                .Where(x => x.IsActive)
-                .OrderBy(x => x.DisplayOrder)
-                .ToList();
-
-            return View("ExamMarksEntry", vm);
-        }
         //[HttpPost]
         //[ValidateAntiForgeryToken]
         //[SkipPermission]
         //public IActionResult SectionChanged(ExamMarksEntryVM vm)
         //{
-        //    vm = _repository.GetFillMarksViewModel();
+        //    vm = PrepareFilters(new ExamMarksEntryVM());
 
-        //    vm.BatchId = Convert.ToInt32(Request.Form["BatchId"]);
-        //    vm.StaffId = Convert.ToInt64(Request.Form["StaffId"]);
-        //    vm.ClassId = Convert.ToInt32(Request.Form["ClassId"]);
-        //    vm.SectionId = Convert.ToInt32(Request.Form["SectionId"]);
-
-        //    vm.Classes = _repository.GetClasses(vm.BatchId, vm.StaffId);
-
-        //    vm.Sections = _repository.GetSections(
-        //        vm.BatchId,
-        //        vm.StaffId,
-        //        vm.ClassId);
-        //    vm.ExamCategories = _context.ExamCategories.Where(x => x.IsActive).ToList();
+        //    vm.ExamCategories = _context.ExamCategories
+        //        .Where(x => x.IsActive)
+        //        .OrderBy(x => x.DisplayOrder)
+        //        .ToList();
 
         //    return View("ExamMarksEntry", vm);
         //}
+        //[HttpPost]
+        //[SkipPermission]
+        //[ValidateAntiForgeryToken]
+        //public async Task<IActionResult> LoadStudents(ExamMarksEntryVM vm)
+        //{
+        //    string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
+        //    bool isAdmin =
+        //        User.IsInRole("Admin") ||
+        //        User.IsInRole("Principal") ||
+        //        User.IsInRole("YN IT Solutions");
+
+        //    //  vm = _repository.LoadStudents(vm, userId, isAdmin);
+        //    vm = await _repository.LoadStudents(vm);
+        //    return View("ExamMarksEntry", vm);
+        //}
         [HttpPost]
         [SkipPermission]
         [ValidateAntiForgeryToken]
-        public IActionResult LoadStudents(ExamMarksEntryVM vm)
+        public async Task<IActionResult> LoadStudents([FromForm] ExamMarksEntryVM vm)
         {
-            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            vm = await _repository.LoadStudents(vm);
 
-            bool isAdmin =
-                User.IsInRole("Admin") ||
-                User.IsInRole("Principal") ||
-                User.IsInRole("YN IT Solutions");
-
-            //  vm = _repository.LoadStudents(vm, userId, isAdmin);
-            vm = _repository.LoadStudents(vm);
-            return View("ExamMarksEntry", vm);
+            return PartialView("_ExamMarksTable", vm);
         }
 
         [HttpPost]
         [SkipPermission]
         [ValidateAntiForgeryToken]
-        public IActionResult Save(ExamMarksEntryVM vm)
+        public async Task<IActionResult> ExamMarksEntry(ExamMarksEntryVM vm)
         {
             string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -540,7 +545,7 @@ namespace Shikhsa.Controllers
             }
 
             //vm = _repository.LoadStudents(vm, userId, isAdmin);
-            vm = _repository.LoadStudents(vm);
+            vm = await _repository.LoadStudents(vm);
 
             return View("ExamMarksEntry", vm);
         }
@@ -610,32 +615,47 @@ namespace Shikhsa.Controllers
 
             return View("CoScholasticMarkEntry", vm);
         }
+        //[HttpPost]
+        //[ValidateAntiForgeryToken]
+        //[SkipPermission]
+        //public IActionResult LoadCoScholasticStudents(CoScholasticGradeEntryVM vm)
+        //{
+        //    vm = PrepareFilters(vm);
+
+        //    vm.ExamCategories = _context.ExamCategories
+        //        .Where(x => x.IsActive)
+        //        .ToList();
+
+        //    vm = _repository.LoadStudents(vm);
+
+        //    return View("CoScholasticMarkEntry", vm);
+        //}
         [HttpPost]
-        [ValidateAntiForgeryToken]
         [SkipPermission]
-        public IActionResult LoadCoScholasticStudents(CoScholasticGradeEntryVM vm)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> LoadCoScholasticStudents([FromForm] CoScholasticGradeEntryVM vm)
         {
-            vm = PrepareFilters(vm);
+            vm = await _repository.LoadStudents(vm);
 
-            vm.ExamCategories = _context.ExamCategories
-                .Where(x => x.IsActive)
-                .ToList();
-
-            vm = _repository.LoadStudents(vm);
-
-            return View("CoScholasticMarkEntry", vm);
+            return PartialView("_ExamCoScholasticMarkTable", vm);
         }
         [HttpGet]
-        public IActionResult CoScholasticMarkEntry()
+        public async Task<IActionResult> CoScholasticMarkEntry()
         {
-            var vm = _repository.GetcoscholasticMarksViewModel();
-
+            CoScholasticGradeEntryVM vm = new();
+             // var vm = _repository.GetcoscholasticMarksViewModel();
+             await _lookup.BindAsync(vm, User);
+            vm.Students = new List<CoScholasticStudentVM>();
+            vm.ExamCategories = await _context.ExamCategories
+                  .OrderBy(x => x.ExamCategoryName)
+                  .ToListAsync();
+            Console.WriteLine(vm);
             return View(vm);
         }
         [HttpPost]
         [SkipPermission]
         [ValidateAntiForgeryToken]
-        public IActionResult CoScholasticMarkEntry(CoScholasticGradeEntryVM vm)
+        public async Task<IActionResult> CoScholasticMarkEntry(CoScholasticGradeEntryVM vm)
         {
             string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -656,7 +676,7 @@ namespace Shikhsa.Controllers
             }
 
             //vm = _repository.LoadStudents(vm, userId, isAdmin);
-            vm = _repository.LoadStudents(vm);
+            vm = await _repository.LoadStudents(vm);
 
             return View("CoScholasticMarkEntry", vm);
         }

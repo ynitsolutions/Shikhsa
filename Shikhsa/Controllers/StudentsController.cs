@@ -22,14 +22,16 @@ namespace Shikhsa.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         public readonly EmailService _emailService;
         public readonly NotificationService _notificationService;
+        private readonly LookupService _lookup;
         public StudentsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager,
-     PermissionService permissionService, IWebHostEnvironment env,  StudentReportRepository repo, EmailService emailService,NotificationService notificationService) : base(userManager, permissionService, context,emailService)
+     PermissionService permissionService, IWebHostEnvironment env,  StudentReportRepository repo, EmailService emailService,NotificationService notificationService,LookupService lookup) : base(userManager, permissionService, context,emailService, lookup)
         {
             _context = context;
             _env = env;
             _repo = repo;
             _userManager = userManager;
             _notificationService = notificationService;
+            _lookup = lookup;
         }
         #region Registration
         public async Task<IActionResult> StudentRegistrations()

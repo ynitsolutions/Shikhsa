@@ -1,0 +1,321 @@
+﻿@model Shikhsa.ViewModels.ExamMarksEntryVM
+
+@if (Model.Columns != null && Model.Columns.Any())
+{
+    <div class="card shadow-sm">
+
+        <div class="card-body p-0">
+
+            <div class="table-scroll">
+
+                <table id="tblMarks"
+                       class="table table-bordered table-striped table-hover align-middle mb-0">
+
+                    <!-- Yahan pura thead copy kar do -->
+
+                    <thead class="table-dark">
+
+                        <tr>
+
+                            <th style="min-width:70px">
+                                #
+                            </th>
+
+                            <th style="min-width:120px">
+                                @Localizer.Get("Application No")
+                            </th>
+
+                            <th style="min-width:250px">
+                                @Localizer.Get("Student") @Localizer.Get("Name")
+                            </th>
+
+                            @for (int c = 0; c < Model.Columns.Count; c++)
+                            {
+                                <th class="text-center"
+                                    style="min-width:140px">
+
+                                    <div class="fw-bold">
+
+                                        @Model.Columns[c].SubjectName
+
+                                    </div>
+
+                                    <small>
+
+                                        @Model.Columns[c].ExamName
+
+                                    </small>
+
+                                    <br />
+
+                                    <span class="badge bg-primary">
+
+                                        Max :
+                                        @Model.Columns[c].MaxMarks
+
+                                    </span>
+
+                                    <input type="hidden"
+                                           asp-for="Columns[c].ExamId" />
+
+                                    <input type="hidden"
+                                           asp-for="Columns[c].SubjectId" />
+
+                                    <input type="hidden"
+                                           asp-for="Columns[c].MaxMarks" />
+
+                                </th>
+                            }
+                            <th style="min-width:220px">
+                                Remarks
+                            </th>
+                            <th style="min-width:220px">
+                                Total
+                            </th>
+                            <th style="min-width:220px">
+                                %
+                            </th>
+                            <th style="min-width:220px">
+                                Rank in Class
+                            </th>
+                            @*   <th style="min-width:220px">
+                                       Freeze
+                                    </th> *@
+                            @* <th style="min-width:90px" class="text-center">
+                                        Freeze
+                                        @if (Model.IsClassTeacher.GetValueOrDefault())
+                                        {
+                                            <br />
+                                            <button type="button"
+                                                    id="toggleAllFreeze"
+                                                    class="btn btn-sm btn-link p-0">
+                                                <i id="headerFreezeIcon"
+                                                   class="fa-solid fa-lock-open text-success fs-5"></i>
+                                            </button>
+                                        }
+                                    </th> *@
+                            @if (Model.IsClassTeacher.GetValueOrDefault())
+                            {
+                                <th style="min-width:90px" class="text-center">
+                                    Freeze
+                                    <br />
+                                    <button type="button"
+                                            id="toggleAllFreeze"
+                                            class="btn btn-sm btn-link p-0">
+                                        <i id="headerFreezeIcon"
+                                           class="fa-solid fa-lock-open text-success fs-5"></i>
+                                    </button>
+                                </th>
+                            }
+                        </tr>
+
+                    </thead>
+
+                    <!-- Yahan pura tbody copy kar do -->
+
+                    <tbody>
+
+                        @if (Model.Students != null && Model.Students.Any())
+                        {
+                            @for (int i = 0; i < Model.Students.Count; i++)
+                            {
+                                <tr>
+
+                                    <td>
+
+                                        @*   @Model.Students[i].RollNo *@
+                                        @(i + 1)
+
+                                        <input type="hidden" asp-for="Students[i].StudentId" />
+                                        <input type="hidden" asp-for="Students[i].RollNo" />
+                                        <input type="hidden" asp-for="Students[i].AdmissionNo" />
+                                        <input type="hidden" asp-for="Students[i].StudentName" />
+
+                                    </td>
+
+                                    <td>
+
+                                        @Model.Students[i].AdmissionNo
+
+                                    </td>
+
+                                    <td>
+
+                                        @Model.Students[i].StudentName
+
+                                    </td>
+
+                                    @for (int j = 0; j < Model.Columns.Count; j++)
+                                    {
+                                        <td>
+
+                                            <input type="hidden"
+                                                   asp-for="Students[i].Marks[j].ExamObtainedMarkId" />
+
+                                            <input type="hidden"
+                                                   asp-for="Students[i].Marks[j].ExamId" />
+
+                                            <input type="hidden"
+                                                   asp-for="Students[i].Marks[j].SubjectId" />
+
+                                            @if (Model.Students[i].IsFreeze)
+                                            {
+                                                <input asp-for="Students[i].Marks[j].Marks"
+                                                       class="form-control form-control-sm text-end mark-input decimal" data-max="@Model.Columns[j].MaxMarks"
+                                                       readonly />
+
+                                                <div class="form-check mt-1">
+
+                                                    <input asp-for="Students[i].Marks[j].IsAbsent"
+                                                           class="form-check-input"
+                                                           disabled />
+
+                                                    <label class="form-check-label">
+
+                                                        AB
+
+                                                    </label>
+
+                                                </div>
+
+                                                <input type="hidden"
+                                                       asp-for="Students[i].Marks[j].IsAbsent" />
+
+                                                @*    <input type="hidden"
+                                                               asp-for="Students[i].Marks[j].IsFreeze" /> *@
+
+                                            }
+                                            else
+                                            {
+                                                <input asp-for="Students[i].Marks[j].Marks"
+                                                       type="number"
+                                                       min="0"
+                                                       max="@Model.Columns[j].MaxMarks"
+                                                       data-max="@Model.Columns[j].MaxMarks"
+                                                       step="0.01"
+                                                       readonly="@(Model.Students[i].IsFreeze ? "readonly" : null)"
+                                                       class="form-control form-control-sm text-end mark-input decimal" />
+
+                                                <div class="form-check mt-1">
+                                                    a
+                                                    @*  <input asp-for="Students[i].Marks[j].IsAbsent" class="form-check-input" /> *@
+                                                    <input asp-for="Students[i].Marks[j].IsAbsent"
+                                                           class="form-check-input absent-input"
+                                                           disabled="@(Model.Students[i].IsFreeze ? "disabled" : null)" />
+
+                                                    <label class="form-check-label">
+
+                                                        AB
+
+                                                    </label>
+
+                                                </div>
+
+                                                <input type="hidden"
+                                                       asp-for="Students[i].Marks[j].IsFreeze" />
+                                            }
+
+                                            @*   <input asp-for="Students[i].Marks[j].Remarks"
+                                                           class="form-control form-control-sm mt-1"
+                                                           placeholder="Remarks" /> *@
+
+                                        </td>
+                                    }
+                                    <td>
+                                        <input asp-for="Students[i].Remarks"
+                                               class="form-control form-control-sm"
+                                               placeholder="Remarks" readonly="@(Model.Students[i].IsFreeze ? "readonly" : null)" />
+                                    </td>
+                                    <td>
+                                        <input asp-for="Students[i].Total"
+                                               class="form-control form-control-sm total"
+                                               placeholder="total" readonly />
+                                    </td>
+                                    <td>
+                                        <input asp-for="Students[i].Percent"
+                                               class="form-control form-control-sm percent"
+                                               placeholder="Percent" readonly />
+                                    </td>
+                                    <td>
+                                        <input asp-for="Students[i].RankInClass"
+                                               class="form-control form-control-sm rank"
+                                               placeholder="Rank In Class" readonly />
+                                    </td>
+                                    @*    <td class="text-center">
+
+                                                @if (Model.IsClassTeacher.GetValueOrDefault())
+                                                {
+                                                    <input asp-for="Students[i].IsFreeze" class="freeze-value" type="hidden" />
+
+                                                    <button type="button" class="btn btn-sm btn-link toggle-freeze p-0">
+
+                                                        <i class="freeze-icon fa-solid @(Model.Students[i].IsFreeze ? "fa-lock text-danger" : "fa-lock-open text-success") fs-5"></i>
+
+                                                    </button>
+                                                }
+                                                else
+                                                {
+                                                    @Html.HiddenFor(x => x.Students[i].IsFreeze)
+
+                                                    <i class="fa-solid @(Model.Students[i].IsFreeze ? "fa-lock text-danger" : "fa-lock-open text-success") fs-5"></i>
+                                                }
+
+                                            </td> *@
+                                    @if (Model.IsClassTeacher.GetValueOrDefault())
+                                    {
+                                        <td class="text-center">
+
+                                            <input asp-for="Students[i].IsFreeze"
+                                                   class="freeze-value"
+                                                   type="hidden" />
+
+                                            <button type="button"
+                                                    class="btn btn-sm btn-link toggle-freeze p-0">
+
+                                                <i class="freeze-icon fa-solid @(Model.Students[i].IsFreeze ? "fa-lock text-danger" : "fa-lock-open text-success") fs-5"></i>
+
+                                            </button>
+
+                                        </td>
+                                    }
+                                </tr>
+                            }
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+        <div class="card-footer d-flex justify-content-end gap-2">
+
+            <button type="submit"
+                    formaction="@Url.Action("ExamMarksEntry", "Exam")"
+                    class="btn btn-success">
+                <i class="fa fa-save"></i>
+                Save Marks
+            </button>
+
+            <button type="submit"
+                    formaction="@Url.Action("ExportExcel", "Exam")"
+                    class="btn btn-success">
+                <i class="fa fa-file-excel"></i>
+                Export Excel
+            </button>
+
+        </div>
+
+    </div>
+}
+else
+{
+    <div class="alert alert-warning mt-3">
+
+        Please select Batch, Staff, Class, Section and Term then click
+        <strong>Load Students</strong>.
+
+    </div>
+}

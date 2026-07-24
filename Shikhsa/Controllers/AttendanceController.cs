@@ -3,6 +3,7 @@ using DocumentFormat.OpenXml.Office2010.Excel;
 using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Shikhsa.Attributes;
 using Shikhsa.Data;
@@ -16,13 +17,17 @@ namespace Shikhsa.Controllers
     public class AttendanceController : BaseController
     {
         private readonly StaffAttendanceRepository _repository;
+        private readonly StudentAttendanceRepository _studentAttendanceRepository;
         private readonly ApplicationDbContext _context;
         private readonly RoleManager<ApplicationRole> _roleManager;
         private readonly UserManager<ApplicationUser> _userManager;
-        public AttendanceController(StaffAttendanceRepository repository, UserManager<ApplicationUser> userManager, EmailService email, ApplicationDbContext context, PermissionService permissionService) : base(userManager, permissionService, context, email)
+        private readonly LookupService _lookup;
+        public AttendanceController(StaffAttendanceRepository repository, UserManager<ApplicationUser> userManager, EmailService email, ApplicationDbContext context, PermissionService permissionService, StudentAttendanceRepository studentAttendanceRepository, LookupService lookup) : base(userManager, permissionService, context, email,lookup)
         {
             _repository = repository;
             _context = context;
+            _studentAttendanceRepository = studentAttendanceRepository;
+            _lookup = lookup;
         }
 
         private string CurrentUser =>
@@ -197,6 +202,185 @@ namespace Shikhsa.Controllers
 
             return RedirectToAction(nameof(Index));
         }
+        #region Student Attendance
+        public IActionResult StudentsAttendance()
+        {
+            StudentAttendanceVM vm = new();
+
+            vm = PrepareFilters(vm);
+
+            vm.AttendanceTypes = _context.AttendanceTypes
+                .Where(x => x.IsActive)
+                .OrderBy(x => x.DisplayOrder)
+                .ToList();
+
+            return View(vm);
+        }
+        public IActionResult Index()
+        {
+            StudentAttendanceVM vm = new();
+
+            vm = PrepareFilters(vm);
+
+            vm.AttendanceTypes = _context.AttendanceTypes
+                .Where(x => x.IsActive)
+                .OrderBy(x => x.DisplayOrder)
+                .ToList();
+
+            return View(vm);
+        }
+        [HttpPost]
+        public IActionResult ClassChanged(StudentAttendanceVM vm)
+        {
+            vm = PrepareFilters(vm);
+
+            return View("Index", vm);
+        }
+        [HttpPost]
+        public IActionResult SectionChanged(StudentAttendanceVM vm)
+        {
+            vm = PrepareFilters(vm);
+
+            return View("Index", vm);
+        }
+        [HttpPost]
+        public IActionResult LoadStudents(StudentAttendanceVM vm)
+        {
+            vm = PrepareFilters(vm);
+
+            vm.Students = _studentAttendanceRepository.LoadStudents(vm);
+
+            vm.AttendanceTypes = _context.AttendanceTypes
+                .Where(x => x.IsActive)
+                .OrderBy(x => x.DisplayOrder)
+                .ToList();
+
+            return View("Index", vm);
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Save(StudentAttendanceVM vm)
+        {
+            if (!ModelState.IsValid)
+            {
+                vm = PrepareFilters(vm);
+                return View("Index", vm);
+            }
+
+            _studentAttendanceRepository.Save(vm, User.Identity!.Name!);
+
+            TempData["success"] = "Attendance saved successfully.";
+
+            return RedirectToAction(nameof(Index));
+        }
+        private StudentAttendanceVM PrepareFilters(StudentAttendanceVM vm)
+        {
+            var userId = _userManager.GetUserId(User);
+
+            bool isAdminUser =
+                User.IsInRole("Admin") ||
+                User.IsInRole("Principal") ||
+                User.IsInRole("Developer") ||
+                User.IsInRole("YN IT Solutions");
+
+            // ---------------- Batch ----------------
+
+            vm.Batches = _context.Batches
+                .Where(x => x.IsActive)
+                .OrderByDescending(x => x.BatchId)
+                .ToList();
+
+            // ---------------- Staff ----------------
+
+            if (isAdminUser)
+            {
+                vm.StaffList = _context.StaffMasters
+                    .Where(x => x.IsActive)
+                    .OrderBy(x => x.FullName)
+                   
+                    .ToList();
+            }
+            else
+            {
+                var staff = _context.StaffMasters
+                    .FirstOrDefault(x => x.UserId == userId && x.IsActive);
+
+                if (staff != null)
+                {
+                    vm.StaffId = staff.StaffId;
+
+                   vm.StaffList = new List<StaffMaster>
+                    {
+                        new StaffMaster
+                        {
+                            StaffId = staff.StaffId,
+                           FirstName = staff.FirstName,
+                           MiddleName = staff.MiddleName,
+                            LastName = staff.LastName,
+               
+                        }
+                   };
+
+
+                    ViewBag.LockStaff = true;
+                }
+            }
+
+            // ---------------- Class ----------------
+           
+            if (vm.BatchId > 0)
+            {
+                //vm.Classes = _context.DataListItems
+                //    .Where(x => x.IsActive)
+                //    .OrderBy(x => x.DisplayOrder)
+                //    .ToList
+                //    
+                vm.Classes = GetDataListItems("Class");
+            }
+
+            // ---------------- Section ----------------
+
+            if (vm.ClassId > 0)
+            {
+                //vm.Sections = _context.SectionMasters
+                //    .Where(x => x.IsActive)
+                //    .OrderBy(x => x.DisplayOrder)
+                //    .ToList();
+                vm.Sections = GetDataListItems("Section");
+            }
+
+            // ---------------- Attendance Types ----------------
+
+            vm.AttendanceTypes = _context.AttendanceTypes
+                .Where(x => x.IsActive)
+                .OrderBy(x => x.DisplayOrder)
+                .ToList();
+
+            // ---------------- Class Teacher ----------------
+
+            if (!isAdminUser && vm.StaffId > 0)
+            {
+                var assignment = _context.ClassTeachers
+                    .FirstOrDefault(x =>
+                        x.StaffId == vm.StaffId &&
+                       
+                        x.IsActive);
+
+                if (assignment != null)
+                {
+                    vm.BatchId = assignment.BatchId;
+                    vm.ClassId = assignment.ClassId;
+                    vm.SectionId = assignment.SectionId;
+
+                    ViewBag.LockBatch = true;
+                    ViewBag.LockClass = true;
+                    ViewBag.LockSection = true;
+                }
+            }
+
+            return vm;
+        }
+        #endregion
     }
 
 }

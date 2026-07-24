@@ -21,12 +21,14 @@ namespace Shikhsa.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IWebHostEnvironment _env;
         private readonly EmailService _emailService;
+        private readonly LookupService _lookup;
         public FeeHeadingController(FeeHeadingRepository repository, RoleManager<ApplicationRole> roleManager, ApplicationDbContext context,
      UserManager<ApplicationUser> userManager,
-     PermissionService permissionService, IWebHostEnvironment env, EmailService email) :base(userManager, permissionService, context, email)
+     PermissionService permissionService, IWebHostEnvironment env, EmailService email, LookupService lookup) : base(userManager, permissionService, context, email, lookup)
         {
             _repository = repository;
             _context = context;
+            _lookup = lookup;
         }
         #region Frequency
         public async Task<IActionResult> FeeFrequency(int id = 0)

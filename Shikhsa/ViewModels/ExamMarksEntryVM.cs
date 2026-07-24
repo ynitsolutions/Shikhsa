@@ -1,26 +1,37 @@
 ﻿using Shikhsa.Models;
+using Shikhsa.ViewModels.DataFilter;
 using System.ComponentModel.DataAnnotations;
 
 namespace Shikhsa.ViewModels
 {
-    public class ExamMarksEntryVM: StudentFilterVM
+    //public class ExamMarksEntryVM: StudentFilterVM
+    //{
+
+
+
+    //    public int ExamType { get; set; }
+
+    //    public List<ExamCategory> ExamCategories { get; set; } = new();
+
+    //    public List<DataListItem> ExamTypes { get; set; } = new();
+    //    // Dropdown
+
+
+    //    // Dynamic Columns
+
+    //    public List<ExamMarkColumnVM> Columns { get; set; } = new();
+
+    //    // Students
+
+    //    public List<ExamMarksRowVM> Students { get; set; } = new();
+    //}
+    public class ExamMarksEntryVM : StudentFilterVM
     {
-       
-
-
         public int ExamType { get; set; }
 
-        public List<ExamCategory> ExamCategories { get; set; } = new();
-
         public List<DataListItem> ExamTypes { get; set; } = new();
-        // Dropdown
-
-      
-        // Dynamic Columns
 
         public List<ExamMarkColumnVM> Columns { get; set; } = new();
-
-        // Students
 
         public List<ExamMarksRowVM> Students { get; set; } = new();
     }
@@ -74,26 +85,21 @@ namespace Shikhsa.ViewModels
 
         //public string? Remarks { get; set; }
     }
-    public class StudentFilterVM
+   
+    public class StudentFilterVM : BaseFilterVM
     {
-        public int BatchId { get; set; }
-
-        public long StaffId { get; set; }
-
-        public int ClassId { get; set; }
-
-        public int SectionId { get; set; }
         public int ExamCategoryId { get; set; }
+
         public bool? IsClassTeacher { get; set; }
 
-        // Dropdowns
-        public List<Batches> Batches { get; set; } = new();
-
-        public List<StaffMaster> Staffs { get; set; } = new();
-
-        public List<DataListItem> Classes { get; set; } = new();
-
-        public List<DataListItem> Sections { get; set; } = new();
         public List<ExamCategory> ExamCategories { get; set; } = new();
+    }
+    public class TeacherFilterRequests
+    {
+        public int BatchId { get; set; }
+        public long StaffId { get; set; }
+        public int ClassId { get; set; }
+        public int SectionId { get; set; }
+        public string ChangedBy { get; set; } = "";
     }
 }

@@ -1,0 +1,102 @@
+﻿@model Shikhsa.ViewModels.StudentFilterVM
+
+@* <div class="card shadow-sm mb-3">
+    <div class="card-header bg-primary text-white">
+        <i class="fa fa-filter"></i> Search Filter
+    </div>
+
+    <div class="card-body">
+
+        <div class="row g-3"> *@
+
+            <!-- Batch -->
+
+            <div class="col-md-3">
+
+               <label class="form-label">@Localizer.Get("Batch")</label>
+
+                <select asp-for="BatchId" asp-items="@(new SelectList(Model.Batches, "BatchId", "AcademicYear"))" class="form-select" id="BatchId">
+
+                <option value="">@Localizer.Get("Select") @Localizer.Get("Batch")</option>
+
+                </select>
+
+            @*     @if (Model.LockBatch)
+                {
+                    <input type="hidden" asp-for="BatchId" />
+                } *@
+
+            </div>
+
+            <!-- Staff -->
+
+            <div class="col-md-3">
+
+    <label class="form-label">@Localizer.Get("Staff")</label>
+
+                <select asp-for="StaffId"
+                        asp-items="@(new SelectList(Model.Staffs, "StaffId", "FullName"))"
+                        class="form-select select2 2"
+                        id="StaffId"
+                        disabled="@Model.LockStaff">
+
+        <option value="">@Localizer.Get("Select") @Localizer.Get("Staff")</option>
+
+                </select>
+
+               @* @if (Model.LockStaff)
+                {
+                    <input type="hidden" asp-for="StaffId" />
+                } *@
+
+            </div>
+
+            <!-- Class -->
+
+            <div class="col-md-3">
+
+    <label class="form-label">@Localizer.Get("Class")</label>
+
+                <select asp-for="ClassId"
+                        asp-items="@(new SelectList(Model.Classes, "DataListItemId", "DataListItemText"))"
+                        class="form-select select2"
+                        id="ClassId">
+
+        <option value="">@Localizer.Get("Select") @Localizer.Get("Class")</option>
+
+                </select>
+
+              @*   @if (Model.LockClass)
+                {
+                    <input type="hidden" asp-for="ClassId" />
+                } *@
+
+            </div>
+
+            <!-- Section -->
+
+            <div class="col-md-3">
+
+    <label class="form-label">@Localizer.Get("Section")</label>
+
+                <select asp-for="SectionId"
+                        asp-items="@(new SelectList(Model.Sections, "DataListItemId", "DataListItemText"))"
+                        class="form-select select2"
+                        id="SectionId">
+
+        <option value="">@Localizer.Get("Select") @Localizer.Get("Section")</option>
+
+                </select>
+
+               @*  @if (Model.LockSection)
+                {
+                    <input type="hidden" asp-for="SectionId" />
+                } *@
+
+            </div>
+@* 
+        </div>
+
+    </div>
+
+</div> *@

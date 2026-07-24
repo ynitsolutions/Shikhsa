@@ -90,6 +90,7 @@ namespace Shikhsa.Data
         public DbSet<Tbl_ExamObtainedMarks> ExamObtainedMarks { get; set; }
         public DbSet<StudentExamSummary> StudentExamSummaries { get; set; }
         public DbSet<CoScholasticGrade> CoScholasticGrades { get; set; }
+        public DbSet<StudentAttendance> StudentAttendances { get; set; }
         protected override void OnModelCreating(ModelBuilder builder)
         {
 

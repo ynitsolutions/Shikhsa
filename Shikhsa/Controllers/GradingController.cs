@@ -20,13 +20,14 @@ namespace Shikhsa.Controllers
         private readonly RoleManager<ApplicationRole> _roleManager;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ApplicationDbContext _context;
+        private readonly LookupService _lookup;
 
-    
-        public GradingController(ApplicationDbContext context,RoleManager<ApplicationRole> roleManager,UserManager<ApplicationUser> userManager, PermissionService permissionService, IWebHostEnvironment env, EmailService email, GradingRepository repo) : base(userManager, permissionService, context, email)
+        public GradingController(ApplicationDbContext context,RoleManager<ApplicationRole> roleManager,UserManager<ApplicationUser> userManager, PermissionService permissionService, IWebHostEnvironment env, EmailService email, GradingRepository repo,LookupService lookup) : base(userManager, permissionService, context, email, lookup)
         {
             _repo = repo;
             _context = context;
             _roleManager = roleManager;
+            _lookup = lookup;
 
         }
 

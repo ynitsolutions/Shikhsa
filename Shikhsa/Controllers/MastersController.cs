@@ -22,18 +22,19 @@ namespace Shikhsa.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IWebHostEnvironment _env;
         private readonly EmailService _emailService;
-
+        private readonly LookupService _lookup;
         public MastersController(
      ApplicationDbContext context,
      RoleManager<ApplicationRole> roleManager,
      UserManager<ApplicationUser> userManager,
-     PermissionService permissionService, IWebHostEnvironment env, EmailService email
+     PermissionService permissionService, IWebHostEnvironment env, EmailService email, LookupService lookup
  ) :
-            base(userManager, permissionService, context, email)
+            base(userManager, permissionService, context, email, lookup)
         {
             _context = context;
             _roleManager = roleManager;
             _env = env;
+            _lookup = lookup;
         }
         #region Menu
 

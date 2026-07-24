@@ -20,7 +20,8 @@ namespace Shikhsa.Controllers
         private readonly PermissionService _permissionService;
         private readonly ApplicationDbContext _context;
         private readonly EmailService _email;
-        public BaseController(UserManager<ApplicationUser> userManager, PermissionService permissionService, ApplicationDbContext context, EmailService email)
+        private readonly LookupService _lookup;
+        public BaseController(UserManager<ApplicationUser> userManager, PermissionService permissionService, ApplicationDbContext context, EmailService email, LookupService lookup)
         {
             _userManager = userManager;
             _permissionService = permissionService;
@@ -247,6 +248,22 @@ namespace Shikhsa.Controllers
             
             return HttpContext?.Session?.GetCurrentUser();
         }
+        //[HttpGet]
+        //public async Task<IActionResult> GetTeacherFilter(
+        //   int batchId = 0,
+        //   long staffId = 0,
+        //   int classId = 0,
+        //   int sectionId = 0)
+        //{
+        //    var result = await _lookup.GetTeacherFilterAsync(
+        //        User,
+        //        batchId,
+        //        staffId,
+        //        classId,
+        //        sectionId);
+
+        //    return Json(result);
+        //}
     }
 
 
