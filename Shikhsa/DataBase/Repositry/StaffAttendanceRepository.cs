@@ -33,7 +33,7 @@ namespace Shikhsa.DataBase.Repositry
                 {
                     StaffId = s.StaffId,
                     StaffCode = s.StaffCode,
-                    StaffName = $"{s.FirstName} {s.LastName}",
+                    StaffName = $"{s.FirstName}{s.MiddleName} {s.LastName}",
                     AttendanceId = att?.AttendanceId ?? 0,
                     AttendanceTypeId = att?.AttendanceTypeId ?? 0,
                     Remarks = att?.Remarks
@@ -226,6 +226,7 @@ namespace Shikhsa.DataBase.Repositry
                 throw;
             }
         }
+
         public async Task<List<AttendanceType>> GetAllAsync()
         {
             return await _context.AttendanceTypes

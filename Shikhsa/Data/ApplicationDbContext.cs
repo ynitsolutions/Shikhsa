@@ -221,6 +221,10 @@ namespace Shikhsa.Data
                 entity.HasOne(s => s.Class).WithMany().HasForeignKey(s => s.ClassId).OnDelete(DeleteBehavior.NoAction);entity.HasOne(s => s.Section).WithMany().HasForeignKey(s => s.SectionId).OnDelete(DeleteBehavior.NoAction);entity.HasOne(s => s.Student).WithMany().HasForeignKey(s => s.StudentId).OnDelete(DeleteBehavior.NoAction);entity.HasOne(s => s.Batch).WithMany().HasForeignKey(s => s.BatchId).OnDelete(DeleteBehavior.NoAction);entity.HasOne(s => s.ExamCategory).WithMany().HasForeignKey(s => s.ExamCategoryId).OnDelete(DeleteBehavior.NoAction);
             });
             builder.Entity<CoScholasticArea>().HasOne(x => x.CoScholastic).WithMany().HasForeignKey(x => x.CoScholasticId).HasPrincipalKey(x => x.CoScholasticId).OnDelete(DeleteBehavior.Restrict);
+            builder.Entity<StudentAttendance>().HasOne(x => x.Section).WithMany().HasForeignKey(x => x.SectionId).OnDelete(DeleteBehavior.NoAction);
+            builder.Entity<StudentAttendance>().HasOne(x => x.Class).WithMany().HasForeignKey(x => x.ClassId).OnDelete(DeleteBehavior.NoAction);
+            builder.Entity<StudentAttendance>().HasOne(x => x.Batch).WithMany().HasForeignKey(x => x.BatchId).OnDelete(DeleteBehavior.NoAction);
+            builder.Entity<StudentAttendance>().HasOne(x => x.Student).WithMany().HasForeignKey(x => x.StudentId).OnDelete(DeleteBehavior.NoAction);
         }
         public override int SaveChanges()
         {

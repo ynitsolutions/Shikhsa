@@ -74,6 +74,7 @@ builder.Services.AddScoped<StaffRepository>();
 builder.Services.AddScoped<GradingRepository>();
 builder.Services.AddScoped<ClassTeacherRepository>();
 builder.Services.AddScoped<StaffAttendanceRepository>();
+builder.Services.AddScoped<StudentAttendanceRepository>();
 builder.Services.Configure<EmailSettings>(
 builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddScoped<NotificationService>();

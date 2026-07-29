@@ -1,0 +1,172 @@
+﻿@model Shikhsa.ViewModels.StudentAttendanceVM
+
+@{
+    ViewData["Title"] = "Student Attendance";
+}
+<style>
+    .table-scroll {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: auto;
+        overflow-y: auto;
+        max-height: 600px; /* Vertical Scroll */
+        white-space: nowrap;
+    }
+
+        .table-scroll table {
+            width: max-content;
+            min-width: 100%;
+        }
+
+    .card,
+    .card-body {
+        overflow: hidden;
+    }
+
+    .toggle-freeze {
+        border: none;
+        background: none;
+        padding: 0;
+    }
+
+        .toggle-freeze i {
+            font-size: 20px;
+            cursor: pointer;
+            transition: .2s;
+        }
+
+            .toggle-freeze i:hover {
+                transform: scale(1.15);
+            }
+</style>
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">
+
+        @TempData["Success"]
+
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">
+
+        @TempData["Error"]
+
+    </div>
+}
+@*    <form asp-action="LoadStudents" asp-controller="Exam" method="post">
+
+        @Html.AntiForgeryToken()
+ *@
+
+<form id="frmAttendance" asp-controller="Attendance" asp-action="StudentsAttendance" method="post">
+    @Html.AntiForgeryToken()
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            <div class="row g-3 align-items-end">
+
+                <partial name="~/Views/Shared/_StudentFilterPartial.cshtml" model="Model" />
+
+                <div class="col-md-2">
+                    <label class="form-label">
+                        @Localizer.Get("Date")
+                    </label>
+
+
+
+                   
+
+                    <input asp-for="AttendanceDate"
+                           type="date"
+                           class="form-control" />
+
+
+                </div>
+
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100" id="btnLoadStudents">
+                        <i class="fa fa-search"></i> @Localizer.Get("Load") @Localizer.Get("Students")
+                    </button>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+    <div id="attendanceContainer">
+        <partial name="_StudentsAttendanceList" model="Model" />
+    </div>
+</form>
+    @section Scripts {
+    <script src="~/js/teacher-filter.js"></script>
+
+ 
+        <partial name="_ValidationScriptsPartial" />
+    <script>
+            $(document).ready(function () {
+                $('#tblAttendance').DataTable({
+                    paging: true,
+                    ordering: true,
+                    searching: true,
+                    info: false,
+                    scrollX: true,
+                    scrollCollapse: true
+
+                });
+
+            });
+            $(document).on("click", "#btnLoadStudents", function (e) {
+
+            e.preventDefault();
+
+            $.ajax({
+
+                url: "/Attendance/LoadStudents",
+
+                type: "POST",
+
+                data: $("#frmAttendance").serialize(),
+
+                beforeSend: function () {
+
+                    $("#btnLoadStudents")
+                        .prop("disabled", true)
+                        .html('<i class="fa fa-spinner fa-spin"></i> Loading...');
+
+                },
+
+                success: function (html) {
+
+                    $("#attendanceContainer").html(html);
+                    updateSummary();
+                   // initMarksTable();
+
+                    // calculateAll();
+
+                    // updateHeaderFreezeIcon();
+
+                },
+
+                complete: function () {
+
+                    $("#btnLoadStudents")
+                        .prop("disabled", false)
+                        .html('<i class="fa fa-search"></i> Load Students');
+
+                },
+
+                error: function (xhr) {
+
+                    console.log(xhr.responseText);
+
+                }
+
+            });
+
+        });
+         
+    </script>
+    }

@@ -1,0 +1,250 @@
+﻿@model Shikhsa.ViewModels.StudentAttendanceVM
+
+@if (Model != null)
+{
+    @if (Model.Students != null && Model.Students.Any())
+    {
+        <div class="card shadow">
+            <div class="row mb-3">
+
+                <div class="col-md-3">
+                    <div class="card bg-primary text-white text-center">
+                        <div class="card-body py-2">
+                            <h3 id="totalCount">@Model.Students.Count</h3>
+                            <small>Total Students</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card bg-success text-white text-center">
+                        <div class="card-body py-2">
+                            <h3 id="presentCount">0</h3>
+                            <small>Present</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card bg-danger text-white text-center">
+                        <div class="card-body py-2">
+                            <h3 id="absentCount">0</h3>
+                            <small>Absent</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card bg-warning text-dark text-center">
+                        <div class="card-body py-2">
+                            <h3 id="leaveCount">0</h3>
+                            <small>Leave</small>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="card-header text-white">
+                <h5 class="mb-0">
+                    Attendance for @Model.AttendanceDate.ToString("dd-MMM-yyyy")
+                </h5>
+            </div>
+
+            <div class="card-body p-0">
+
+                <div class="table-scroll">
+
+                    <table class="table table-bordered table-striped table-hover align-middle mb-0"
+                           id="tblAttendance">
+
+                        <thead class="table-dark">
+
+                            <tr>
+
+                                <th style="width:70px">
+                                    Sr.
+                                </th>
+
+                                <th style="width:130px">
+                                    Admission No
+                                </th>
+
+                                <th style="min-width:220px">
+                                    Student Name
+                                </th>
+
+                                <th class="text-center" style="min-width:320px">
+                                    Attendance
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+                            @for (int i = 0; i < Model.Students.Count; i++)
+                            {
+                                <tr>
+
+                                    <td class="text-center">
+
+                                        @(i + 1)
+
+                                        <input type="hidden"
+                                               asp-for="Students[i].StudentId" />
+
+                                    </td>
+
+                                    <td>
+
+                                        @Model.Students[i].AdmissionNo
+
+                                    </td>
+
+                                    <td>
+
+                                        @Model.Students[i].StudentName
+
+                                    </td>
+
+                                    <td style="min-width:320px">
+
+                                        <input type="hidden" asp-for="Students[i].AttendanceEntryId" />
+
+                                        <div class="d-flex justify-content-center flex-wrap gap-2">
+
+                                            @for (int t = 0; t < Model.AttendanceTypes.Count; t++)
+                                            {
+                                                var type = Model.AttendanceTypes[t];
+                                                var id = $"att_{i}_{type.AttendanceTypeId}";
+                                                var isChecked = Model.Students[i].AttendanceTypeId == type.AttendanceTypeId;
+
+                                                <div class="form-check form-check-inline">
+                                                    <input type="hidden" asp-for="Students[i].StudentId" />
+                                                    <input type="hidden" asp-for="Students[i].AttendanceEntryId" />
+
+                                                    <input type="hidden" asp-for="Students[i].RollNo" />
+                                                    <input type="hidden" asp-for="Students[i].AdmissionNo" />
+                                                    <input type="hidden" asp-for="Students[i].StudentName" />
+                                                    <input type="hidden" asp-for="Students[i].Remark" />
+                                                    <input type="hidden" asp-for="Students[i].IsFreeze" />
+                                                    <input type="radio"
+                                                           id="@id"
+                                                           class="form-check-input"
+                                                           name="Students[@i].AttendanceTypeId"
+                                                           value="@type.AttendanceTypeId"
+                                                           checked="@isChecked"
+                                                           data-code="@type.Code"
+                                                           data-isleave="@type.IsLeave"
+                                                           style="@(string.IsNullOrEmpty(type.Color) ? "" : $"accent-color:{type.Color};")" />
+
+                                                    <label class="form-check-label" for="@id"
+                                                           title="@type.Name">
+                                                        @type.Code
+                                                    </label>
+
+                                                </div>
+                                            }
+
+                                        </div>
+
+                                    </td>
+
+                                </tr>
+                            }
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+            <div class="card-footer d-flex justify-content-end gap-2">
+
+                <button type="submit"
+                        asp-action="ExportAttendanceExcel"
+                        class="btn btn-success">
+
+                    <i class="fa fa-file-excel"></i>
+                    Export Excel
+
+                </button>
+
+                <button type="submit"
+                        asp-action="StudentsAttendance" 
+                        class="btn btn-primary">
+
+                    <i class="fa fa-save"></i>
+                    Save Attendance
+
+                </button>
+
+            </div>
+
+        </div>
+    }
+}
+<script>
+    $(document).ready(function () {
+                $('#tblAttendance').DataTable({
+                    paging: true,
+                    ordering: true,
+                    searching: true,
+                    info: false,
+                    scrollX: true,
+                    scrollCollapse: true
+
+                });
+
+            });
+        function updateSummary() {
+
+        var total = $("#tblAttendance tbody tr").length;
+        var present = 0;
+        var absent = 0;
+        var leave = 0;
+
+        $("#tblAttendance tbody tr").each(function () {
+
+            var selected = $(this).find("input[type=radio]:checked");
+
+            if (selected.length === 0)
+                return;
+
+            var code = (selected.data("code") || "").toString().toUpperCase();
+
+            switch (code) {
+
+                case "P":
+                case "PR":
+                case "H":
+                case "O":
+                    present++;
+                    break;
+
+                case "A":
+                    absent++;
+                    break;
+
+                case "L":
+                case "CL":
+                case "SL":
+                case "ML":
+                    leave++;
+                    break;
+            }
+
+        });
+
+        $("#totalCount").text(total);
+        $("#presentCount").text(present);
+        $("#absentCount").text(absent);
+        $("#leaveCount").text(leave);
+    }
+
+    $(document).on("change", "#tblAttendance input[type=radio]", function () {
+        updateSummary();
+    });
+</script>
