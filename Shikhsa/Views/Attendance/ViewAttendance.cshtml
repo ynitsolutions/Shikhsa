@@ -1,0 +1,263 @@
+﻿@model Shikhsa.ViewModels.StudentAttendanceReportVM
+
+@{
+    ViewData["Title"] = "View Attendance";
+}
+<form asp-action="ViewAttendance" method="post">
+
+    @Html.AntiForgeryToken()
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+
+            <div class="row g-3 align-items-end">
+
+        <div class="col-md-2">
+            <label>@Localizer.Get("Batch")</label>
+
+            <select asp-for="BatchId"
+                    asp-items="@(new SelectList(Model.Batches, "BatchId", "AcademicYear"))"
+                    class="form-select select2">
+            </select>
+        </div>
+
+        <div class="col-md-2">
+            <label>@Localizer.Get("Class")</label>
+
+            <select asp-for="ClassId"
+                    asp-items="@(new SelectList(Model.Classes, "DataListItemId", "DataListItemText"))"
+                    class="form-select select2">
+            </select>
+        </div>
+
+        <div class="col-md-2">
+            <label>@Localizer.Get("Section")</label>
+
+            <select asp-for="SectionId"
+                    asp-items="@(new SelectList(Model.Sections, "DataListItemId", "DataListItemText"))"
+                    class="form-select select2">
+            </select>
+        </div>
+
+        <div class="col-md-2">
+           
+                    <label>  @Localizer.Get("From Date") </label>
+                    <div class="input-group fp-date">
+
+                        <input asp-for="FromDate"
+                               class="form-control"
+                               type="text"
+                               data-input />
+
+                        <span class="input-group-text" data-toggle style="height: auto; align-self: stretch;">
+                            <i class="ti ti-calendar"></i>
+                        </span>
+
+                    </div>
+           @*  <input asp-for="FromDate"
+                   type="date"
+                   class="form-control" /> *@
+        </div>
+
+        <div class="col-md-2">
+          
+                    <label>  @Localizer.Get("To Date") </label>
+                    <div class="input-group fp-date">
+
+                        <input asp-for="ToDate"
+                               class="form-control"
+                               type="text"
+                               data-input />
+
+                        <span class="input-group-text" data-toggle style="height: auto; align-self: stretch;">
+                            <i class="ti ti-calendar"></i>
+                        </span>
+
+                    </div>
+            @* <input asp-for="ToDate"
+                   type="date"
+                   class="form-control" /> *@
+        </div>
+
+        <div class="col-md-2 d-flex align-items-end">
+
+            <button class="btn btn-primary w-100">
+
+                <i class="fa fa-search"></i>
+
+                Search
+
+            </button>
+
+        </div>
+
+    </div>
+        </div>
+    </div>
+
+</form>
+@if (Model != null)
+{
+    @if (Model.Students != null && Model.Students.Any())
+    {
+        <div class="card shadow">
+
+            <div class="card-header text-white">
+            </div>
+
+            <div class="card-body p-0">
+
+                <div class="table-scroll">
+
+                    <table class="table table-bordered table-striped table-hover align-middle mb-0"
+                           id="ReportTable">
+                        <thead>
+
+                            <tr>
+
+                                <th>#</th>
+
+                                <th>@Localizer.Get("Roll")</th>
+
+                                <th>@Localizer.Get("Admission No")</th>
+
+                                <th>@Localizer.Get("Student Name")</th>
+
+                                @foreach (var date in Model.Dates)
+                                {
+                                    <th class="text-center">
+
+                                        @date.ToString("dd/MM")
+
+                                    </th>
+                                }
+
+                                <th>P</th>
+
+                                <th>L</th>
+
+                                <th>A</th>
+
+                                <th>%</th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            @for (int i = 0; i < Model.Students.Count; i++)
+                            {
+                                var student = Model.Students[i];
+
+                                <tr>
+
+                                    <td>@(i + 1)</td>
+
+                                    <td>@student.RollNo</td>
+
+                                    <td>@student.AdmissionNo</td>
+
+                                    <td>@student.StudentName</td>
+
+                                    @foreach (var date in Model.Dates)
+                                    {
+                                        if (student.Attendance.TryGetValue(date, out var code))
+                                        {
+                                            <td class="text-center">
+
+                                                @code
+
+                                            </td>
+                                        }
+                                        else
+                                        {
+                                            <td></td>
+                                        }
+                                    }
+
+                                    <td>
+
+                                        @student.TotalPresent
+
+                                    </td>
+
+                                    <td>
+
+                                        @student.TotalLeave
+
+                                    </td>
+
+                                    <td>
+
+                                        @student.TotalAbsent
+
+                                    </td>
+
+                                    <td>
+
+                                        @student.AttendancePercentage %
+
+                                    </td>
+
+                                </tr>
+
+                            }
+
+                        </tbody>
+                       
+
+                    </table>
+
+                </div>
+
+            </div>
+
+            
+
+        </div>
+    }
+}
+
+
+<form asp-action="ExportAttendance" method="post">
+
+    <input type="hidden" asp-for="BatchId" />
+
+    <input type="hidden" asp-for="ClassId" />
+
+    <input type="hidden" asp-for="SectionId" />
+
+    <input type="hidden" asp-for="FromDate" />
+
+    <input type="hidden" asp-for="ToDate" />
+
+    <button class="btn btn-success">
+
+        <i class="fa fa-file-excel"></i>
+
+        Download Excel
+
+    </button>
+
+</form>
+ @section Scripts {
+
+ 
+        <partial name="_ValidationScriptsPartial" />
+
+        <script>
+            $(document).ready(function () {
+            $('#ReportTable').DataTable({
+                    paging: true,
+                    ordering: true,
+                    searching: true,
+                    info: false,
+                    scrollX: true,
+                    scrollCollapse: true
+
+                });
+                      
+            });
+        </script>
+ }

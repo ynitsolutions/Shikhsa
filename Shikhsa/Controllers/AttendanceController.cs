@@ -9,6 +9,7 @@ using Shikhsa.Attributes;
 using Shikhsa.Data;
 using Shikhsa.DataBase.Repositry;
 using Shikhsa.Models;
+using Shikhsa.Repositories;
 using Shikhsa.Services;
 using Shikhsa.ViewModels;
 
@@ -393,6 +394,41 @@ namespace Shikhsa.Controllers
         //    return vm;
         //}
         #endregion
+       
+        public async Task<IActionResult> ViewAttendance(StudentAttendanceReportVM vm)
+        {
+           // await _lookup.BindAsync(vm, User);
+           vm.Batches = _context.Batches
+                .Where(x => x.IsActive)
+                .OrderByDescending(x => x.BatchId)
+                .ToList();
+            vm.Classes = GetDataListItems("Class");
+            vm.Sections = GetDataListItems("Section");
+            if (vm.BatchId > 0 &&
+                vm.ClassId > 0 &&
+                vm.SectionId > 0)
+            {
+                vm = await _studentAttendanceRepository.GetAttendanceReportAsync(vm);
+
+              
+               
+            }
+
+            return View(vm);
+        }
+        [HttpPost]
+        [SkipPermission]
+        public async Task<IActionResult> ExportAttendance(StudentAttendanceReportVM vm)
+        {
+            vm = await _studentAttendanceRepository.GetAttendanceReportAsync(vm);
+
+            var bytes = _studentAttendanceRepository.ExportAttendanceExcel(vm);
+
+            return File(
+                bytes,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                $"Attendance_{DateTime.Now:yyyyMMddHHmmss}.xlsx");
+        }
     }
 
 }

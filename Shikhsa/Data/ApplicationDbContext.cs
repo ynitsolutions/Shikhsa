@@ -1,18 +1,4 @@
-﻿//using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-//using Microsoft.EntityFrameworkCore;
-
-//namespace Shikhsa.Data
-//{
-//    public class ApplicationDbContext : IdentityDbContext
-//    {
-//        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-//            : base(options)
-//        {
-//        }
-//    }
-//}
-// Data/ApplicationDbContext.cs
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Shikhsa.Helpers;

@@ -60,4 +60,50 @@ namespace Shikhsa.ViewModels
         public int AttendanceTypeId { get; set; }
         public bool IsFreeze { get; set; }
     }
+    public class StudentAttendanceReportVM 
+    {
+        public int BatchId { get; set; }
+        public int ClassId { get; set; }
+        public int SectionId { get; set; }
+        public DateOnly FromDate { get; set; } = DateOnly.FromDateTime(DateTime.Today);
+
+        public DateOnly ToDate { get; set; } = DateOnly.FromDateTime(DateTime.Today);
+
+        // Dynamic Date Columns
+        public List<DateOnly> Dates { get; set; } = new();
+
+        public List<StudentAttendanceReportRowVM> Students { get; set; } = new();
+        public List<Batches> Batches { get; set; } = new();
+        public List<DataListItem> Classes { get; set; } = new();
+
+        public List<DataListItem> Sections { get; set; } = new();
+    }
+
+    public class StudentAttendanceReportRowVM
+    {
+        public long StudentId { get; set; }
+
+        public int RollNo { get; set; }
+
+        public string AdmissionNo { get; set; } = "";
+
+        public string StudentName { get; set; } = "";
+
+        public string ClassName { get; set; } = "";
+
+        public string SectionName { get; set; } = "";
+
+        // Date -> Attendance Code (P/A/L/H)
+        public Dictionary<DateOnly, string> Attendance { get; set; } = new();
+
+        public int TotalPresent { get; set; }
+
+        public int TotalAbsent { get; set; }
+
+        public int TotalLeave { get; set; }
+
+        public int TotalHoliday { get; set; }
+
+        public decimal AttendancePercentage { get; set; }
+    }
 }
