@@ -97,5 +97,6 @@ namespace Shikhsa.Models
         public Tbl_StudentsRegistrations Student { get; set; }
 
         public CoScholasticArea CoScholasticArea { get; set; }
+
     }
 }

@@ -7,9 +7,11 @@ using Shikhsa.Helpers;
 //using Shikhsa.Middlewares;
 using Shikhsa.Models;
 using Shikhsa.Models.Common;
+using Shikhsa.Models.Payment;
 using Shikhsa.Repositories;
 using Shikhsa.Repository;
 using Shikhsa.Services;
+using Shikhsa.Sevices;
 using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -78,6 +80,10 @@ builder.Services.AddScoped<StudentAttendanceRepository>();
 builder.Services.Configure<EmailSettings>(
 builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddScoped<NotificationService>();
+builder.Services.AddScoped<ReportCardRepository>();
+builder.Services.AddScoped<GradeService>();
+builder.Services.AddScoped<ReportCardService>();
+builder.Services.AddScoped<ReportCardPdfService>();
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<LookupService>();
 builder.Services.AddScoped<FileUploadHelper>();
@@ -86,6 +92,8 @@ builder.Services.AddScoped<FeeHeadingRepository>();
 builder.Services.AddScoped<LookupRepository>();
 builder.Services.AddScoped<NotificationTemplateRepository>();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<EncrypDecrpt>();
+
 var app = builder.Build();
 
 

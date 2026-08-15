@@ -30,16 +30,17 @@ namespace Shikhsa.ViewModels
 
     //    public IEnumerable<Batches> Batches { get; set; } = new List<Batches>();
     //}
-    public class GradeRangeVM
-    {
-        public decimal MinPercentage { get; set; }
 
-        public decimal MaxPercentage { get; set; }
+    //public class GradeRangeVM
+    //{
+    //    public decimal MinPercentage { get; set; }
 
-        public string Grade { get; set; }
+    //    public decimal MaxPercentage { get; set; }
 
-        public string Description { get; set; }
-    }
+    //    public string Grade { get; set; }
+
+    //    public string Description { get; set; }
+    //}
     public class GradingCriteriaVM
     {
         public GradingCriteria Criteria { get; set; } = new GradingCriteria();

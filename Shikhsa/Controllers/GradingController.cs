@@ -85,7 +85,7 @@ namespace Shikhsa.Controllers
         {
             await _repo.Delete(id);
 
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(GradingCriteria));
         }
         [SkipPermission]
         [HttpPost]

@@ -165,16 +165,33 @@ namespace Shikhsa.Controllers
         [HttpPost]
         public IActionResult SaveScholasticExams(ScholasticExamVM vm)
         {
+            //if (!ModelState.IsValid)
+            //{
+            //    ModelState.Values.SelectMany(v => v.Errors);
+            //    vm = _repository.GetViewModel();
+            //    vm.Classes = GetDataListItems("Class");
+            //    vm.ExamType = GetDataListItems("Exam Type");
+            //    return View("ScholasticExams", vm);
+            //}
             if (!ModelState.IsValid)
             {
-                ModelState.Values.SelectMany(v => v.Errors);
+                var errors = ModelState
+                    .Where(x => x.Value != null)
+                    .SelectMany(x => x.Value!.Errors.Select(e => new
+                    {
+                        Field = x.Key,
+                        Error = e.ErrorMessage,
+                        Exception = e.Exception?.Message
+                    })).ToList();
                 vm = _repository.GetViewModel();
                 vm.Classes = GetDataListItems("Class");
                 vm.ExamType = GetDataListItems("Exam Type");
                 return View("ScholasticExams", vm);
+                // Breakpoint yahan lagao
             }
 
-           int result = _repository.Save(vm);
+
+            int result = _repository.Save(vm);
 
             if (result > 0)
                 SuccessMessage("Record saved successfully.");
@@ -408,7 +425,7 @@ namespace Shikhsa.Controllers
 
             await _lookup.BindAsync(vm, User);
             vm.Columns=new List<ExamMarkColumnVM>();
-            vm.ExamCategories =await _context.ExamCategories
+            vm.ExamCategories =await _context.ExamCategories.Where(x=>x.IsActive)
                   .OrderBy(x => x.ExamCategoryName)
                   .ToListAsync();
             Console.WriteLine(vm);

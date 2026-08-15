@@ -491,8 +491,9 @@
             var id=$(this).data("id");
 
             $.get("/Grading/SaveGradingCriteria/"+id,function(res){
-
-                $("#Criteria_Id").val(res.id);
+                debugger
+                console.log(res);
+                        $("#Criteria_GradingCriteriaId").val(res.gradingCriteriaId);
                 $("#Criteria_TermId").val(res.termId).trigger("change");
                 $("#Criteria_ClassId").val(res.classId).trigger("change");
                 $("#Criteria_BatchId").val(res.batchId).trigger("change");
@@ -516,7 +517,7 @@
 
             var id=$(this).data("id");
 
-            location.href="/Grading/Delete/"+id;
+            location.href="/Grading/DeleteGradingCriteria/"+id;
 
         });
 

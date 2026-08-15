@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Shikhsa.Attributes;
 using Shikhsa.Data;
 using Shikhsa.Models;
 namespace Shikhsa.Repositories
@@ -93,38 +94,32 @@ namespace Shikhsa.Repositories
                     x.UserId == userId &&
                     x.IsActive);
         }
-        public async Task<List<Tbl_Students>> GetStudentsAsync(
-    int batchId,
-    int classId,
-    int sectionId)
+        public async Task<List<Tbl_Students>> GetStudentsAsync(int batchId,int classId,int sectionId)
         {
             int Admitted = _context.DataListItems.Where(x => x.DataListItemValue == "Admitted" && x.IsActive).Select(x => x.DataListItemId).FirstOrDefault();
-            return await _context.Tbl_Students
-                .AsNoTracking()
-                .Where(x =>
-                   x.AdmitBatchId == batchId &&
-                    x.AdmitClassId == classId &&
-                    x.AdmitSectionId == sectionId &&
-                    x.IsActive && x.Status == Admitted)
-                .OrderBy(x => x.FirstName)
-                .ThenBy(x => x.MiddleName)
-                .ThenBy(x => x.LastName)
-                .ToListAsync();
+            return await _context.Tbl_Students.AsNoTracking().Where(x => x.AdmitBatchId == batchId && x.AdmitClassId == classId && x.AdmitSectionId == sectionId && x.IsActive && x.Status == Admitted).OrderBy(x => x.FirstName).ThenBy(x => x.MiddleName).ThenBy(x => x.LastName).ToListAsync();
         }
-        public async Task<bool> IsClassTeacherAsync(
-    int batchId,
-    int classId,
-    int sectionId,
-    long staffId)
+        public async Task<bool> IsClassTeacherAsync(int batchId,int classId,int sectionId,long staffId)
         {
-            return await _context.ClassTeachers
-                .AsNoTracking()
-                .AnyAsync(x =>
-                    x.BatchId == batchId &&
-                    x.ClassId == classId &&
-                    x.SectionId == sectionId &&
-                    x.StaffId == staffId &&
-                    x.IsActive);
+            return await _context.ClassTeachers.AsNoTracking().AnyAsync(x => x.BatchId == batchId && x.ClassId == classId && x.SectionId == sectionId && x.StaffId == staffId && x.IsActive);
+        }
+        public async Task <List<ExamCategory>> GetExamCategoriesAsync()
+        {
+            return await _context.ExamCategories.Where(x => x.IsActive).ToListAsync();
+        }
+       
+        public List<DataListItem> GetDataListItems(string dataListName)
+        {
+            var dataListId = _context.DataLists
+                .Where(x => x.DataListName == dataListName && x.IsActive == true)
+                .Select(x => x.DataListId)
+                .FirstOrDefault();
+
+            if (dataListId == 0) return new List<DataListItem>();
+
+            return _context.DataListItems
+                .Where(x => x.DataListId == dataListId)
+                .ToList();
         }
     }
 }

@@ -77,6 +77,7 @@ namespace Shikhsa.Data
         public DbSet<StudentExamSummary> StudentExamSummaries { get; set; }
         public DbSet<CoScholasticGrade> CoScholasticGrades { get; set; }
         public DbSet<StudentAttendance> StudentAttendances { get; set; }
+        public DbSet<ReportCardSetting> ReportCardSettings { get; set; }
         protected override void OnModelCreating(ModelBuilder builder)
         {
 

@@ -1,0 +1,442 @@
+﻿@model Shikhsa.ViewModels.ReportCardFilterVM
+@{
+ ViewData["Title"] = @Localizer.Get("Report Card");
+}
+<div class="container-fluid">
+
+    <div class="card shadow-sm">
+
+        <div class="card-header">
+            <h5 class="mb-0">
+                CBSE Report Card
+            </h5>
+        </div>
+
+        <div class="card-body">
+
+            <form asp-action="ReportCard"
+                  method="post">
+
+                @Html.AntiForgeryToken()
+
+                <div class="row g-3">
+
+                    <div class="col-md-3">
+
+                        <label class="form-label">
+                            Academic Year
+                        </label>
+
+                        <select asp-for="BatchId"
+                                class="form-select select2">
+
+                            <option value="">
+                                Select
+                            </option>
+
+                            @foreach (var item in Model.Batches)
+                            {
+                                <option value="@item.BatchId">
+                                    @item.AcademicYear
+                                </option>
+                            }
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="col-md-3">
+
+                        <label class="form-label">
+                            Class
+                        </label>
+
+                        <select asp-for="ClassId"
+                                class="form-select select2">
+
+                            <option value="">
+                                Select
+                            </option>
+
+                            @foreach (var item in Model.Classes)
+                            {
+                                <option value="@item.DataListItemId">
+                                    @item.DataListItemText
+                                </option>
+                            }
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="col-md-3">
+
+                        <label class="form-label">
+                            Section
+                        </label>
+
+                        <select asp-for="SectionId"
+                                class="form-select select2">
+
+                            <option value="">
+                               Select
+                            </option>
+
+                            @foreach (var item in Model.Sections)
+                            {
+                                <option value="@item.DataListItemId">
+                                    @item.DataListItemText
+                                </option>
+                            }
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="col-md-3">
+
+                        <label class="form-label">
+                            Term
+                        </label>
+
+                        <select asp-for="ExamCategoryId"
+                                class="form-select select2">
+
+                            <option value="">
+                               Select
+                            </option>
+
+                            @foreach (var item in Model.ExamCategories)
+                            {
+                                <option value="@item.ExamCategoryId">
+                                    @item.ExamCategoryName
+                                </option>
+                            }
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+
+                <div class="mt-3">
+
+                    <button type="submit"
+                            class="btn btn-primary">
+
+                        <i class="fa fa-search"></i>
+                        Load Students
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    @if (Model.Students.Any())
+    {
+        <div class="card shadow-sm mt-3">
+
+            <div class="card-header
+                            d-flex
+                            justify-content-between
+                            align-items-center">
+
+                <strong>
+                    Students (@Model.Students.Count)
+                </strong>
+
+                <div>
+
+                    <button type="button"
+                            class="btn btn-success"
+                            id="downloadSelected">
+
+                        <i class="fa fa-download"></i>
+                        Download Selected
+
+                    </button>
+                    <button type="button" class="btn btn-primary" id="downloadAll"> <i class="fa fa-file-pdf"></i>Download All</button>
+                 @*    <button type="button"
+                            class="btn btn-primary"
+                            id="downloadAll">
+
+                        <i class="fa fa-file-pdf"></i>
+                        Download All
+
+                    </button> *@
+
+                </div>
+
+            </div>
+
+
+            <div class="table-responsive">
+
+                <table class="table table-bordered
+                                  table-hover
+                                  align-middle
+                                  mb-0">
+
+                    <thead>
+
+                        <tr>
+
+                            <th width="40">
+                                <input type="checkbox"
+                                       id="selectAll" />
+                            </th>
+
+                            <th>
+                                #
+                            </th>
+
+                            <th>
+                                Scholar No
+                            </th>
+
+                            <th>
+                                Student Name
+                            </th>
+
+                            <th>
+                                Class
+                            </th>
+
+                            <th>
+                                Section
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                            <th>
+                                Action
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        @{
+                            var index = 1;
+                        }
+
+                        @foreach (var student in Model.Students)
+                        {
+                            <tr>
+
+                                <td>
+
+                                    <input type="checkbox"
+                                           class="studentCheck"
+                                           value="@student.StudentId" />
+
+                                </td>
+
+                                <td>
+                                    @(index++)
+                                </td>
+
+                                <td>
+                                    @student.ScholarNumber
+                                </td>
+
+                                <td>
+                                    <strong>
+                                        @student.StudentName
+                                    </strong>
+                                </td>
+
+                                <td>
+                                    @student.ClassName
+                                </td>
+
+                                <td>
+                                    @student.SectionName
+                                </td>
+
+                                <td>
+
+                                    @if (student.IsReportCardReady)
+                                    {
+                                        <span class="badge bg-success">
+                                            Ready
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning text-dark">
+                                            Pending
+                                        </span>
+                                    }
+
+                                </td>
+
+                                <td>
+
+                                    <a class="btn btn-sm btn-outline-primary"
+                                       target="_blank"
+                                       href="@Url.Action(
+                                                                                  "Download",
+                                                                                  "ReportCard",
+                                                                                  new
+                                                                                  {
+                                                                                      studentId = student.StudentId,
+                                                                                      batchId = Model.BatchId,
+                                                                                      examCategoryId = Model.ExamCategoryId
+                                                                                  })">
+
+                                <i class="fa fa-file-pdf"></i>
+                                PDF
+
+                                    </a>
+
+                                </td>
+
+                            </tr>
+                                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+    }
+
+</div>
+@section Scripts {
+    <script>
+
+        document
+            .getElementById("selectAll")
+            ?.addEventListener("change", function () {
+
+                document
+                    .querySelectorAll(".studentCheck")
+                    .forEach(x =>
+                        x.checked = this.checked
+                    );
+
+            });
+
+    </script>
+    <script>
+        document.getElementById("downloadAll")
+            ?.addEventListener("click", function () {
+
+                const batchId = '@Model.BatchId';
+                const classId = '@Model.ClassId';
+                const sectionId = '@Model.SectionId';
+                const examCategoryId = '@Model.ExamCategoryId';
+
+                if (!batchId || !classId || !sectionId || !examCategoryId) {
+                    alert("Please select Batch, Class, Section and Term.");
+                    return;
+                }
+
+                const url =
+                    '@Url.Action("DownloadClass", "ReportCard")' +
+                    '?batchId=' + batchId +
+                    '&classId=' + classId +
+                    '&sectionId=' + sectionId +
+                    '&examCategoryId=' + examCategoryId;
+
+                window.location.href = url;
+            });
+    </script>
+    <script>
+        document.getElementById("downloadSelected")
+            ?.addEventListener("click", async function () {
+
+                const selectedStudents = Array.from(
+                    document.querySelectorAll(".studentCheck:checked")
+                ).map(x => x.value);
+
+                if (selectedStudents.length === 0) {
+                    alert("Please select at least one student.");
+                    return;
+                }
+
+                const batchId = '@Model.BatchId';
+                const examCategoryId = '@Model.ExamCategoryId';
+
+                const formData = new FormData();
+
+                selectedStudents.forEach(id => {
+                    formData.append("studentIds", id);
+                });
+
+                formData.append("batchId", batchId);
+                formData.append("examCategoryId", examCategoryId);
+
+                const button = this;
+
+                button.disabled = true;
+                button.innerHTML =
+                    '<i class="fa fa-spinner fa-spin"></i> Preparing...';
+
+                try {
+
+                    const response = await fetch(
+                        '@Url.Action("DownloadSelected", "ReportCard")',
+                        {
+                            method: "POST",
+                            body: formData
+                        }
+                    );
+
+                    if (!response.ok) {
+                        const message = await response.text();
+                        alert(message || "Unable to generate report cards.");
+                        return;
+                    }
+
+                    const blob = await response.blob();
+
+                    const url = window.URL.createObjectURL(blob);
+
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = "Selected_ReportCards.zip";
+
+                    document.body.appendChild(a);
+                    a.click();
+
+                    a.remove();
+
+                    window.URL.revokeObjectURL(url);
+
+                }
+                catch (error) {
+
+                    console.error(error);
+
+                    alert("Something went wrong while downloading.");
+
+                }
+                finally {
+
+                    button.disabled = false;
+                    button.innerHTML =
+                        '<i class="fa fa-download"></i> Download Selected';
+
+                }
+            });
+    </script>
+}

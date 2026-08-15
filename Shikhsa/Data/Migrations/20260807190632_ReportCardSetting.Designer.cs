@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Shikhsa.Data;
 
@@ -11,9 +12,11 @@ using Shikhsa.Data;
 namespace Shikhsa.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260807190632_ReportCardSetting")]
+    partial class ReportCardSetting
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1681,77 +1684,6 @@ namespace Shikhsa.Data.Migrations
                     b.HasIndex("NotificationCategoryId");
 
                     b.ToTable("NotificationTemplateCategories");
-                });
-
-            modelBuilder.Entity("Shikhsa.Models.ReportCardSetting", b =>
-                {
-                    b.Property<int>("ReportCardSettingId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ReportCardSettingId"));
-
-                    b.Property<string>("AddedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("AddedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("BatchId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("BoardType")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("FooterText")
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
-
-                    b.Property<string>("HeaderText")
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("ShowLogo")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("ShowPrincipalSignature")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("ShowQRCode")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("ShowStudentPhoto")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("ShowTeacherSignature")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("ShowWatermark")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("UseDigitalSignature")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("WatermarkText")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.HasKey("ReportCardSettingId");
-
-                    b.HasIndex("BatchId");
-
-                    b.ToTable("ReportCardSettings");
                 });
 
             modelBuilder.Entity("Shikhsa.Models.RoleMenuPermission", b =>
@@ -3738,15 +3670,6 @@ namespace Shikhsa.Data.Migrations
                     b.Navigation("NotificationCategory");
 
                     b.Navigation("NotificationTemplate");
-                });
-
-            modelBuilder.Entity("Shikhsa.Models.ReportCardSetting", b =>
-                {
-                    b.HasOne("Shikhsa.Models.Batches", "Batch")
-                        .WithMany()
-                        .HasForeignKey("BatchId");
-
-                    b.Navigation("Batch");
                 });
 
             modelBuilder.Entity("Shikhsa.Models.ScholasticExam", b =>

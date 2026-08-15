@@ -1,0 +1,54 @@
+﻿@* @model Shik ReportCardVMs *@
+@model Shikhsa.ViewModels.ReportCardVM
+<div class="card">
+
+    <div class="card-header">
+
+        <h3>@Model.Student.StudentName</h3>
+
+    </div>
+
+    <div class="card-body">
+
+        <table class="table table-bordered">
+
+            <thead>
+
+                <tr>
+
+                    <th>Subject</th>
+
+                    <th>Max</th>
+
+                    <th>Obtained</th>
+
+                    <th>Grade</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                @foreach (var item in Model.ScholasticMarks)
+                {
+                    <tr>
+
+                        <td>@item.SubjectName</td>
+
+                        <td>@item.MaximumMarks</td>
+
+                        <td>@item.ObtainedMarks</td>
+
+                        <td>@item.Grade</td>
+
+                    </tr>
+                }
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
