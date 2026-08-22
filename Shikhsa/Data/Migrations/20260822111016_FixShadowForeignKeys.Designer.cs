@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Shikhsa.Data;
 
@@ -11,9 +12,11 @@ using Shikhsa.Data;
 namespace Shikhsa.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260822111016_FixShadowForeignKeys")]
+    partial class FixShadowForeignKeys
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2001,9 +2004,9 @@ namespace Shikhsa.Data.Migrations
                     b.Property<int>("ClassId")
                         .HasColumnType("int");
 
-                    b.Property<string>("Concession")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<decimal>("Concession")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("ConcessionAmount")
                         .HasPrecision(18, 2)
@@ -2013,10 +2016,6 @@ namespace Shikhsa.Data.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("DueAmount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("FeeCollectedAmount")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 

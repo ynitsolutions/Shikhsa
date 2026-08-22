@@ -3,6 +3,8 @@ using Shikhsa.Data;
 using Shikhsa.Models;
 using Shikhsa.Models;
 using Shikhsa.Models.Common;
+using Shikhsa.Models.Payment;
+using Shikhsa.ViewModels;
 using System;
 
 namespace Shikhsa.Repository
@@ -704,7 +706,1025 @@ namespace Shikhsa.Repository
         }
 
         #endregion
+        #region Fee Receipt
+        public StudentFeePageVM GetStudentFeePage(int? classId = null,int? batchId = null,long? studentId = null)
+        {
+            var vm = new StudentFeePageVM
+            {
+                SelectedClassId = classId,
+                SelectedBatchId = batchId,
+                SelectedStudentId = studentId
+            };
 
+            // -----------------------------------------------------
+            // STUDENTS
+            // -----------------------------------------------------
+
+            if (classId.HasValue && batchId.HasValue)
+            {
+                vm.Students = GetStudents(classId, batchId);
+            }
+
+
+            // -----------------------------------------------------
+            // SELECTED STUDENT
+            // -----------------------------------------------------
+
+            if (studentId.HasValue)
+            {
+                vm.SelectedStudent = GetStudentDetails(studentId.Value);
+
+                if (vm.SelectedStudent != null)
+                {
+                    vm.DueFeeBatch = vm.SelectedStudent.DueBalance;
+                }
+            }
+
+            return vm;
+        }
+        public List<StudentFeeStudentVM> GetStudents(
+           int? classId,
+           int? batchId)
+        {
+            var query = _context.Tbl_Students
+                .AsNoTracking()
+                .Where(x => x.IsActive);
+
+
+            // Current class
+            if (classId.HasValue)
+            {
+                query = query.Where(x =>
+                    x.AdmitClassId == classId.Value);
+            }
+
+
+            // Current batch
+            if (batchId.HasValue)
+            {
+                query = query.Where(x =>
+                    x.AdmitBatchId == batchId.Value);
+            }
+
+
+            var students = query
+                .Select(x => new
+                {
+                    x.StudentId,
+
+                    x.FirstName,
+                    x.MiddleName,
+                    x.LastName,
+
+                    x.ContactNo,
+
+                    x.Parent,
+
+                    x.ScholarNumber,
+
+                    x.AdmitClassId,
+                    x.AdmitSectionId,
+                    x.AdmitBatchId
+                })
+                .ToList();
+
+
+            var result = new List<StudentFeeStudentVM>();
+
+
+            foreach (var student in students)
+            {
+                result.Add(new StudentFeeStudentVM
+                {
+                    StudentId = student.StudentId,
+
+                    StudentName = BuildFullName(
+                        student.FirstName,
+                        student.MiddleName,
+                        student.LastName),
+
+                    FatherName = student.Parent == null
+                        ? string.Empty
+                        : BuildFullName(
+                            student.Parent.FatherFirstName,
+                            student.Parent.FatherMiddleName,
+                            student.Parent.FatherLastName),
+
+                    ContactNo = student.ContactNo ?? string.Empty,
+
+                    RollNo = student.ScholarNumber ?? "Not assigned",
+
+                    ClassId = student.AdmitClassId,
+
+                    SectionId = student.AdmitSectionId,
+
+                    BatchId = student.AdmitBatchId,
+                    ClassName=_context.DataListItems.Where(x=>x.DataListItemId==student.AdmitClassId).Select(x=>x.DataListItemText).FirstOrDefault(),
+                    SectionName= _context.DataListItems.Where(x => x.DataListItemId == student.AdmitSectionId).Select(x => x.DataListItemText).FirstOrDefault(),
+                    DueBalance = GetStudentonlyDueBalance(student.StudentId)
+                });
+            }
+
+
+            return result
+                .OrderBy(x => x.StudentName)
+                .ToList();
+        }
+
+
+        // =========================================================
+        // STUDENT DETAILS
+        // =========================================================
+
+        public StudentFeeStudentVM? GetStudentDetails(long studentId)
+        {
+            var student = _context.Tbl_Students
+                .AsNoTracking()
+                .Include(x => x.Parent)
+                .FirstOrDefault(x =>
+                    x.StudentId == studentId &&
+                    x.IsActive);
+
+            if (student == null)
+                return null;
+
+
+            var result = new StudentFeeStudentVM
+            {
+                StudentId = student.StudentId,
+
+                StudentName = BuildFullName(
+                    student.FirstName,
+                    student.MiddleName,
+                    student.LastName),
+
+                FatherName = student.Parent == null
+                    ? string.Empty
+                    : BuildFullName(
+                        student.Parent.FatherFirstName,
+                        student.Parent.FatherMiddleName,
+                        student.Parent.FatherLastName),
+
+                ContactNo = student.ContactNo ?? "Not available",
+
+                RollNo = student.ScholarNumber ?? "Not assigned",
+
+                ClassId = student.AdmitClassId,
+
+                SectionId = student.AdmitSectionId,
+
+                BatchId = student.AdmitBatchId,
+
+                //DueBalance = GetStudentDueBalance(
+                //    student.StudentId)
+                DueBalance= GetStudentonlyDueBalance(student.StudentId)
+            };
+
+
+            // Class name
+            if (student.AdmitClassId.HasValue)
+            {
+                result.ClassName =
+                    _context.DataListItems
+                        .Where(x =>
+                            x.DataListItemId ==
+                            student.AdmitClassId.Value)
+                        .Select(x => x.DataListItemText)
+                        .FirstOrDefault()
+                    ?? string.Empty;
+            }
+
+
+            // Section name
+            if (student.AdmitSectionId.HasValue)
+            {
+                result.SectionName =
+                    _context.DataListItems
+                        .Where(x =>
+                            x.DataListItemId ==
+                            student.AdmitSectionId.Value)
+                        .Select(x => x.DataListItemText)
+                        .FirstOrDefault()
+                    ?? string.Empty;
+            }
+
+
+            // Batch name
+            if (student.AdmitBatchId.HasValue)
+            {
+                result.BatchName =
+                    _context.Batches
+                        .Where(x =>
+                            x.BatchId ==
+                            student.AdmitBatchId.Value)
+                        .Select(x => x.AcademicYear)
+                        .FirstOrDefault()
+                    ?? string.Empty;
+            }
+
+
+            return result;
+        }
+
+
+        // =========================================================
+        // STUDENT DUE BALANCE
+        // =========================================================
+        //public decimal GetStudentonlyDueBalance(long studentId)
+        //{
+        //    var student = _context.Tbl_Students
+        //        .AsNoTracking()
+        //        .FirstOrDefault(x =>
+        //            x.StudentId == studentId &&
+        //            x.IsActive);
+
+        //    if (student == null)
+        //        return 0;
+
+
+        //    // ============================================
+        //    // CURRENT CLASS & BATCH
+        //    // ============================================
+
+        //    int classId = student.AdmitClassId ?? 0;
+        //    int batchId = student.AdmitBatchId ?? 0;
+
+
+        //    // ============================================
+        //    // 1. TUITION FEE
+        //    // ============================================
+
+        //    decimal tuitionFee = _context.TuitionFeePlans
+        //        .AsNoTracking()
+        //        .Where(x =>
+        //            x.IsActive &&
+        //            x.ClassId == classId &&
+        //            x.BatchId == batchId)
+        //        .Sum(x => (decimal?)x.FeeValue) ?? 0;
+
+
+        //    // ============================================
+        //    // 2. TRANSPORT FEE
+        //    // ============================================
+
+        //    decimal transportFee = 0;
+
+        //    if (student.IsTranspot && student.TranspotId.HasValue)
+        //    {
+        //        transportFee = _context.TransportFeePlans
+        //            .AsNoTracking()
+        //            .Where(x =>
+        //                x.IsActive &&
+        //                x.TransportId == student.TranspotId.Value &&
+        //                x.BatchId == batchId)
+        //            .Sum(x => (decimal?)x.TransportFee) ?? 0;
+        //    }
+
+
+        //    // ============================================
+        //    // 3. HOSTEL FEE
+        //    // ============================================
+
+        //    decimal hostelFee = 0;
+
+        //    if (student.IsHostel && student.HostelId.HasValue)
+        //    {
+        //        hostelFee = _context.HostelFeePlans
+        //            .AsNoTracking()
+        //            .Where(x =>
+        //                x.IsActive &&
+        //                x.HostelId == student.HostelId.Value )
+        //                //&& x. == batchId)
+        //            .Sum(x => (decimal?)x.HostelFee) ?? 0;
+        //    }
+
+
+        //    // ============================================
+        //    // TOTAL APPLICABLE FEE
+        //    // ============================================
+
+        //    decimal totalFee =
+        //        tuitionFee +
+        //        transportFee +
+        //        hostelFee;
+
+
+        //    // ============================================
+        //    // TOTAL PAID BY STUDENT
+        //    // ============================================
+
+        //    decimal totalPaid = _context.StudentFees
+        //        .AsNoTracking()
+        //        .Where(x =>
+        //            x.StudentId == studentId &&
+        //            x.BatchId == batchId &&
+        //            x.IsActive)
+        //        .Sum(x => (decimal?)x.PaidAmount) ?? 0;
+
+
+        //    // ============================================
+        //    // DUE
+        //    // ============================================
+
+        //    decimal due = totalFee - totalPaid;
+
+
+        //    // Advance payment होने पर Due negative नहीं होगा
+        //    return Math.Max(0, due);
+        //}
+        public decimal GetStudentonlyDueBalance(long studentId)
+        {
+            var student = _context.Tbl_Students
+                .AsNoTracking()
+                .FirstOrDefault(x =>
+                    x.StudentId == studentId &&
+                    x.IsActive);
+
+            if (student == null)
+                return 0;
+
+            int classId = student.AdmitClassId ?? 0;
+            int batchId = student.AdmitBatchId ?? 0;
+
+            if (classId <= 0 || batchId <= 0)
+                return 0;
+
+            var due = _context.StudentUnpaidFeeSPResults
+                .FromSqlInterpolated($@"
+            EXEC USP_GetStudentUnpaidFees
+                @StudentId = {studentId},
+                @ClassId = {classId},
+                @BatchId = {batchId}")
+                .AsNoTracking()
+                .AsEnumerable()
+                .Sum(x => x.Balance);
+
+            return Math.Max(0, due);
+        }
+        public decimal GetStudentDueBalance(long studentId)
+        {
+            return _context.StudentFees
+                .Where(x =>
+                    x.StudentId == studentId &&
+                    x.IsActive)
+                .Sum(x => x.BalanceAmount);
+        }
+
+
+        // =========================================================
+        // FULL NAME
+        // =========================================================
+
+        private static string BuildFullName(string? firstName,string? middleName,string? lastName)
+        {
+            return string.Join(" ",new[]
+                {
+                    firstName,
+                    middleName,
+                    lastName
+                }
+                .Where(x =>!string.IsNullOrWhiteSpace(x))).Trim();
+        }
+        //public StudentFeeReceiptVM GetUnpaidFees(long studentId,int classId,int batchId)
+        //{
+        //    var vm = new StudentFeeReceiptVM
+        //    {
+        //        StudentId = studentId,
+        //        ClassId = classId,
+        //        BatchId = batchId
+        //    };
+
+        //    // ============================================
+        //    // STUDENT DETAILS
+        //    // ============================================
+
+        //    var student = _context.Tbl_Students
+        //        .AsNoTracking()
+        //        .Include(x => x.Parent)
+        //        .FirstOrDefault(x =>
+        //            x.StudentId == studentId &&
+        //            x.IsActive);
+
+        //    if (student == null)
+        //        return vm;
+
+
+        //    vm.StudentName = BuildFullName(
+        //        student.FirstName,
+        //        student.MiddleName,
+        //        student.LastName);
+
+        //    vm.FatherName = student.Parent == null
+        //        ? string.Empty
+        //        : BuildFullName(
+        //            student.Parent.FatherFirstName,
+        //            student.Parent.FatherMiddleName,
+        //            student.Parent.FatherLastName);
+
+        //    vm.ContactNo = student.ContactNo ?? string.Empty;
+
+        //    vm.RollNo = student.ScholarNumber ?? "Not assigned";
+
+
+        //    // ============================================
+        //    // UNPAID / PARTIALLY PAID STUDENT FEES
+        //    // ============================================
+
+        //    var fees = _context.StudentFees
+        //        .AsNoTracking()
+        //        .Where(x =>
+        //            x.StudentId == studentId &&
+        //            x.ClassId == classId &&
+        //            x.BatchId == batchId &&
+        //            x.IsActive &&
+        //            x.BalanceAmount > 0)
+        //        .OrderBy(x => x.Year)
+        //        .ThenBy(x => x.Month)
+        //        .ThenBy(x => x.StudentFeeId)
+        //        .ToList();
+
+
+        //    // ============================================
+        //    // MAP FEES
+        //    // ============================================
+
+        //    foreach (var fee in fees)
+        //    {
+        //        var item = new StudentFeeReceiptItemVM
+        //        {
+        //            FeeId = fee.FeeId,
+
+        //            Amount = fee.FeeAmount,
+
+        //            PaidAmount = fee.PaidAmount,
+
+        //            Balance = fee.BalanceAmount,
+
+        //            CollectAmount = fee.BalanceAmount,
+
+        //            IsSelected = false,
+
+        //            FeeDescription =$"{GetMonthName(fee.Month)} Month School Fee"
+        //        };
+
+        //        vm.TuitionFees.Add(item);
+        //    }
+
+
+        //    // ============================================
+        //    // TOTAL DUE
+        //    // ============================================
+
+        //    vm.TotalAmount = vm.TuitionFees.Sum(x => x.Balance);
+
+        //    vm.TotalFees = vm.TotalAmount;
+
+        //    vm.DueBalance = vm.TotalAmount;
+
+        //    return vm;
+        //}
+        public StudentFeeReceiptVM GetUnpaidFees(
+      long studentId,
+      int classId,
+      int batchId)
+        {
+            var vm = new StudentFeeReceiptVM
+            {
+                StudentId = studentId,
+                ClassId = classId,
+                BatchId = batchId
+            };
+
+            // ============================================
+            // STUDENT DETAILS
+            // ============================================
+
+            var student = _context.Tbl_Students
+                .AsNoTracking()
+                .Include(x => x.Parent)
+                .FirstOrDefault(x =>
+                    x.StudentId == studentId &&
+                    x.IsActive);
+
+            if (student == null)
+                return vm;
+
+
+            vm.StudentName = BuildFullName(
+                student.FirstName,
+                student.MiddleName,
+                student.LastName);
+
+            vm.FatherName = student.Parent == null
+                ? string.Empty
+                : BuildFullName(
+                    student.Parent.FatherFirstName,
+                    student.Parent.FatherMiddleName,
+                    student.Parent.FatherLastName);
+
+            vm.ContactNo = student.ContactNo ?? string.Empty;
+
+            vm.RollNo = student.ScholarNumber ?? "Not assigned";
+
+
+            // ============================================
+            // GET UNPAID FEES FROM SP
+            // ============================================
+
+            var fees = _context.StudentUnpaidFeeSPResults
+                .FromSqlInterpolated($@"
+            EXEC USP_GetStudentUnpaidFees
+                @StudentId = {studentId},
+                @ClassId = {classId},
+                @BatchId = {batchId}")
+                .AsNoTracking()
+                .ToList();
+
+
+            // ============================================
+            // DISTRIBUTE FEES BY FEE TYPE
+            // ============================================
+
+            foreach (var fee in fees)
+            {
+                var item = new StudentFeeReceiptItemVM
+                {
+                    FeeId = fee.FeeId,
+
+                    FeePlanId = fee.FeePlanId,
+
+                    FeeType = fee.FeeType,
+
+                    FeeHeadingName = fee.FeeHeadingName,
+
+                    Month = fee.Month,
+
+                    Year = fee.Year,
+
+                    Amount = fee.Amount,
+
+                    PaidAmount = fee.PaidAmount,
+
+                    Balance = fee.Balance,
+
+                    CollectAmount = fee.Balance,
+
+                    IsSelected = false,
+
+                    PaymentStatus = fee.PaymentStatus,
+
+                    FeeDescription = fee.FeeDescription
+                };
+
+
+                switch (fee.FeeType.Trim().ToLower())
+                {
+                    case "tuition":
+                        vm.TuitionFees.Add(item);
+                        break;
+
+                    case "transport":
+                        vm.TransportFees.Add(item);
+                        break;
+
+                    case "hostel":
+                        vm.HostelFees.Add(item);
+                        break;
+                }
+            }
+
+
+            // ============================================
+            // TOTAL DUE
+            // ============================================
+
+            vm.TotalAmount =
+                vm.TuitionFees.Sum(x => x.Balance)
+                + vm.TransportFees.Sum(x => x.Balance)
+                + vm.HostelFees.Sum(x => x.Balance);
+
+            vm.TotalFees = vm.TotalAmount;
+
+            vm.DueBalance = vm.TotalAmount;
+
+
+            return vm;
+        }
+        private string GetMonthName(int month)
+        {
+            if (month < 1 || month > 12)
+                return string.Empty;
+
+            return new DateTime(2000, month, 1)
+                .ToString("MMMM");
+        }
+        #endregion
+        #region Save Fee Receipt (Cash)
+
+        //public long SaveCashFeeReceipt(StudentFeeReceiptVM vm)
+        //{
+        //    string receiptNumber = GenerateReceiptNumber();
+
+        //    // ============================================
+        //    // SELECTED FEES
+        //    // ============================================
+
+        //    var allSelectedFees = new List<StudentFeeReceiptItemVM>();
+        //    allSelectedFees.AddRange(vm.TuitionFees.Where(x => x.IsSelected && x.CollectAmount > 0));
+        //    allSelectedFees.AddRange(vm.TransportFees.Where(x => x.IsSelected && x.CollectAmount > 0));
+        //    allSelectedFees.AddRange(vm.HostelFees.Where(x => x.IsSelected && x.CollectAmount > 0));
+
+        //    if (!allSelectedFees.Any())
+        //        throw new InvalidOperationException("Koi fee select nahi ki gayi.");
+
+
+        //    // ============================================
+        //    // SERVER-SIDE CALCULATION (client ki values trust nahi kar rahe)
+        //    // ============================================
+
+        //    decimal totalFeeSum = allSelectedFees.Sum(x => x.Amount);      // Actual fee amount
+        //    decimal collectSum = allSelectedFees.Sum(x => x.CollectAmount); // Entered collect amount
+
+        //    decimal lateFee = vm.LateFee;
+        //    decimal concession = vm.ConcessionAmount;
+
+        //    decimal receiptAmount = Math.Max(0, collectSum + lateFee - concession);
+
+        //    // Student ka OVERALL due, is payment se PEHLE (SP se live fetch)
+        //    decimal oldBalance = GetStudentonlyDueBalance(vm.StudentId);
+
+        //    decimal balanceAmount = Math.Max(0, oldBalance - receiptAmount);
+        //    // ============================================
+        //    // RECEIPT HEADER
+        //    // ============================================
+
+        //    var receipt = new FeeReceipt
+        //    {
+        //        StudentId = vm.StudentId,
+        //        ClassId = vm.ClassId,
+        //        BatchId = vm.BatchId,
+        //        PaymentModeId = vm.PaymentModeId,
+        //        ReceiptDate = vm.ReceiptDate == default ? DateTime.Now : vm.ReceiptDate,
+        //        ReceiptNumber = receiptNumber,
+
+        //        ReceiptAmount = receiptAmount,
+        //        TotalFee = totalFeeSum,
+        //        LateFee = lateFee,
+        //        Concession = vm.Concession,
+        //        ConcessionAmount = concession,
+
+        //        OldBalance = oldBalance,
+        //        BalanceAmount = balanceAmount,
+        //        DueAmount = balanceAmount,
+
+        //        PaidAmount = receiptAmount,
+        //        Remark = vm.Remark,
+        //        CurrentYear = DateTime.Now.Year,
+        //        FeeCollectedAmount = collectSum,
+        //        IsActive = true
+        //    };
+
+        //    _context.FeeReceipt.Add(receipt);
+        //    _context.SaveChanges();
+
+
+        //    // ============================================
+        //    // FEE ITEMS SAVE
+        //    // ============================================
+
+        //    foreach (var item in allSelectedFees)
+        //    {
+        //        var studentFee = _context.StudentFees
+        //            .FirstOrDefault(x =>
+        //                x.FeeId == item.FeeId &&
+        //                x.StudentId == vm.StudentId &&
+        //                x.Month == item.Month &&
+        //                x.Year == item.Year);
+
+        //        decimal balanceAfter;
+
+        //        if (studentFee != null)
+        //        {
+        //            studentFee.FeeAmount = item.Amount;
+        //            studentFee.PaidAmount += item.CollectAmount;
+        //            studentFee.BalanceAmount = Math.Max(0, studentFee.FeeAmount - studentFee.PaidAmount);
+        //            studentFee.IsFullyPaid = studentFee.BalanceAmount <= 0;
+
+        //            balanceAfter = studentFee.BalanceAmount;
+
+        //            _context.StudentFees.Update(studentFee);
+        //        }
+        //        else
+        //        {
+        //            studentFee = new StudentFee
+        //            {
+        //                StudentId = vm.StudentId,
+        //                FeeId = item.FeeId,
+        //                ClassId = vm.ClassId,
+        //                BatchId = vm.BatchId,
+        //                Month = item.Month,
+        //                Year = item.Year,
+        //                FeeType = item.FeeType,
+
+        //                FeeAmount = item.Amount,
+        //                PaidAmount = item.CollectAmount,
+        //                BalanceAmount = Math.Max(0, item.Amount - item.CollectAmount),
+        //                IsFullyPaid = (item.Amount - item.CollectAmount) <= 0,
+
+        //                IsActive = true
+        //            };
+
+        //            _context.StudentFees.Add(studentFee);
+        //            _context.SaveChanges();
+
+        //            balanceAfter = studentFee.BalanceAmount;
+        //        }
+
+        //        var detail = new FeeReceiptDetail
+        //        {
+        //            FeeReceiptId = receipt.FeeReceiptId,
+        //            StudentFeeId = studentFee.StudentFeeId,
+        //            FeeId = item.FeeId,
+        //            FeeDescription = item.FeeDescription,
+        //            Month = item.Month,
+        //            Year = item.Year,
+        //            Amount = item.Amount,
+        //            PaidAmount = item.CollectAmount,
+        //            BalanceAmount = balanceAfter,
+        //            AdjustedAmount = 0,
+        //            IsActive = true
+        //        };
+
+        //        _context.FeeReceiptDetail.Add(detail);
+        //    }
+
+        //    _context.SaveChanges();
+
+        //    return receipt.FeeReceiptId;
+        //}
+        #region 
+
+        public long SaveCashFeeReceipt(StudentFeeReceiptVM vm)
+        {
+            using var transaction = _context.Database.BeginTransaction();
+
+            try
+            {
+                string receiptNumber = GenerateReceiptNumber();
+
+                var allSelectedFees = new List<StudentFeeReceiptItemVM>();
+                allSelectedFees.AddRange(vm.TuitionFees.Where(x => x.IsSelected && x.CollectAmount > 0));
+                allSelectedFees.AddRange(vm.TransportFees.Where(x => x.IsSelected && x.CollectAmount > 0));
+                allSelectedFees.AddRange(vm.HostelFees.Where(x => x.IsSelected && x.CollectAmount > 0));
+
+                if (!allSelectedFees.Any())
+                    throw new InvalidOperationException("No fee selected!");
+
+
+                // ============================================
+                // SERVER-SIDE CALCULATION
+                // ============================================
+
+                decimal totalFeeSum = allSelectedFees.Sum(x => x.Amount);
+                decimal collectSum = allSelectedFees.Sum(x => x.CollectAmount);
+
+                decimal lateFee = vm.LateFee;
+                decimal concession = vm.ConcessionAmount;
+
+                decimal receiptAmount = Math.Max(0, collectSum + lateFee - concession);
+
+                decimal oldBalance = GetStudentonlyDueBalance(vm.StudentId);
+
+                decimal balanceAmount = Math.Max(0, oldBalance - collectSum - concession);
+
+
+                // ============================================
+                // CONCESSION TARGET FEE NIRDHARIT KARO
+                // ============================================
+
+                var dueAfterCollectMap = new Dictionary<StudentFeeReceiptItemVM, decimal>();
+
+                foreach (var item in allSelectedFees)
+                {
+                    var existing = _context.StudentFees
+                        .FirstOrDefault(x =>
+                            x.FeeId == item.FeeId &&
+                            x.StudentId == vm.StudentId &&
+                            x.Month == item.Month &&
+                            x.Year == item.Year);
+
+                    decimal dueBeforeThisPayment = existing?.BalanceAmount ?? item.Amount;
+                    decimal dueAfterCollect = Math.Max(0, dueBeforeThisPayment - item.CollectAmount);
+
+                    dueAfterCollectMap[item] = dueAfterCollect;
+                }
+
+                StudentFeeReceiptItemVM concessionTargetItem = null;
+
+                if (concession > 0)
+                {
+                    concessionTargetItem = allSelectedFees
+                        .FirstOrDefault(x => dueAfterCollectMap[x] == concession);
+
+                    if (concessionTargetItem == null)
+                    {
+                        concessionTargetItem = allSelectedFees.Last();
+                    }
+                }
+
+
+                // ============================================
+                // RECEIPT HEADER
+                // ============================================
+
+                var receipt = new FeeReceipt
+                {
+                    StudentId = vm.StudentId,
+                    ClassId = vm.ClassId,
+                    BatchId = vm.BatchId,
+                    PaymentModeId = vm.PaymentModeId,
+                    ReceiptDate = vm.ReceiptDate == default ? DateTime.Now : vm.ReceiptDate,
+                    ReceiptNumber = receiptNumber,
+
+                    ReceiptAmount = receiptAmount,
+                    TotalFee = totalFeeSum,
+                    LateFee = lateFee,
+
+                    ConcessionAmount = concession,
+                    Concession = vm.Concession,
+
+                    OldBalance = oldBalance,
+                    BalanceAmount = balanceAmount,
+                    DueAmount = balanceAmount,
+
+                    PaidAmount = receiptAmount,
+                    Remark = vm.Remark,
+                    CurrentYear = DateTime.Now.Year,
+                    FeeCollectedAmount = collectSum,
+                    IsActive = true
+                };
+
+                _context.FeeReceipt.Add(receipt);
+                _context.SaveChanges();
+
+
+                // ============================================
+                // FEE ITEMS SAVE
+                // ============================================
+
+                foreach (var item in allSelectedFees)
+                {
+                    var studentFee = _context.StudentFees
+                        .FirstOrDefault(x =>
+                            x.FeeId == item.FeeId &&
+                            x.StudentId == vm.StudentId &&
+                            x.Month == item.Month &&
+                            x.Year == item.Year);
+
+                    decimal previousPaid;
+                    decimal previousBalance;
+                    decimal balanceAfter;
+                    decimal itemConcession = 0;
+
+                    if (item == concessionTargetItem && concession > 0)
+                    {
+                        decimal dueAfterCollect = dueAfterCollectMap[item];
+
+                        itemConcession = concession <= dueAfterCollect
+                            ? concession
+                            : dueAfterCollect;
+                    }
+
+
+                    if (studentFee != null)
+                    {
+                        previousPaid = studentFee.PaidAmount;
+                        previousBalance = studentFee.BalanceAmount;
+
+                        studentFee.FeeAmount = item.Amount;
+                        studentFee.PaidAmount += item.CollectAmount + itemConcession;
+                        studentFee.BalanceAmount = Math.Max(0, studentFee.FeeAmount - studentFee.PaidAmount);
+                        studentFee.IsFullyPaid = studentFee.BalanceAmount <= 0;
+
+                        balanceAfter = studentFee.BalanceAmount;
+
+                        _context.StudentFees.Update(studentFee);
+                    }
+                    else
+                    {
+                        previousPaid = 0;
+                        previousBalance = item.Amount;
+
+                        decimal paidWithConcession = item.CollectAmount + itemConcession;
+
+                        studentFee = new StudentFee
+                        {
+                            StudentId = vm.StudentId,
+                            FeeId = item.FeeId,
+                            ClassId = vm.ClassId,
+                            BatchId = vm.BatchId,
+                            Month = item.Month,
+                            Year = item.Year,
+                            FeeType = item.FeeType,
+
+                            FeeAmount = item.Amount,
+                            PaidAmount = paidWithConcession,
+                            BalanceAmount = Math.Max(0, item.Amount - paidWithConcession),
+                            IsFullyPaid = (item.Amount - paidWithConcession) <= 0,
+
+                            IsActive = true
+                        };
+
+                        _context.StudentFees.Add(studentFee);
+                        _context.SaveChanges();
+
+                        balanceAfter = studentFee.BalanceAmount;
+                    }
+
+                    var detail = new FeeReceiptDetail
+                    {
+                        FeeReceiptId = receipt.FeeReceiptId,
+                        StudentFeeId = studentFee.StudentFeeId,
+                        FeeId = item.FeeId,
+                        FeeType = item.FeeType,
+                        FeeDescription = item.FeeDescription,
+                        Month = item.Month,
+                        Year = item.Year,
+                        Amount = item.Amount,
+
+                        PreviousPaidAmount = previousPaid,
+                        PreviousBalanceAmount = previousBalance,
+
+                        PaidAmount = item.CollectAmount,
+                        BalanceAmount = balanceAfter,
+                        AdjustedAmount = itemConcession,
+                        IsActive = true
+                    };
+
+                    _context.FeeReceiptDetail.Add(detail);
+                }
+
+                _context.SaveChanges();
+
+                // ============================================
+                // SAB KUCH SAHI GAYA — COMMIT KARO
+                // ============================================
+
+                transaction.Commit();
+
+                return receipt.FeeReceiptId;
+            }
+            catch (Exception)
+            {
+                // ============================================
+                // KAHIN BHI ERROR AAYA — SAB KUCH ROLLBACK KARO
+                // ============================================
+
+                transaction.Rollback();
+                throw;   // 👈 exception ko dubara throw karo taaki controller/caller ko pata chale
+            }
+        }
+
+        #endregion
+
+        private string GenerateReceiptNumber()
+        {
+            int year = DateTime.Now.Year;
+
+            var lastReceipt = _context.FeeReceipt          // ✅ singular
+                .Where(x => x.CurrentYear == year)
+                .OrderByDescending(x => x.FeeReceiptId)
+                .FirstOrDefault();
+
+            int nextNumber = 1;
+
+            if (lastReceipt != null && !string.IsNullOrEmpty(lastReceipt.ReceiptNumber))
+            {
+                var parts = lastReceipt.ReceiptNumber.Split('-');
+                if (parts.Length > 0 && int.TryParse(parts[^1], out int lastNum))
+                {
+                    nextNumber = lastNum + 1;
+                }
+            }
+
+            return $"RC-{year}-{nextNumber:D5}";
+        }
+
+
+        public FeeReceipt? GetReceiptForPrint(long feeReceiptId)
+        {
+            return _context.FeeReceipt              // ✅ singular
+                .AsNoTracking()
+                .Include(x => x.Student)
+                .Include(x => x.PaymentMode)
+                .Include(x => x.Details)
+                .FirstOrDefault(x => x.FeeReceiptId == feeReceiptId);
+        }
+
+        #endregion
 
     }
+
+
 }
+

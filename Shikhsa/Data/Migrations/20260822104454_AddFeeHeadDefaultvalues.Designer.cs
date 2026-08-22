@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Shikhsa.Data;
 
@@ -11,9 +12,11 @@ using Shikhsa.Data;
 namespace Shikhsa.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260822104454_AddFeeHeadDefaultvalues")]
+    partial class AddFeeHeadDefaultvalues
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2001,9 +2004,9 @@ namespace Shikhsa.Data.Migrations
                     b.Property<int>("ClassId")
                         .HasColumnType("int");
 
-                    b.Property<string>("Concession")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<decimal>("Concession")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("ConcessionAmount")
                         .HasPrecision(18, 2)
@@ -2013,10 +2016,6 @@ namespace Shikhsa.Data.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("DueAmount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("FeeCollectedAmount")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
@@ -2299,6 +2298,9 @@ namespace Shikhsa.Data.Migrations
                     b.Property<long>("StudentFeeId")
                         .HasColumnType("bigint");
 
+                    b.Property<long?>("StudentFeeId1")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("nvarchar(max)");
 
@@ -2313,6 +2315,8 @@ namespace Shikhsa.Data.Migrations
                     b.HasIndex("PaymentTransactionId");
 
                     b.HasIndex("StudentFeeId");
+
+                    b.HasIndex("StudentFeeId1");
 
                     b.ToTable("PaymentTransactionFeeDetail");
                 });
@@ -2482,6 +2486,9 @@ namespace Shikhsa.Data.Migrations
                     b.Property<long>("StudentFeeId")
                         .HasColumnType("bigint");
 
+                    b.Property<long?>("StudentFeeId1")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("nvarchar(max)");
 
@@ -2495,6 +2502,8 @@ namespace Shikhsa.Data.Migrations
                     b.HasIndex("FeeReceiptId");
 
                     b.HasIndex("StudentFeeId");
+
+                    b.HasIndex("StudentFeeId1");
 
                     b.ToTable("StudentFeeCreditAdjustment");
                 });
@@ -4674,10 +4683,14 @@ namespace Shikhsa.Data.Migrations
                         .IsRequired();
 
                     b.HasOne("Shikhsa.Models.Payment.StudentFee", "StudentFee")
-                        .WithMany("PaymentDetails")
+                        .WithMany()
                         .HasForeignKey("StudentFeeId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
+
+                    b.HasOne("Shikhsa.Models.Payment.StudentFee", null)
+                        .WithMany("PaymentDetails")
+                        .HasForeignKey("StudentFeeId1");
 
                     b.Navigation("PaymentTransaction");
 
@@ -4729,10 +4742,14 @@ namespace Shikhsa.Data.Migrations
                         .IsRequired();
 
                     b.HasOne("Shikhsa.Models.Payment.StudentFee", "StudentFee")
-                        .WithMany("CreditAdjustments")
+                        .WithMany()
                         .HasForeignKey("StudentFeeId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
+
+                    b.HasOne("Shikhsa.Models.Payment.StudentFee", null)
+                        .WithMany("CreditAdjustments")
+                        .HasForeignKey("StudentFeeId1");
 
                     b.Navigation("FeeCredit");
 

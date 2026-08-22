@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using Shikhsa.Attributes;
 using Shikhsa.Data;
 using Shikhsa.Helpers;
 using Shikhsa.Models;
@@ -360,5 +361,169 @@ namespace Shikhsa.Controllers
         }
         #endregion
         #endregion
+        #region Fee Receipt
+        [HttpGet]
+        public IActionResult FeeReceipt(int? classId = null,int? batchId = null,long? studentId = null)
+        {
+            var vm = new StudentFeePageVM
+            {
+                SelectedClassId = classId,
+              
+                SelectedBatchId = batchId,
+                SelectedStudentId = studentId,
+
+                // BaseController ka existing function
+                Classes = GetDataListItems("Class"),
+
+                // BaseController ka existing function
+                Sections = GetDataListItems("Section"),
+
+                // BaseController ka existing function
+                Batches = GetBatchList()
+            };
+
+
+            if (classId.HasValue &&
+               
+                batchId.HasValue)
+            {
+                vm.Students = _repository.GetStudents(
+                    classId.Value,
+                    batchId.Value);
+            }
+
+
+            if (studentId.HasValue)
+            {
+                vm.SelectedStudent =_repository.GetStudentDetails(studentId.Value);
+                vm.FeeReceipt =_repository.GetUnpaidFees(studentId.Value,classId.Value,batchId.Value);
+                vm.PaymentMode = GetDataListItems("Payment Mode");
+            }
+
+
+            return View(vm);
+        }
+        #endregion
+        #region Save Fee Receipt
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult SaveFeeReceipt(StudentFeePageVM vm)
+        {
+            if (vm.FeeReceipt == null ||
+                !vm.SelectedStudentId.HasValue ||
+                !vm.SelectedClassId.HasValue ||
+                !vm.SelectedBatchId.HasValue)
+            {
+                TempData["Error"] = "Invalid data. Please try again.";
+
+                return RedirectToAction("FeeReceipt", "FeeHeading", new
+                {
+                    classId = vm.SelectedClassId,
+                    batchId = vm.SelectedBatchId,
+                    studentId = vm.SelectedStudentId
+                });
+            }
+
+            // Fill required IDs into FeeReceipt VM
+            vm.FeeReceipt.StudentId = vm.SelectedStudentId.Value;
+            vm.FeeReceipt.ClassId = vm.SelectedClassId.Value;
+            vm.FeeReceipt.BatchId = vm.SelectedBatchId.Value;
+
+
+            // ============================================
+            // PAYMENT MODE TEXT NIKALO
+            // ============================================
+
+            var paymentModeText = GetDataListItems("Payment Mode")
+                .Where(x => x.DataListItemId == vm.FeeReceipt.PaymentModeId)
+                .Select(x => x.DataListItemText)
+                .FirstOrDefault();
+
+            if (string.IsNullOrWhiteSpace(paymentModeText))
+            {
+                TempData["Error"] = "Please select a Payment Mode.";
+
+                return RedirectToAction("FeeReceipt", "FeeHeading", new
+                {
+                    classId = vm.SelectedClassId,
+                    batchId = vm.SelectedBatchId,
+                    studentId = vm.SelectedStudentId
+                });
+            }
+
+
+            // ============================================
+            // CASH → SAVE + PRINT (A5, 2 copies)
+            // ============================================
+
+            if (paymentModeText.Trim().Equals("Cash", StringComparison.OrdinalIgnoreCase))
+            {
+                long receiptId = _repository.SaveCashFeeReceipt(vm.FeeReceipt);
+
+                return RedirectToAction("PrintReceipt", new { id = receiptId });
+            }
+
+
+            // ============================================
+            // ONLINE → ABHI KE LIYE SKIP (next part me karenge)
+            // ============================================
+
+            if (paymentModeText.Trim().Equals("Online", StringComparison.OrdinalIgnoreCase))
+            {
+                TempData["Info"] = "Online payment integration next part me implement hoga.";
+
+                return RedirectToAction("FeeReceipt", "FeeHeading", new
+                {
+                    classId = vm.SelectedClassId,
+                    batchId = vm.SelectedBatchId,
+                    studentId = vm.SelectedStudentId
+                });
+            }
+
+
+            // ============================================
+            // OTHER PAYMENT MODE (Cheque, Card etc.) — abhi block
+            // ============================================
+
+            TempData["Error"] = $"'{paymentModeText}' payment mode abhi supported nahi hai.";
+
+            return RedirectToAction("FeeReceipt", "FeeHeading", new
+            {
+                classId = vm.SelectedClassId,
+                batchId = vm.SelectedBatchId,
+                studentId = vm.SelectedStudentId
+            });
+        }
+
+
+        // =========================================================
+        // PRINT RECEIPT
+        // =========================================================
+
+        [HttpGet]
+        [SkipPermission]
+        public async Task<IActionResult> PrintReceipt(long id)
+        {
+            var receipt = _repository.GetReceiptForPrint(id);
+            if (receipt == null)
+                return NotFound();
+
+            var schoolDetails = await _context.SchoolMasters.FirstOrDefaultAsync();
+            ViewBag.School = schoolDetails;
+            var studentWithParent = await _context.Tbl_Students
+        .Include(x => x.Parent)
+        .AsNoTracking()
+        .FirstOrDefaultAsync(x => x.StudentId == receipt.StudentId);
+
+            ViewBag.FatherName = studentWithParent?.Parent == null
+                ? string.Empty
+                : $"{studentWithParent.Parent.FatherFirstName} {studentWithParent.Parent.FatherMiddleName} {studentWithParent.Parent.FatherLastName}".Trim();
+
+            return View(receipt);
+        }
+
+        #endregion
+
     }
 }

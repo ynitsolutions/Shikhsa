@@ -90,4 +90,28 @@ namespace Shikhsa.Models
         public Batches? Batch { get; set; }
         public FeeHeading? FeeHeading { get; set; }
     }
+    public class StudentUnpaidFeeSPResult
+    {
+        public long FeeId { get; set; }
+
+        public long FeePlanId { get; set; }
+
+        public string FeeType { get; set; } = string.Empty;
+
+        public string FeeHeadingName { get; set; } = string.Empty;
+
+        public int Month { get; set; }
+
+        public int Year { get; set; }
+
+        public decimal Amount { get; set; }
+
+        public decimal PaidAmount { get; set; }
+
+        public decimal Balance { get; set; }
+
+        public string PaymentStatus { get; set; } = string.Empty;
+
+        public string FeeDescription { get; set; } = string.Empty;
+    }
 }

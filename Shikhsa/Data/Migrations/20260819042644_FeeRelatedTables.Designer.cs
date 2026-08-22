@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Shikhsa.Data;
 
@@ -11,9 +12,11 @@ using Shikhsa.Data;
 namespace Shikhsa.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260819042644_FeeRelatedTables")]
+    partial class FeeRelatedTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1319,288 +1322,6 @@ namespace Shikhsa.Data.Migrations
                     b.HasIndex("FrequencyId");
 
                     b.ToTable("FeeHeadings");
-
-                    b.HasData(
-                        new
-                        {
-                            FeeHeadingId = 1L,
-                            AddedDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Apr = false,
-                            Aug = false,
-                            Dec = false,
-                            Feb = false,
-                            FeeHeadingName = "January Month School Fee",
-                            FrequencyId = 1,
-                            IsActive = true,
-                            Jan = true,
-                            Jul = false,
-                            Jun = false,
-                            Mar = false,
-                            May = false,
-                            Nov = false,
-                            Oct = false,
-                            Sep = false
-                        },
-                        new
-                        {
-                            FeeHeadingId = 2L,
-                            AddedDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Apr = false,
-                            Aug = false,
-                            Dec = false,
-                            Feb = true,
-                            FeeHeadingName = "February Month School Fee",
-                            FrequencyId = 1,
-                            IsActive = true,
-                            Jan = false,
-                            Jul = false,
-                            Jun = false,
-                            Mar = false,
-                            May = false,
-                            Nov = false,
-                            Oct = false,
-                            Sep = false
-                        },
-                        new
-                        {
-                            FeeHeadingId = 3L,
-                            AddedDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Apr = false,
-                            Aug = false,
-                            Dec = false,
-                            Feb = false,
-                            FeeHeadingName = "March Month School Fee",
-                            FrequencyId = 1,
-                            IsActive = true,
-                            Jan = false,
-                            Jul = false,
-                            Jun = false,
-                            Mar = true,
-                            May = false,
-                            Nov = false,
-                            Oct = false,
-                            Sep = false
-                        },
-                        new
-                        {
-                            FeeHeadingId = 4L,
-                            AddedDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Apr = true,
-                            Aug = false,
-                            Dec = false,
-                            Feb = false,
-                            FeeHeadingName = "April Month School Fee",
-                            FrequencyId = 1,
-                            IsActive = true,
-                            Jan = false,
-                            Jul = false,
-                            Jun = false,
-                            Mar = false,
-                            May = false,
-                            Nov = false,
-                            Oct = false,
-                            Sep = false
-                        },
-                        new
-                        {
-                            FeeHeadingId = 5L,
-                            AddedDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Apr = false,
-                            Aug = false,
-                            Dec = false,
-                            Feb = false,
-                            FeeHeadingName = "May Month School Fee",
-                            FrequencyId = 1,
-                            IsActive = true,
-                            Jan = false,
-                            Jul = false,
-                            Jun = false,
-                            Mar = false,
-                            May = true,
-                            Nov = false,
-                            Oct = false,
-                            Sep = false
-                        },
-                        new
-                        {
-                            FeeHeadingId = 6L,
-                            AddedDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Apr = false,
-                            Aug = false,
-                            Dec = false,
-                            Feb = false,
-                            FeeHeadingName = "June Month School Fee",
-                            FrequencyId = 1,
-                            IsActive = true,
-                            Jan = false,
-                            Jul = false,
-                            Jun = true,
-                            Mar = false,
-                            May = false,
-                            Nov = false,
-                            Oct = false,
-                            Sep = false
-                        },
-                        new
-                        {
-                            FeeHeadingId = 7L,
-                            AddedDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Apr = false,
-                            Aug = false,
-                            Dec = false,
-                            Feb = false,
-                            FeeHeadingName = "July Month School Fee",
-                            FrequencyId = 1,
-                            IsActive = true,
-                            Jan = false,
-                            Jul = true,
-                            Jun = false,
-                            Mar = false,
-                            May = false,
-                            Nov = false,
-                            Oct = false,
-                            Sep = false
-                        },
-                        new
-                        {
-                            FeeHeadingId = 8L,
-                            AddedDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Apr = false,
-                            Aug = true,
-                            Dec = false,
-                            Feb = false,
-                            FeeHeadingName = "August Month School Fee",
-                            FrequencyId = 1,
-                            IsActive = true,
-                            Jan = false,
-                            Jul = false,
-                            Jun = false,
-                            Mar = false,
-                            May = false,
-                            Nov = false,
-                            Oct = false,
-                            Sep = false
-                        },
-                        new
-                        {
-                            FeeHeadingId = 9L,
-                            AddedDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Apr = false,
-                            Aug = false,
-                            Dec = false,
-                            Feb = false,
-                            FeeHeadingName = "September Month School Fee",
-                            FrequencyId = 1,
-                            IsActive = true,
-                            Jan = false,
-                            Jul = false,
-                            Jun = false,
-                            Mar = false,
-                            May = false,
-                            Nov = false,
-                            Oct = false,
-                            Sep = true
-                        },
-                        new
-                        {
-                            FeeHeadingId = 10L,
-                            AddedDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Apr = false,
-                            Aug = false,
-                            Dec = false,
-                            Feb = false,
-                            FeeHeadingName = "October Month School Fee",
-                            FrequencyId = 1,
-                            IsActive = true,
-                            Jan = false,
-                            Jul = false,
-                            Jun = false,
-                            Mar = false,
-                            May = false,
-                            Nov = false,
-                            Oct = true,
-                            Sep = false
-                        },
-                        new
-                        {
-                            FeeHeadingId = 11L,
-                            AddedDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Apr = false,
-                            Aug = false,
-                            Dec = false,
-                            Feb = false,
-                            FeeHeadingName = "November Month School Fee",
-                            FrequencyId = 1,
-                            IsActive = true,
-                            Jan = false,
-                            Jul = false,
-                            Jun = false,
-                            Mar = false,
-                            May = false,
-                            Nov = true,
-                            Oct = false,
-                            Sep = false
-                        },
-                        new
-                        {
-                            FeeHeadingId = 12L,
-                            AddedDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Apr = false,
-                            Aug = false,
-                            Dec = true,
-                            Feb = false,
-                            FeeHeadingName = "December Month School Fee",
-                            FrequencyId = 1,
-                            IsActive = true,
-                            Jan = false,
-                            Jul = false,
-                            Jun = false,
-                            Mar = false,
-                            May = false,
-                            Nov = false,
-                            Oct = false,
-                            Sep = false
-                        },
-                        new
-                        {
-                            FeeHeadingId = 13L,
-                            AddedDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Apr = false,
-                            Aug = false,
-                            Dec = false,
-                            Feb = false,
-                            FeeHeadingName = "Admission Fee",
-                            FrequencyId = 1,
-                            IsActive = true,
-                            Jan = false,
-                            Jul = false,
-                            Jun = false,
-                            Mar = false,
-                            May = false,
-                            Nov = false,
-                            Oct = false,
-                            Sep = false
-                        },
-                        new
-                        {
-                            FeeHeadingId = 14L,
-                            AddedDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Apr = false,
-                            Aug = false,
-                            Dec = false,
-                            Feb = false,
-                            FeeHeadingName = "Readmission Fee",
-                            FrequencyId = 1,
-                            IsActive = true,
-                            Jan = false,
-                            Jul = false,
-                            Jun = false,
-                            Mar = false,
-                            May = false,
-                            Nov = false,
-                            Oct = false,
-                            Sep = false
-                        });
                 });
 
             modelBuilder.Entity("Shikhsa.Models.GradingCriteria", b =>
@@ -2001,9 +1722,9 @@ namespace Shikhsa.Data.Migrations
                     b.Property<int>("ClassId")
                         .HasColumnType("int");
 
-                    b.Property<string>("Concession")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<decimal>("Concession")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("ConcessionAmount")
                         .HasPrecision(18, 2)
@@ -2013,10 +1734,6 @@ namespace Shikhsa.Data.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("DueAmount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("FeeCollectedAmount")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
@@ -2113,9 +1830,6 @@ namespace Shikhsa.Data.Migrations
                     b.Property<long>("FeeReceiptId")
                         .HasColumnType("bigint");
 
-                    b.Property<string>("FeeType")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
@@ -2123,14 +1837,6 @@ namespace Shikhsa.Data.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("PaidAmount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("PreviousBalanceAmount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("PreviousPaidAmount")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
@@ -2279,10 +1985,6 @@ namespace Shikhsa.Data.Migrations
                     b.Property<long>("FeeId")
                         .HasColumnType("bigint");
 
-                    b.Property<string>("FeeType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
@@ -2350,9 +2052,6 @@ namespace Shikhsa.Data.Migrations
 
                     b.Property<long>("FeeId")
                         .HasColumnType("bigint");
-
-                    b.Property<string>("FeeType")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -2466,15 +2165,8 @@ namespace Shikhsa.Data.Migrations
                     b.Property<long>("FeeCreditId")
                         .HasColumnType("bigint");
 
-                    b.Property<long>("FeeId")
-                        .HasColumnType("bigint");
-
                     b.Property<long>("FeeReceiptId")
                         .HasColumnType("bigint");
-
-                    b.Property<string>("FeeType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -3593,53 +3285,6 @@ namespace Shikhsa.Data.Migrations
                     b.ToTable("StudentExamSummaries");
                 });
 
-            modelBuilder.Entity("Shikhsa.Models.StudentUnpaidFeeSPResult", b =>
-                {
-                    b.Property<decimal>("Amount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("Balance")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("FeeDescription")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("FeeHeadingName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<long>("FeeId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("FeePlanId")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("FeeType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Month")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("PaidAmount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("PaymentStatus")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Year")
-                        .HasColumnType("int");
-
-                    b.ToTable((string)null);
-
-                    b.ToView(null, (string)null);
-                });
-
             modelBuilder.Entity("Shikhsa.Models.SubjectMasters", b =>
                 {
                     b.Property<int>("SubjectId")
@@ -4637,7 +4282,7 @@ namespace Shikhsa.Data.Migrations
                         .IsRequired();
 
                     b.HasOne("Shikhsa.Models.Payment.StudentFee", "StudentFee")
-                        .WithMany("ReceiptDetails")
+                        .WithMany()
                         .HasForeignKey("StudentFeeId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
@@ -4674,7 +4319,7 @@ namespace Shikhsa.Data.Migrations
                         .IsRequired();
 
                     b.HasOne("Shikhsa.Models.Payment.StudentFee", "StudentFee")
-                        .WithMany("PaymentDetails")
+                        .WithMany()
                         .HasForeignKey("StudentFeeId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
@@ -4729,7 +4374,7 @@ namespace Shikhsa.Data.Migrations
                         .IsRequired();
 
                     b.HasOne("Shikhsa.Models.Payment.StudentFee", "StudentFee")
-                        .WithMany("CreditAdjustments")
+                        .WithMany()
                         .HasForeignKey("StudentFeeId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
@@ -5144,15 +4789,6 @@ namespace Shikhsa.Data.Migrations
                     b.Navigation("FeeDetails");
 
                     b.Navigation("Receipts");
-                });
-
-            modelBuilder.Entity("Shikhsa.Models.Payment.StudentFee", b =>
-                {
-                    b.Navigation("CreditAdjustments");
-
-                    b.Navigation("PaymentDetails");
-
-                    b.Navigation("ReceiptDetails");
                 });
 
             modelBuilder.Entity("Shikhsa.Models.StaffMaster", b =>

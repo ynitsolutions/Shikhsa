@@ -1,0 +1,1887 @@
+﻿@model Shikhsa.ViewModels.StudentFeePageVM
+
+@{
+    ViewData["Title"] = "Student Fees";
+}
+
+<style>
+    .fee-card {
+        background: #fff;
+        border-radius: 5px;
+        padding: 8px;
+        box-shadow: 0 1px 8px rgba(0, 0, 0, .08);
+    }
+
+    .fee-header {
+        text-align: center;
+    }
+
+    .fee-header h5 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    .fee-header small {
+        font-size: 9px;
+        color: #555;
+    }
+
+    .fee-divider {
+        border-top: 1px solid #174a8b;
+        margin: 6px 0 10px;
+    }
+
+    .form-label {
+        font-size: 9px;
+        margin-bottom: 3px;
+    }
+
+    .form-control,
+    .form-select {
+        height: 30px;
+        font-size: 10px;
+        border-radius: 3px;
+    }
+
+    .student-wrapper {
+        position: relative;
+    }
+
+    .student-select {
+        height: 30px;
+        border: 1px solid #ced4da;
+        border-radius: 3px;
+        display: flex;
+        align-items: center;
+        padding: 0 8px;
+        font-size: 10px;
+        cursor: pointer;
+        background: #fff;
+    }
+
+    .student-select span:first-child {
+        flex: 1;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    .student-dropdown {
+        position: absolute;
+        top: 32px;
+        left: 0;
+        right: 0;
+        background: #fff;
+        border: 1px solid #ddd;
+        box-shadow: 0 4px 12px rgba(0,0,0,.18);
+        z-index: 9999;
+        display: none;
+    }
+
+    .student-search {
+        padding: 7px;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .student-search input {
+        width: 100%;
+        height: 28px;
+        font-size: 9px;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        padding: 4px 7px;
+    }
+
+    .student-list {
+        max-height: 170px;
+        overflow-y: auto;
+    }
+
+    .student-item {
+        padding: 7px 8px;
+        border-bottom: 1px solid #eee;
+        cursor: pointer;
+    }
+
+    .student-item:hover {
+        background: #eef6ff;
+    }
+
+    .student-name {
+        font-size: 10px;
+        font-weight: 600;
+    }
+
+    .student-info {
+        font-size: 8px;
+        color: #777;
+        margin-top: 2px;
+    }
+
+    .student-contact {
+        font-size: 8px;
+        color: #777;
+    }
+
+    .student-balance {
+        font-size: 8px;
+        color: #dc3545;
+        margin-top: 2px;
+    }
+
+    .student-count {
+        text-align: center;
+        font-size: 8px;
+        color: #777;
+        padding: 5px;
+        border-top: 1px solid #eee;
+    }
+
+    .selected-field {
+        background: #eef8ff;
+    }
+
+    .balance-field {
+        background: #fff3f3;
+        color: #dc3545;
+        font-weight: 600;
+    }
+
+    .generate-area {
+        text-align: center;
+        margin-top: 15px;
+    }
+
+    .generate-btn {
+        background: #337fc9;
+        color: #fff;
+        border: none;
+        border-radius: 3px;
+        padding: 7px 18px;
+        font-size: 10px;
+    }
+
+    .generate-btn:hover {
+        background: #286aa9;
+        color: #fff;
+    }
+</style>
+
+
+<div class="container-fluid">
+
+    <div class="fee-card">
+
+        <!-- HEADER -->
+
+        <div class="fee-header">
+
+            <h5>Student Fees</h5>
+
+            <small>
+                Generate Student Fee Receipt
+            </small>
+
+        </div>
+
+        <div class="fee-divider"></div>
+
+
+        <!-- FORM -->
+
+        <form asp-controller="FeeHeading"
+              asp-action="FeeReceipt"
+              method="get"
+              id="feeSearchForm">
+            @Html.AntiForgeryToken()
+            <div class="row g-2">
+
+                <!-- CLASS -->
+
+                <div class="col-md-4">
+
+                    <label class="form-label">
+                        Class:
+                    </label>
+
+                    <select asp-for="SelectedClassId"
+                            id="ClassId"
+                            class="form-select">
+
+                        <option value="">
+                            Select Class
+                        </option>
+
+                        @foreach (var item in Model.Classes)
+                        {
+                            <option value="@item.DataListItemId"
+                                    selected="@(Model.SelectedClassId == item.DataListItemId)">
+
+                                @item.DataListItemText
+
+                            </option>
+                        }
+
+                    </select>
+
+                </div>
+
+
+                <!-- STUDENT -->
+
+                <div class="col-md-4">
+
+                    <label class="form-label">
+                        Select Student:
+                    </label>
+
+                    <div class="student-wrapper">
+
+                        <div class="student-select"
+                             id="studentSelect">
+
+                            <span id="selectedStudentText">
+
+                                @if (Model.SelectedStudent != null)
+                                {
+                                    @Model.SelectedStudent.StudentName
+                                }
+                                else
+                                {
+                                    @:Select Student
+                                }
+
+                            </span>
+
+                            <span>▼</span>
+
+                        </div>
+
+
+                        <div class="student-dropdown"
+                             id="studentDropdown">
+
+                            <!-- SEARCH -->
+
+                            <div class="student-search">
+
+                                <input type="text"
+                                       id="studentSearch"
+                                       placeholder="🔎 Search by name, roll no, father's name..." />
+
+                            </div>
+
+
+                            <!-- STUDENTS -->
+
+                            <div class="student-list"
+                                 id="studentList">
+
+                                @if (Model.Students != null && Model.Students.Any())
+                                {
+                                    foreach (var student in Model.Students)
+                                    {
+                                        <div class="student-item"
+                                             data-id="@student.StudentId"
+                                             data-name="@student.StudentName"
+                                             data-father="@student.FatherName"
+                                             data-contact="@student.ContactNo"
+                                             data-roll="@student.RollNo"
+                                             data-balance="@student.DueBalance">
+
+                                            <div class="student-name">
+                                                @student.StudentName
+                                            </div>
+
+                                            <div class="student-info">
+
+                                                Roll No:
+                                                @student.RollNo
+
+                                                &nbsp; |
+
+                                                Father:
+                                                @student.FatherName
+
+                                                &nbsp; |
+
+                                                Class:
+                                                @student.ClassName
+
+                                                @if (!string.IsNullOrWhiteSpace(student.SectionName))
+                                                {
+                                                    <text>-@student.SectionName</text>
+                                                }
+
+                                    </div>
+
+                                    <div class="student-contact">
+
+                                        Contact:
+                                        @(string.IsNullOrWhiteSpace(student.ContactNo)
+                                                                                ? "Not available"
+                                                                                : student.ContactNo)
+
+                                    </div>
+
+                                            <div class="student-balance">
+
+                                                Due Balance:
+                                                ₹@student.DueBalance.ToString("N2")
+
+                                            </div>
+
+                                        </div>
+                                                                }
+                                }
+                                else
+                                {
+                                    <div class="p-3 text-center"
+                                         style="font-size:10px;color:#777;">
+
+                                        No students found.
+
+                                    </div>
+                                }
+
+                            </div>
+
+
+                            <div class="student-count">
+
+                                Showing
+                                <span id="studentCount">
+                                    @(Model.Students?.Count ?? 0)
+                                </span>
+                                students
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- FATHER NAME -->
+
+                <div class="col-md-4">
+
+                    <label class="form-label">
+                        Father's Name:
+                    </label>
+
+                    <input type="text"
+                           id="FatherName"
+                           class="form-control"
+                           readonly
+                           value="@Model.SelectedStudent?.FatherName" />
+
+                </div>
+
+
+                <!-- BATCH -->
+
+                <div class="col-md-4">
+
+                    <label class="form-label">
+                        Batch:
+                    </label>
+
+                    <select asp-for="SelectedBatchId"
+                            id="BatchId"
+                            class="form-select">
+
+                        <option value="">
+                            Select Batch
+                        </option>
+
+                        @foreach (var item in Model.Batches)
+                        {
+                            <option value="@item.BatchId"
+                                    selected="@(Model.SelectedBatchId == item.BatchId)">
+
+                                @item.AcademicYear
+
+                            </option>
+                        }
+
+                    </select>
+
+                </div>
+
+
+                <!-- STUDENT NAME -->
+
+                <div class="col-md-4">
+
+                    <label class="form-label">
+                        Student Name:
+                    </label>
+
+                    <input type="text"
+                           id="StudentName"
+                           class="form-control selected-field"
+                           readonly
+                           value="@Model.SelectedStudent?.StudentName" />
+
+                </div>
+
+
+                <!-- CONTACT -->
+
+                <div class="col-md-4">
+
+                    <label class="form-label">
+                        Contact No:
+                    </label>
+
+                    <input type="text"
+                           id="ContactNo"
+                           class="form-control"
+                           readonly
+                           value="@Model.SelectedStudent?.ContactNo" />
+
+                </div>
+
+
+                <!-- DUE FEE BATCH -->
+
+                <div class="col-md-4">
+
+                    <label class="form-label">
+                        Due Fee Batch:
+                    </label>
+
+                    <input type="number"
+                           id="DueFeeBatch"
+                           class="form-control"
+                           value="@Model.DueFeeBatch" />
+
+                </div>
+
+
+                <!-- ROLL NO -->
+
+                <div class="col-md-4">
+
+                    <label class="form-label">
+                        Roll No:
+                    </label>
+
+                    <input type="text"
+                           id="RollNo"
+                           class="form-control"
+                           readonly
+                           value="@Model.SelectedStudent?.RollNo" />
+
+                </div>
+
+
+                <!-- DUE BALANCE -->
+
+                <div class="col-md-4">
+
+                    <label class="form-label">
+                        Due Balance:
+                    </label>
+
+                    <input type="text"
+                           id="DueBalance"
+                           class="form-control balance-field"
+                           readonly
+                           value="@(Model.SelectedStudent == null
+                                                          ? "₹0"
+                                                          : "₹" + Model.SelectedStudent.DueBalance.ToString("N2"))" />
+
+                </div>
+
+            </div>
+
+
+            <!-- BUTTON -->
+
+            <div class="generate-area">
+
+                <button type="button"
+                        class="generate-btn"
+                        id="checkGenerate">
+
+                    ✔ Check & Generate
+
+                </button>
+
+            </div>
+            @if (Model.FeeReceipt != null)
+            {
+                <div class="card mt-3">
+
+                    <div class="card-header p-0">
+
+                        <ul class="nav nav-tabs" role="tablist">
+
+                            <li class="nav-item">
+                                <button class="nav-link active"
+                                        data-bs-toggle="tab"
+                                        data-bs-target="#tuitionTab"
+                                        type="button">
+
+                                    Tuition Fee
+                                    (@Model.FeeReceipt.TuitionFees.Count)
+                                </button>
+                            </li>
+
+                            <li class="nav-item">
+                                <button class="nav-link"
+                                        data-bs-toggle="tab"
+                                        data-bs-target="#transportTab"
+                                        type="button">
+
+                                    Transport Fee
+                                    (@Model.FeeReceipt.TransportFees.Count)
+                                </button>
+                            </li>
+
+                            <li class="nav-item">
+                                <button class="nav-link"
+                                        data-bs-toggle="tab"
+                                        data-bs-target="#hostelTab"
+                                        type="button">
+
+                                    Hostel Fee
+                                    (@Model.FeeReceipt.HostelFees.Count)
+                                </button>
+                            </li>
+
+                        </ul>
+
+                    </div>
+
+
+                    <div class="card-body p-0">
+
+                        <div class="tab-content">
+
+                            <!-- ===================================== -->
+                            <!-- TUITION FEE -->
+                            <!-- ===================================== -->
+
+
+<div class="tab-pane fade show active"
+     id="tuitionTab">
+
+    <div class="d-flex justify-content-between
+                align-items-center p-2">
+
+        <strong>
+            Tuition Fee Details
+        </strong> 
+
+        @if (Model.FeeReceipt.TuitionFees.Any())
+        {
+            <label class="small">
+                <input type="checkbox"
+                       id="selectAllTuition" />
+
+                Select All
+            </label>
+        }
+
+    </div>
+
+
+    @if (!Model.FeeReceipt.TuitionFees.Any())
+    {
+        <div class="p-3 text-muted">
+            No unpaid tuition fee.
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+
+            <table class="table table-bordered table-sm mb-0">
+
+                <thead>
+                    <tr>
+                        <th width="40">#</th>
+
+                        <th>
+                            Fee Description
+                        </th>
+
+                        <th width="120">
+                            Amount (₹)
+                        </th>
+
+                        <th width="120">
+                            Paid (₹)
+                        </th>
+
+                        <th width="120">
+                            Balance (₹)
+                        </th>
+
+                        <th width="80">
+                            Select
+                        </th>
+
+                        <th width="130">
+                            Collect Amount
+                        </th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    @for (int i = 0;
+                          i < Model.FeeReceipt.TuitionFees.Count;
+                          i++)
+                    {
+                        var fee =
+                            Model.FeeReceipt.TuitionFees[i];
+
+                        <tr>
+
+                            <td>
+                                @(i + 1)
+                            </td>
+
+                            <td>
+                                @fee.FeeDescription
+                            </td>
+
+                            <td>
+                                @fee.Amount.ToString("N2")
+                            </td>
+
+                            <td>
+                                @fee.PaidAmount.ToString("N2")
+                            </td>
+
+                            <td>
+                                @fee.Balance.ToString("N2")
+                            </td>
+
+                            <td class="text-center">
+
+                                <input type="checkbox"
+                                       class="fee-select tuition-select"
+                                       name="FeeReceipt.TuitionFees[@i].IsSelected"
+                                       value="true"
+                                       data-index="@i" />
+
+                                <input type="hidden" name="FeeReceipt.TuitionFees[@i].FeeId" value="@fee.FeeId" />
+                                <input type="hidden" name="FeeReceipt.TuitionFees[@i].FeePlanId" value="@fee.FeePlanId" />
+                                <input type="hidden" name="FeeReceipt.TuitionFees[@i].FeeType" value="@fee.FeeType" />
+                                <input type="hidden" name="FeeReceipt.TuitionFees[@i].FeeDescription" value="@fee.FeeDescription" />
+                                <input type="hidden" name="FeeReceipt.TuitionFees[@i].Month" value="@fee.Month" />
+                                <input type="hidden" name="FeeReceipt.TuitionFees[@i].Year" value="@fee.Year" />
+                                <input type="hidden" name="FeeReceipt.TuitionFees[@i].Amount" value="@fee.Amount" />
+                                <input type="hidden" name="FeeReceipt.TuitionFees[@i].PaidAmount" value="@fee.PaidAmount" />
+                                <input type="hidden" name="FeeReceipt.TuitionFees[@i].Balance" value="@fee.Balance" />
+
+                            </td>
+
+                            <td>
+
+                                <input type="text"
+                                       class="form-control form-control-sm collect-amount decimal"
+                                       name="FeeReceipt.TuitionFees[@i].CollectAmount"
+                                       value="0"
+                                       min="0"
+                                       max="@fee.Balance"
+                                                                   data-amount="@fee.Amount"
+                                       data-index="@i" />
+
+                            </td>
+
+                        </tr>
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+    }
+
+</div>
+
+
+                            <!-- ===================================== -->
+                            <!-- TRANSPORT -->
+                            <!-- ===================================== -->
+
+
+<div class="tab-pane fade"
+     id="transportTab">
+
+    <div class="d-flex justify-content-between
+                align-items-center p-2">
+
+        <strong>
+            Transport Fee Details
+        </strong>
+
+        @if (Model.FeeReceipt.TransportFees.Any())
+        {
+            <label class="small">
+                <input type="checkbox"
+                       id="selectAllTransport" />
+
+                Select All
+            </label>
+        }
+
+    </div>
+
+
+    @if (!Model.FeeReceipt.TransportFees.Any())
+    {
+        <div class="p-3 text-muted">
+            No unpaid transport fee.
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+
+            <table class="table table-bordered table-sm mb-0">
+
+                <thead>
+                    <tr>
+
+                        <th width="40">
+                            #
+                        </th>
+
+                        <th>
+                            Fee Description
+                        </th>
+
+                        <th width="120">
+                            Amount (₹)
+                        </th>
+
+                        <th width="120">
+                            Paid (₹)
+                        </th>
+
+                        <th width="120">
+                            Balance (₹)
+                        </th>
+
+                        <th width="80">
+                            Select
+                        </th>
+
+                        <th width="130">
+                            Collect Amount
+                        </th>
+
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    @for (int i = 0;
+                          i < Model.FeeReceipt.TransportFees.Count;
+                          i++)
+                    {
+                        var fee =
+                            Model.FeeReceipt.TransportFees[i];
+
+                        <tr>
+
+                            <td>
+                                @(i + 1)
+                            </td>
+
+                            <td>
+                                @fee.FeeDescription
+                            </td>
+
+                            <td>
+                                @fee.Amount.ToString("N2")
+                            </td>
+
+                            <td>
+                                @fee.PaidAmount.ToString("N2")
+                            </td>
+
+                            <td>
+                                @fee.Balance.ToString("N2")
+                            </td>
+
+                            <td class="text-center">
+
+                                <input type="checkbox"
+                                       class="fee-select transport-select"
+                                       name="FeeReceipt.TransportFees[@i].IsSelected"
+                                       value="true"
+                                       data-index="@i" />
+
+                               <input type="hidden" name="FeeReceipt.TransportFees[@i].FeeId" value="@fee.FeeId" />
+                                <input type="hidden" name="FeeReceipt.TransportFees[@i].FeePlanId" value="@fee.FeePlanId" />
+                                <input type="hidden" name="FeeReceipt.TransportFees[@i].FeeType" value="@fee.FeeType" />
+                                <input type="hidden" name="FeeReceipt.TransportFees[@i].FeeDescription" value="@fee.FeeDescription" />
+                                <input type="hidden" name="FeeReceipt.TransportFees[@i].Month" value="@fee.Month" />
+                                <input type="hidden" name="FeeReceipt.TransportFees[@i].Year" value="@fee.Year" />
+                                <input type="hidden" name="FeeReceipt.TransportFees[@i].Amount" value="@fee.Amount" />
+                                <input type="hidden" name="FeeReceipt.TransportFees[@i].PaidAmount" value="@fee.PaidAmount" />
+                                <input type="hidden" name="FeeReceipt.TransportFees[@i].Balance" value="@fee.Balance" />
+
+                            </td>
+
+                            <td>
+
+                                <input type="text"
+                                       class="form-control form-control-sm collect-amount decimal"
+                                       name="FeeReceipt.TransportFees[@i].CollectAmount"
+                                       value="0"
+                                       min="0"
+                                       max="@fee.Balance"
+                                       data-amount="@fee.Amount"
+                                       data-index="@i" />
+                                
+
+                            </td>
+
+                        </tr>
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+    }
+
+</div>
+
+
+                            <!-- ===================================== -->
+                            <!-- HOSTEL -->
+                            <!-- ===================================== -->
+
+
+<div class="tab-pane fade"
+     id="hostelTab">
+
+    <div class="d-flex justify-content-between
+                align-items-center p-2">
+
+        <strong>
+            Hostel Fee Details
+        </strong>
+
+        @if (Model.FeeReceipt.HostelFees.Any())
+        {
+            <label class="small">
+                <input type="checkbox"
+                       id="selectAllHostel" />
+
+                Select All
+            </label>
+        }
+
+    </div>
+
+
+    @if (!Model.FeeReceipt.HostelFees.Any())
+    {
+        <div class="p-3 text-muted">
+            No unpaid hostel fee.
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+
+            <table class="table table-bordered table-sm mb-0">
+
+                <thead>
+                    <tr>
+
+                        <th width="40">
+                            #
+                        </th>
+
+                        <th>
+                            Fee Description
+                        </th>
+
+                        <th width="120">
+                            Amount (₹)
+                        </th>
+
+                        <th width="120">
+                            Paid (₹)
+                        </th>
+
+                        <th width="120">
+                            Balance (₹)
+                        </th>
+
+                        <th width="80">
+                            Select
+                        </th>
+
+                        <th width="130">
+                            Collect Amount
+                        </th>
+
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    @for (int i = 0;
+                          i < Model.FeeReceipt.HostelFees.Count;
+                          i++)
+                    {
+                        var fee =
+                            Model.FeeReceipt.HostelFees[i];
+
+                        <tr>
+
+                            <td>
+                                @(i + 1)
+                            </td>
+
+                            <td>
+                                @fee.FeeDescription
+                            </td>
+
+                            <td>
+                                @fee.Amount.ToString("N2")
+                            </td>
+
+                            <td>
+                                @fee.PaidAmount.ToString("N2")
+                            </td>
+
+                            <td>
+                                @fee.Balance.ToString("N2")
+                            </td>
+
+                            <td class="text-center">
+
+                                <input type="checkbox"
+                                       class="fee-select hostel-select"
+                                       name="FeeReceipt.HostelFees[@i].IsSelected"
+                                       value="true"
+                                       data-index="@i" />
+
+                                <input type="hidden" name="FeeReceipt.HostelFees[@i].FeeId" value="@fee.FeeId" />
+                                <input type="hidden" name="FeeReceipt.HostelFees[@i].FeePlanId" value="@fee.FeePlanId" />
+                                <input type="hidden" name="FeeReceipt.HostelFees[@i].FeeType" value="@fee.FeeType" />
+                                <input type="hidden" name="FeeReceipt.HostelFees[@i].FeeDescription" value="@fee.FeeDescription" />
+                                <input type="hidden" name="FeeReceipt.HostelFees[@i].Month" value="@fee.Month" />
+                                <input type="hidden" name="FeeReceipt.HostelFees[@i].Year" value="@fee.Year" />
+                                <input type="hidden" name="FeeReceipt.HostelFees[@i].Amount" value="@fee.Amount" />
+                                <input type="hidden" name="FeeReceipt.HostelFees[@i].PaidAmount" value="@fee.PaidAmount" />
+                                <input type="hidden" name="FeeReceipt.HostelFees[@i].Balance" value="@fee.Balance" />
+
+                            </td>
+
+                            <td>
+
+                                <input type="text"
+                                       class="form-control form-control-sm collect-amount decimal"
+                                       name="FeeReceipt.HostelFees[@i].CollectAmount"
+                                       value="0"
+                                       min="0"
+                                       max="@fee.Balance"
+                                      data-amount="@fee.Amount"
+                                       data-index="@i" />
+
+                            </td>
+
+                        </tr>
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+    }
+
+</div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            }
+            @if (Model.FeeReceipt != null)
+            {
+                <div class="card mt-2">
+
+                    <div class="card-body">
+
+                        <div class="row g-3">
+
+                            <!-- LEFT SIDE -->
+                            <div class="col-md-4">
+
+                                <div class="row mb-2 align-items-center">
+                                    <label class="col-6 col-form-label col-form-label-sm">
+                                        Total Amount:
+                                    </label>
+
+                                    <div class="col-6">
+                                        <input type="text"
+                                               id="totalAmount"
+                                               class="form-control form-control-sm text-end "
+                                               value="₹ @Model.FeeReceipt.TotalAmount.ToString("N2")"
+                                               name="FeeReceipt.TotalAmount"
+                                               readonly />
+                                        <input type="hidden" id="totalDueAmount" value="@Model.FeeReceipt.TotalAmount" />
+                                    </div>
+                                </div>
+
+
+                                <div class="row mb-2 align-items-center">
+                                    <label class="col-6 col-form-label col-form-label-sm">
+                                        Total Fees:
+                                    </label>
+
+                                    <div class="col-6">
+                                        <input type="text"
+                                               id="totalFees"
+                                               class="form-control form-control-sm text-end"
+                                               value="₹ @Model.FeeReceipt.TotalFees.ToString("N2")"
+                                               name="FeeReceipt.TotalFees"
+                                               readonly />
+                                    </div>
+                                </div>
+
+
+                                <div class="row mb-2 align-items-center">
+                                    <label class="col-6 col-form-label col-form-label-sm">
+                                        Receipt Amount:
+                                    </label>
+
+                                    <div class="col-6">
+                                        <input type="text"
+                                               asp-for="FeeReceipt.ReceiptAmount"
+                                               id="receiptAmount"
+                                               class="form-control form-control-sm text-end decimal"
+                                               name="FeeReceipt.ReceiptAmount"
+                                               min="0"/>
+                                    </div>
+                                </div>
+
+
+                                <div class="row mb-2 align-items-center">
+                                    <label class="col-6 col-form-label col-form-label-sm">
+                                        Balance Amount:
+                                    </label>
+
+                                    <div class="col-6">
+                                        <input type="text" asp-for="FeeReceipt.BalanceAmount"
+                                               id="balanceAmount"
+                                               class="form-control form-control-sm text-end"
+                                               value="₹ @Model.FeeReceipt.BalanceAmount.ToString("N2")"
+                                               name="FeeReceipt.BalanceAmount"
+                                               readonly />
+                                    </div>
+                                </div>
+
+                            </div>
+
+
+                            <!-- MIDDLE -->
+                            <div class="col-md-4">
+
+                                <div class="row mb-2 align-items-center">
+                                    <label class="col-6 col-form-label col-form-label-sm">
+                                        Late Fee:
+                                    </label>
+
+                                    <div class="col-6">
+                                        <input type="text"
+                                               asp-for="FeeReceipt.LateFee"
+                                               id="lateFee"
+                                               class="form-control form-control-sm text-end decimal"
+                                               name="FeeReceipt.LateFee"
+                                               min="0"/>
+                                    </div>
+                                </div>
+
+
+                                <div class="row mb-2 align-items-center">
+                                    <label class="col-6 col-form-label col-form-label-sm">
+                                        Concession:
+                                    </label>
+
+                                    <div class="col-6">
+                                        <input type="text"
+                                               asp-for="FeeReceipt.Concession"
+                                               id="concession"
+                                               class="form-control form-control-sm text-end"
+                                               name="FeeReceipt.Concession"                           />
+                                    </div>
+                                </div>
+
+
+                                <div class="row mb-2 align-items-center">
+                                    <label class="col-6 col-form-label col-form-label-sm">
+                                        Concession Amount:
+                                    </label>
+
+                                    <div class="col-6">
+                                        <input type="text"
+                                               asp-for="FeeReceipt.ConcessionAmount"
+                                               id="concessionAmount"
+                                               class="form-control form-control-sm text-end decimal"
+                                               name="FeeReceipt.ConcessionAmount"
+                                               min="0" />
+                                    </div>
+                                </div>
+
+
+                                <div class="row mb-2 align-items-center">
+                                    <label class="col-6 col-form-label col-form-label-sm">
+                                        Net Fee:
+                                    </label>
+
+                                    <div class="col-6">
+                                        <input type="text"
+                                               id="netFee"
+                                               class="form-control form-control-sm text-end decimal"
+                                               value="₹ @Model.FeeReceipt.NetFee.ToString("N2")"
+                                               name="FeeReceipt.NetFee"
+                                               readonly />
+                                    </div>
+                                </div>
+
+                            </div>
+
+
+                            <!-- RIGHT SIDE -->
+                            <div class="col-md-4">
+
+                                <div class="row mb-2 align-items-center">
+                                    <label class="col-6 col-form-label col-form-label-sm">
+                                        Payment Mode:
+                                    </label>
+
+                                    <div class="col-6">
+
+                                        <select asp-for="FeeReceipt.PaymentModeId" name="FeeReceipt.PaymentModeId"
+                                                class="form-select form-select-sm">
+
+                                            <option value="">
+                                                Select Payment Mode
+                                            </option>
+
+                                            @foreach (var item in Model.PaymentMode)
+                                                {
+                                                    <option value="@item.DataListItemId">
+
+                                                        @item.DataListItemText
+
+                                                    </option>
+                                                }
+
+                                        </select>
+
+                                    </div>
+                                </div>
+
+
+                                <div class="row mb-2 align-items-center">
+                                    <label class="col-6 col-form-label col-form-label-sm">
+                                        Remark:
+                                    </label>
+
+                                    <div class="col-6">
+                                        <input asp-for="FeeReceipt.Remark"
+                                               class="form-control form-control-sm"
+                                               placeholder="Remark" name="FeeReceipt.Remark" />
+                                    </div>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <hr class="my-2" />
+
+
+                        <!-- DATE + SAVE -->
+                        <div class="row align-items-center">
+
+                            <div class="col-md-6">
+
+                                <div class="d-flex align-items-center gap-2">
+
+                                    <label class="small mb-0">
+                                        Date &amp; Time:
+                                    </label>
+
+                                    <input asp-for="FeeReceipt.ReceiptDate"
+                                           type="datetime-local"
+                                           class="form-control form-control-sm"
+                                           style="width:170px;" />
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="col-md-6 text-end">
+
+                                <button type="submit" class="btn btn-success btn-sm px-4" id="saveReceiptBtn">
+
+                                    💾 Save Receipt
+
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            }
+        </form>
+
+    </div>
+
+</div>
+
+@section Scripts
+{
+    <script>
+
+        // =========================================================
+        // SELECT2 INIT + CLASS/BATCH CHANGE (jQuery se bind, Select2 compatible)
+        // =========================================================
+
+        $(document).ready(function() {
+
+            $('#ClassId').select2({ width: '100%' });
+            $('#BatchId').select2({ width: '100%' });
+
+            // Native addEventListener ke bajaye jQuery se bind kiya
+            // taaki Select2 ke jQuery-triggered change event ke saath reliably kaam kare
+            $('#ClassId, #BatchId').on('change', function() {
+                loadStudents();
+            });
+
+        });
+
+
+        const studentSelect = document.getElementById("studentSelect");
+        const studentDropdown = document.getElementById("studentDropdown");
+        const studentSearch = document.getElementById("studentSearch");
+        const selectedStudentText = document.getElementById("selectedStudentText");
+
+
+        // =========================================================
+        // OPEN STUDENT DROPDOWN
+        // =========================================================
+
+        studentSelect.addEventListener("click", function() {
+
+            studentDropdown.style.display =
+                studentDropdown.style.display === "block" ? "none" : "block";
+
+            if (studentDropdown.style.display === "block") {
+                studentSearch.focus();
+            }
+
+        });
+
+
+        // =========================================================
+        // SEARCH STUDENT
+        // =========================================================
+
+        studentSearch.addEventListener("input", function() {
+
+            const search = this.value.toLowerCase().trim();
+            const items = document.querySelectorAll(".student-item");
+            let count = 0;
+
+            items.forEach(function(item) {
+
+                const text = (
+                    item.dataset.name + " " +
+                    item.dataset.father + " " +
+                    item.dataset.roll
+                ).toLowerCase();
+
+                if (text.includes(search)) {
+                    item.style.display = "block";
+                    count++;
+                } else {
+                    item.style.display = "none";
+                }
+
+            });
+
+            document.getElementById("studentCount").textContent = count;
+
+        });
+
+
+        // =========================================================
+        // SELECT STUDENT
+        // =========================================================
+
+        function bindStudentEvents() {
+
+            document.querySelectorAll(".student-item").forEach(function(item) {
+
+                item.addEventListener("click", function() {
+
+                    const studentId = this.dataset.id;
+                    const studentName = this.dataset.name;
+                    const fatherName = this.dataset.father;
+                    const contact = this.dataset.contact;
+                    const roll = this.dataset.roll;
+                    const balance = parseFloat(this.dataset.balance || 0);
+
+                    selectedStudentText.textContent = studentName;
+
+                    document.getElementById("StudentName").value = studentName;
+                    document.getElementById("FatherName").value = fatherName;
+                    document.getElementById("ContactNo").value = contact || "Not available";
+                    document.getElementById("RollNo").value = roll || "Not assigned";
+                    document.getElementById("DueBalance").value = formatCurrency(balance);
+                    document.getElementById("DueFeeBatch").value = balance;
+
+                    document.getElementById("SelectedStudentId").value = studentId;
+
+                    studentDropdown.style.display = "none";
+
+                });
+
+            });
+
+        }
+
+        bindStudentEvents();
+
+
+        // =========================================================
+        // HIDDEN STUDENT ID
+        // =========================================================
+
+        const hiddenStudent = document.createElement("input");
+        hiddenStudent.type = "hidden";
+        hiddenStudent.id = "SelectedStudentId";
+        hiddenStudent.name = "SelectedStudentId";
+        hiddenStudent.value = "@Model.SelectedStudentId";
+
+        document.getElementById("feeSearchForm").appendChild(hiddenStudent);
+
+
+        // =========================================================
+        // CLASS / BATCH CHANGE HANDLER
+        // =========================================================
+
+        function loadStudents() {
+
+            const classId = document.getElementById("ClassId").value;
+            const batchId = document.getElementById("BatchId").value;
+
+            if (!classId || !batchId) return;
+
+            const url =
+                '@Url.Action("FeeReceipt", "FeeHeading")' +
+                '?classId=' + encodeURIComponent(classId) +
+                '&batchId=' + encodeURIComponent(batchId);
+
+            window.location.href = url;
+
+        }
+
+
+        // =========================================================
+        // CHECK & GENERATE
+        // =========================================================
+
+        document.getElementById("checkGenerate").addEventListener("click", function() {
+
+            const classId = document.getElementById("ClassId").value;
+            const batchId = document.getElementById("BatchId").value;
+            const studentId = document.getElementById("SelectedStudentId").value;
+
+            if (!classId) {
+                alert("Please select Class.");
+                return;
+            }
+
+            if (!batchId) {
+                alert("Please select Batch.");
+                return;
+            }
+
+            if (!studentId) {
+                alert("Please select Student.");
+                return;
+            }
+
+            window.location.href =
+                '@Url.Action("FeeReceipt", "FeeHeading")' +
+                '?classId=' + encodeURIComponent(classId) +
+                '&batchId=' + encodeURIComponent(batchId) +
+                '&studentId=' + encodeURIComponent(studentId);
+
+        });
+
+
+        // =========================================================
+        // CURRENCY FORMAT
+        // =========================================================
+
+        function formatCurrency(value) {
+
+            let num = Number(value || 0);
+
+            // Point ke baad ke sirf 2 digit rakhne ke liye (Bina round off kiye)
+            num = Math.trunc(num * 100) / 100;
+
+            return "₹" + num.toLocaleString("en-IN", {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 2
+            });
+
+        }
+
+
+        // =========================================================
+        // CLOSE DROPDOWN (OUTSIDE CLICK)
+        // =========================================================
+
+        document.addEventListener("click", function(event) {
+
+            if (!event.target.closest(".student-wrapper")) {
+                studentDropdown.style.display = "none";
+            }
+
+        });
+
+
+        // =========================================================
+        // GET INPUT BY NAME
+        // =========================================================
+
+        function getInput(name) {
+            return document.querySelector(`[name="${name}"]`);
+        }
+
+
+        // =========================================================
+        // CALCULATE RECEIPT (backend logic se match)
+        // =========================================================
+
+        function calculateReceipt() {
+
+            let totalFeesSum = 0;   // Selected fees ka ACTUAL amount sum
+            let collectSum = 0;     // Selected fees me ENTER kiya gaya amount sum
+
+            document.querySelectorAll(".fee-select").forEach(function(checkbox) {
+
+                if (!checkbox.checked) return;
+
+                const index = checkbox.dataset.index;
+
+                const actualAmount = parseFloat(checkbox.dataset.amount) || 0;
+                totalFeesSum += actualAmount;
+
+                const collectInput =
+                    document.querySelector(`.collect-amount[data-index="${index}"]`);
+
+                if (collectInput) {
+                    collectSum += parseFloat(collectInput.value) || 0;
+                }
+
+            });
+
+            totalFeesSum = Math.round(totalFeesSum * 100) / 100;
+            collectSum = Math.round(collectSum * 100) / 100;
+
+
+            const lateFeeInput = getInput("FeeReceipt.LateFee");
+            const lateFee = lateFeeInput ? (parseFloat(lateFeeInput.value) || 0) : 0;
+
+            const concessionInput = getInput("FeeReceipt.ConcessionAmount");
+            const concession = concessionInput ? (parseFloat(concessionInput.value) || 0) : 0;
+
+
+            // ============================================
+            // RECEIPT AMOUNT — jo CASH actually collect hoga
+            // (Late Fee ADD, Concession MINUS)
+            // ============================================
+
+            let receiptAmount = collectSum + lateFee - concession;
+            receiptAmount = Math.round(receiptAmount * 100) / 100;
+            if (receiptAmount < 0) receiptAmount = 0;
+
+
+            // ============================================
+            // TOTAL DUE (overall student due, is payment se pehle)
+            // ============================================
+
+            const totalDueInput = document.getElementById("totalDueAmount");
+            const totalDue = totalDueInput ? (parseFloat(totalDueInput.value) || 0) : 0;
+
+
+            // ============================================
+            // BALANCE AMOUNT (naya due) — backend formula:
+            // TotalDue - CollectSum(sirf fee) - Concession
+            // Late Fee due se kabhi minus nahi hota
+            // ============================================
+
+            let balanceAmount = totalDue - collectSum - concession;
+            balanceAmount = Math.round(balanceAmount * 100) / 100;
+            if (balanceAmount < 0) balanceAmount = 0;
+
+
+            // ================= UPDATE UI FIELDS =================
+
+            const totalAmountInput = document.getElementById("totalAmount");
+            if (totalAmountInput) totalAmountInput.value = formatCurrency(totalDue);
+
+            const totalFeesInput = document.getElementById("totalFees");
+            if (totalFeesInput) totalFeesInput.value = formatCurrency(collectSum);
+
+            const receiptAmountInput = getInput("FeeReceipt.ReceiptAmount");
+            if (receiptAmountInput) receiptAmountInput.value = receiptAmount.toFixed(2);
+
+            const balanceAmountInput = document.getElementById("balanceAmount");
+            if (balanceAmountInput) balanceAmountInput.value = balanceAmount.toFixed(2);
+
+            const netFeeInput = document.getElementById("netFee");
+            if (netFeeInput) netFeeInput.value = receiptAmount.toFixed(2);
+
+        }
+
+
+        // =========================================================
+        // FEE CHECKBOX SELECT / UNSELECT
+        // =========================================================
+
+        document.addEventListener("change", function(e) {
+
+            if (!e.target.classList.contains("fee-select")) return;
+
+            const checkbox = e.target;
+            const index = checkbox.dataset.index;
+
+            const collectInput =
+                document.querySelector(`.collect-amount[data-index="${index}"]`);
+
+            if (!collectInput) return;
+
+            if (checkbox.checked) {
+
+                const balance = parseFloat(collectInput.max) || 0;
+                collectInput.value = balance.toFixed(2);
+
+            } else {
+
+                collectInput.value = "0";
+
+            }
+
+            calculateReceipt();
+
+        });
+
+
+        // =========================================================
+        // INPUT EVENTS: Collect Amount / Late Fee / Concession
+        // =========================================================
+
+      document.addEventListener("input", function (e) {
+
+    if (e.target.classList.contains("collect-amount")) {
+
+        const input = e.target;
+        const max = parseFloat(input.max) || 0;
+
+        // ============================================
+        // Raw string ko clean karo — sirf ek dot aur digits allow karo
+        // ============================================
+
+        let rawValue = input.value;
+
+        // Multiple dots allow na karo (sirf pehla dot valid rahega)
+        rawValue = rawValue.replace(/[^0-9.]/g, '');
+
+        const dotCount = (rawValue.match(/\./g) || []).length;
+        if (dotCount > 1) {
+            rawValue = rawValue.substring(0, rawValue.lastIndexOf('.'));
+        }
+
+        input.value = rawValue;
+
+
+        // ============================================
+        // Agar value abhi INCOMPLETE hai (jaise "300." ya khali),
+        // to clamp/reformat SKIP karo — user ko type karne do
+        // ============================================
+
+        if (rawValue === '' || rawValue.endsWith('.')) {
+
+            const checkbox = document.querySelector(
+                `.fee-select[data-index="${input.dataset.index}"]`
+            );
+            if (checkbox) {
+                checkbox.checked = (parseFloat(rawValue) || 0) > 0;
+            }
+
+            calculateReceipt();
+            return;   // 👈 yahin ruk jao, max clamp mat karo
+        }
+
+
+        // ============================================
+        // Ab value COMPLETE hai — tabhi min/max clamp karo
+        // ============================================
+
+        let value = parseFloat(rawValue) || 0;
+
+        if (value < 0) value = 0;
+
+        if (value > max) {
+            value = max;
+            input.value = value;   // sirf tabhi overwrite karo jab actually clamp hua ho
+        }
+
+
+        const index = input.dataset.index;
+        const checkbox = document.querySelector(`.fee-select[data-index="${index}"]`);
+
+        if (checkbox) {
+            checkbox.checked = value > 0;
+        }
+
+        calculateReceipt();
+
+    }
+
+    
+            // -----------------------------------------------------
+            // Late Fee
+            // -----------------------------------------------------
+
+            if (e.target.name === "FeeReceipt.LateFee") {
+                calculateReceipt();
+            }
+
+
+            // -----------------------------------------------------
+            // Concession Amount → calculation + required message toggle
+            // -----------------------------------------------------
+
+            if (e.target.name === "FeeReceipt.ConcessionAmount") {
+
+                calculateReceipt();
+
+                const concessionValue = parseFloat(e.target.value) || 0;
+                const messageInput = document.getElementById("concessionMessage");
+                const requiredMark = document.getElementById("concessionMsgRequiredMark");
+
+                if (messageInput) {
+
+                    if (concessionValue > 0) {
+                        messageInput.setAttribute("required", "required");
+                        if (requiredMark) requiredMark.style.display = "inline";
+                    } else {
+                        messageInput.removeAttribute("required");
+                        if (requiredMark) requiredMark.style.display = "none";
+                    }
+
+                }
+
+            }
+
+});
+
+
+        // =========================================================
+        // SELECT ALL TUITION
+        // =========================================================
+
+        const selectAllTuition = document.getElementById("selectAllTuition");
+
+        if (selectAllTuition) {
+
+            selectAllTuition.addEventListener("change", function() {
+
+                const checked = selectAllTuition.checked;
+
+                document.querySelectorAll(".tuition-select").forEach(function(checkbox) {
+
+                    checkbox.checked = checked;
+
+                    const index = checkbox.dataset.index;
+                    const collectInput =
+                        document.querySelector(`.collect-amount[data-index="${index}"]`);
+
+                    if (!collectInput) return;
+
+                    if (checked) {
+                        const balance = parseFloat(collectInput.max) || 0;
+                        collectInput.value = balance.toFixed(2);
+                    } else {
+                        collectInput.value = "0";
+                    }
+
+                });
+
+                calculateReceipt();
+
+            });
+
+        }
+
+
+        // =========================================================
+        // SELECT ALL TRANSPORT
+        // =========================================================
+
+        const selectAllTransport = document.getElementById("selectAllTransport");
+
+        if (selectAllTransport) {
+
+            selectAllTransport.addEventListener("change", function() {
+
+                const checked = selectAllTransport.checked;
+
+                document.querySelectorAll(".transport-select").forEach(function(checkbox) {
+
+                    checkbox.checked = checked;
+
+                    const index = checkbox.dataset.index;
+                    const collectInput =
+                        document.querySelector(`.collect-amount[data-index="${index}"]`);
+
+                    if (!collectInput) return;
+
+                    if (checked) {
+                        const balance = parseFloat(collectInput.max) || 0;
+                        collectInput.value = balance.toFixed(2);
+                    } else {
+                        collectInput.value = "0";
+                    }
+
+                });
+
+                calculateReceipt();
+
+            });
+
+        }
+
+
+        // =========================================================
+        // SELECT ALL HOSTEL
+        // =========================================================
+
+        const selectAllHostel = document.getElementById("selectAllHostel");
+
+        if (selectAllHostel) {
+
+            selectAllHostel.addEventListener("change", function() {
+
+                const checked = selectAllHostel.checked;
+
+                document.querySelectorAll(".hostel-select").forEach(function(checkbox) {
+
+                    checkbox.checked = checked;
+
+                    const index = checkbox.dataset.index;
+                    const collectInput =
+                        document.querySelector(`.collect-amount[data-index="${index}"]`);
+
+                    if (!collectInput) return;
+
+                    if (checked) {
+                        const balance = parseFloat(collectInput.max) || 0;
+                        collectInput.value = balance.toFixed(2);
+                    } else {
+                        collectInput.value = "0";
+                    }
+
+                });
+
+                calculateReceipt();
+
+            });
+
+        }
+
+
+        // =========================================================
+        // SAVE RECEIPT — Concession validation + submit
+        // =========================================================
+
+        const saveReceiptBtn = document.getElementById("saveReceiptBtn");
+
+        if (saveReceiptBtn) {
+
+            saveReceiptBtn.addEventListener("click", function() {
+
+                const concessionInput = document.getElementById("concessionAmount");
+                const messageInput = document.getElementById("concession");
+
+                const concessionValue = parseFloat(concessionInput?.value) || 0;
+                const messageValue = messageInput?.value.trim() || "";
+
+                if (concessionValue > 0 && messageValue === "") {
+
+                    alert("Please Enter Concession Reason or Message!");
+
+                    messageInput.focus();
+
+                    return;
+
+                }
+
+                const form = document.getElementById("feeSearchForm");
+
+                form.action = '@Url.Action("SaveFeeReceipt", "FeeHeading")';
+                form.method = "post";
+
+                form.submit();
+
+            });
+
+        }
+
+
+        // =========================================================
+        // INITIAL CALCULATION (page load / postback)
+        // =========================================================
+
+        document.addEventListener("DOMContentLoaded", function() {
+
+            calculateReceipt();
+
+            // Postback/edit case me agar concession pehle se filled ho
+            const concessionInput = document.getElementById("concessionAmount");
+
+            if (concessionInput) {
+                concessionInput.dispatchEvent(new Event("input"));
+            }
+
+        });
+
+    </script>
+}

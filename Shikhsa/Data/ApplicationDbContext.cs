@@ -5,6 +5,7 @@ using Shikhsa.Helpers;
 using Shikhsa.Models;
 using Shikhsa.Models.Common;
 using Shikhsa.Models.Notification;
+using Shikhsa.Models.Payment;
 using Shikhsa.ViewModels;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -78,6 +79,20 @@ namespace Shikhsa.Data
         public DbSet<CoScholasticGrade> CoScholasticGrades { get; set; }
         public DbSet<StudentAttendance> StudentAttendances { get; set; }
         public DbSet<ReportCardSetting> ReportCardSettings { get; set; }
+        #region Fee
+        public DbSet<StudentFee> StudentFees { get; set; }
+        public DbSet<FeeReceipt> FeeReceipt { get; set; }
+        public DbSet<FeeReceiptDetail> FeeReceiptDetail { get; set; }
+        public DbSet<PaymentTransactionDetail> PaymentTransactionDetail { get; set; }
+        public DbSet<PaymentTransactionFeeDetail> PaymentTransactionFeeDetail { get; set; }
+        public DbSet<StudentFeeCredit> StudentFeeCredit { get; set; }
+        public DbSet<StudentFeeCreditAdjustment> StudentFeeCreditAdjustment { get; set; }
+        public DbSet<StudentUnpaidFeeSPResult> StudentUnpaidFeeSPResults
+        {
+            get;
+            set;
+        }
+        #endregion Fee
         protected override void OnModelCreating(ModelBuilder builder)
         {
 
@@ -212,6 +227,306 @@ namespace Shikhsa.Data
             builder.Entity<StudentAttendance>().HasOne(x => x.Class).WithMany().HasForeignKey(x => x.ClassId).OnDelete(DeleteBehavior.NoAction);
             builder.Entity<StudentAttendance>().HasOne(x => x.Batch).WithMany().HasForeignKey(x => x.BatchId).OnDelete(DeleteBehavior.NoAction);
             builder.Entity<StudentAttendance>().HasOne(x => x.Student).WithMany().HasForeignKey(x => x.StudentId).OnDelete(DeleteBehavior.NoAction);
+
+            builder.Entity<PaymentTransactionDetail>(entity =>
+            {
+                entity.HasKey(x => x.PaymentTransactionId);
+                entity.HasOne(x => x.Student)
+                    .WithMany()
+                    .HasForeignKey(x => x.StudentId)
+                    .OnDelete(DeleteBehavior.NoAction);
+                entity.HasOne(x => x.PaymentMode)
+                    .WithMany()
+                    .HasForeignKey(x => x.PaymentModeId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+            builder.Entity<PaymentTransactionFeeDetail>(entity =>
+            {
+                entity.HasKey(x => x.PaymentTransactionFeeDetailId);
+                entity.HasOne(x => x.PaymentTransaction)
+                    .WithMany(x => x.FeeDetails)
+                    .HasForeignKey(x => x.PaymentTransactionId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(x => x.StudentFee)
+                    .WithMany(x => x.PaymentDetails)
+                    .HasForeignKey(x => x.StudentFeeId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+            builder.Entity<FeeReceipt>(entity =>
+            {
+                entity.HasKey(x => x.FeeReceiptId);
+                entity.HasOne(x => x.Student)
+                    .WithMany()
+                    .HasForeignKey(x => x.StudentId)
+                    .OnDelete(DeleteBehavior.NoAction);
+                entity.HasOne(x => x.PaymentMode)
+                    .WithMany()
+                    .HasForeignKey(x => x.PaymentModeId)
+                    .OnDelete(DeleteBehavior.NoAction);
+                entity.HasOne(x => x.PaymentTransaction)
+                    .WithMany(x => x.Receipts)
+                    .HasForeignKey(x => x.PaymentTransactionId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+            builder.Entity<FeeReceiptDetail>(entity =>
+            {
+                entity.HasKey(x => x.FeeReceiptDetailId);
+
+                entity.HasOne(x => x.FeeReceipt)
+                    .WithMany(x => x.Details)
+                    .HasForeignKey(x => x.FeeReceiptId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(x => x.StudentFee)
+                    .WithMany(x => x.ReceiptDetails)         // ✅ fix: existing collection se link karo
+                    .HasForeignKey(x => x.StudentFeeId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+            builder.Entity<StudentFee>(entity =>
+            {
+                entity.HasKey(x => x.StudentFeeId);
+                entity.HasOne(x => x.Student)
+                    .WithMany()
+                    .HasForeignKey(x => x.StudentId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+            builder.Entity<StudentFeeCredit>(entity =>
+            {
+                entity.HasKey(x => x.FeeCreditId);
+                entity.HasOne(x => x.Student)
+                    .WithMany()
+                    .HasForeignKey(x => x.StudentId)
+                    .OnDelete(DeleteBehavior.NoAction);
+                entity.HasOne(x => x.FeeReceipt)
+                    .WithMany(x => x.Credits)
+                    .HasForeignKey(x => x.FeeReceiptId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+            builder.Entity<StudentFeeCreditAdjustment>(entity =>
+            {
+                entity.HasKey(x => x.FeeCreditAdjustmentId);
+
+               
+                entity.HasOne(x => x.FeeCredit)
+                    .WithMany()
+                    .HasForeignKey(x => x.FeeCreditId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(x => x.StudentFee)
+                    .WithMany(x => x.CreditAdjustments)
+                    .HasForeignKey(x => x.StudentFeeId)
+                    .OnDelete(DeleteBehavior.NoAction);
+                entity.HasOne(x => x.FeeReceipt)
+                    .WithMany()
+                    .HasForeignKey(x => x.FeeReceiptId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+            builder.Entity<StudentUnpaidFeeSPResult>().HasNoKey().ToView(null);
+            builder.Entity<FeeHeading>().HasData(
+        new FeeHeading
+        {
+            FeeHeadingId = 1,
+            FeeHeadingName = "January Month School Fee",
+            FrequencyId = 1,
+            Jan = true,
+            Feb = false,
+            Mar = false,
+            Apr = false,
+            May = false,
+            Jun = false,
+            Jul = false,
+            Aug = false,
+            Sep = false,
+            Oct = false,
+            Nov = false,
+            Dec = false,
+            AddedDate = new DateTime(2026, 1, 1),
+            IsActive = true
+        },
+
+        new FeeHeading
+        {
+            FeeHeadingId = 2,
+            FeeHeadingName = "February Month School Fee",
+            FrequencyId = 1,
+            Jan = false,
+            Feb = true,
+            Mar = false,
+            Apr = false,
+            May = false,
+            Jun = false,
+            Jul = false,
+            Aug = false,
+            Sep = false,
+            Oct = false,
+            Nov = false,
+            Dec = false,
+            AddedDate = new DateTime(2026, 1, 1),
+            IsActive = true
+        },
+
+        new FeeHeading
+        {
+            FeeHeadingId = 3,
+            FeeHeadingName = "March Month School Fee",
+            FrequencyId = 1,
+            Jan = false,
+            Feb = false,
+            Mar = true,
+            Apr = false,
+            May = false,
+            Jun = false,
+            Jul = false,
+            Aug = false,
+            Sep = false,
+            Oct = false,
+            Nov = false,
+            Dec = false,
+            AddedDate = new DateTime(2026, 1, 1),
+            IsActive = true
+        },
+
+        new FeeHeading
+        {
+            FeeHeadingId = 4,
+            FeeHeadingName = "April Month School Fee",
+            FrequencyId = 1,
+            Jan = false,
+            Feb = false,
+            Mar = false,
+            Apr = true,
+            May = false,
+            Jun = false,
+            Jul = false,
+            Aug = false,
+            Sep = false,
+            Oct = false,
+            Nov = false,
+            Dec = false,
+            AddedDate = new DateTime(2026, 1, 1),
+            IsActive = true
+        },
+
+        new FeeHeading
+        {
+            FeeHeadingId = 5,
+            FeeHeadingName = "May Month School Fee",
+            FrequencyId = 1,
+            Jan = false,
+            Feb = false,
+            Mar = false,
+            Apr = false,
+            May = true,
+            Jun = false,
+            Jul = false,
+            Aug = false,
+            Sep = false,
+            Oct = false,
+            Nov = false,
+            Dec = false,
+            AddedDate = new DateTime(2026, 1, 1),
+            IsActive = true
+        },
+
+        new FeeHeading
+        {
+            FeeHeadingId = 6,
+            FeeHeadingName = "June Month School Fee",
+            FrequencyId = 1,
+            Jan = false,
+            Feb = false,
+            Mar = false,
+            Apr = false,
+            May = false,
+            Jun = true,
+            Jul = false,
+            Aug = false,
+            Sep = false,
+            Oct = false,
+            Nov = false,
+            Dec = false,
+            AddedDate = new DateTime(2026, 1, 1),
+            IsActive = true
+        },
+
+        new FeeHeading
+        {
+            FeeHeadingId = 7,
+            FeeHeadingName = "July Month School Fee",
+            FrequencyId = 1,
+            Jul = true,
+            AddedDate = new DateTime(2026, 1, 1),
+            IsActive = true
+        },
+
+        new FeeHeading
+        {
+            FeeHeadingId = 8,
+            FeeHeadingName = "August Month School Fee",
+            FrequencyId = 1,
+            Aug = true,
+            AddedDate = new DateTime(2026, 1, 1),
+            IsActive = true
+        },
+
+        new FeeHeading
+        {
+            FeeHeadingId = 9,
+            FeeHeadingName = "September Month School Fee",
+            FrequencyId = 1,
+            Sep = true,
+            AddedDate = new DateTime(2026, 1, 1),
+            IsActive = true
+        },
+
+        new FeeHeading
+        {
+            FeeHeadingId = 10,
+            FeeHeadingName = "October Month School Fee",
+            FrequencyId = 1,
+            Oct = true,
+            AddedDate = new DateTime(2026, 1, 1),
+            IsActive = true
+        },
+
+        new FeeHeading
+        {
+            FeeHeadingId = 11,
+            FeeHeadingName = "November Month School Fee",
+            FrequencyId = 1,
+            Nov = true,
+            AddedDate = new DateTime(2026, 1, 1),
+            IsActive = true
+        },
+
+        new FeeHeading
+        {
+            FeeHeadingId = 12,
+            FeeHeadingName = "December Month School Fee",
+            FrequencyId = 1,
+            Dec = true,
+            AddedDate = new DateTime(2026, 1, 1),
+            IsActive = true
+        },
+
+        new FeeHeading
+        {
+            FeeHeadingId = 13,
+            FeeHeadingName = "Admission Fee",
+            FrequencyId = 1,
+            AddedDate = new DateTime(2026, 1, 1),
+            IsActive = true
+        },
+
+        new FeeHeading
+        {
+            FeeHeadingId = 14,
+            FeeHeadingName = "Readmission Fee",
+            FrequencyId = 1,
+            AddedDate = new DateTime(2026, 1, 1),
+            IsActive = true
+        }
+    );
         }
         public override int SaveChanges()
         {

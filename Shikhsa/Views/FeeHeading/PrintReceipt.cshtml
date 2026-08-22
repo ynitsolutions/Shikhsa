@@ -1,0 +1,455 @@
+﻿@model Shikhsa.Models.Payment.FeeReceipt
+@{
+    Layout = null;
+    SchoolMaster mySchool = ViewBag.School as SchoolMaster;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Fee Receipt - @Model.ReceiptNumber</title>
+
+    <style>
+            @@media print {
+                @@page {
+                    size: A5 landscape;
+                    margin: 5mm;
+                }
+
+                body {
+                    -webkit-print-color-adjust: exact;
+                }
+            }
+
+            * {
+                box-sizing: border-box;
+            }
+
+            body {
+                font-family: 'Times New Roman', Times, serif;
+                margin: 0;
+                padding: 0;
+                font-size: 9.5px;
+                color: #111;
+            }
+
+            .print-container {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 6mm;
+                width: 100%;
+            }
+
+            .receipt-box {
+                border: 1.5px solid #000;
+                padding: 8px 10px;
+                position: relative;
+            }
+
+            .copy-label {
+                position: absolute;
+                top: 4px;
+                right: 8px;
+                font-size: 8px;
+                font-weight: bold;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                color: #444;
+            }
+
+            /* ============================================
+                       SCHOOL HEADER
+                       ============================================ */
+
+            .school-header {
+                text-align: center;
+                padding-bottom: 4px;
+            }
+
+            .school-header-inner {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+            }
+
+            .school-logo {
+                width: 28px;
+                height: 28px;
+                object-fit: contain;
+                border-radius: 50%;
+            }
+
+            .school-name {
+                font-size: 12.5px;
+                font-weight: bold;
+                margin: 0;
+                letter-spacing: 0.3px;
+            }
+
+            .school-address {
+                font-size: 7.5px;
+                margin: 2px 0 0;
+            }
+
+            .school-email {
+                font-size: 7.5px;
+                margin: 1px 0 0;
+            }
+
+            .header-rule {
+                border: none;
+                border-top: 1.2px solid #000;
+                margin: 4px 0;
+            }
+
+            .receipt-title {
+                text-align: center;
+                font-size: 13px;
+                font-weight: bold;
+                letter-spacing: 1px;
+                margin: 3px 0 6px;
+            }
+
+            .meta-row {
+                display: flex;
+                justify-content: space-between;
+                font-size: 8.5px;
+                margin-bottom: 5px;
+            }
+
+            /* ============================================
+                       STUDENT INFO BOX
+                       ============================================ */
+
+            .info-box {
+                border: 1px solid #000;
+                padding: 4px 7px;
+                margin-bottom: 5px;
+            }
+
+                .info-box table {
+                    width: 100%;
+                    border-collapse: collapse;
+                }
+
+                .info-box td {
+                    font-size: 8.5px;
+                    padding: 1.5px 0;
+                    vertical-align: top;
+                }
+
+            .info-label {
+                font-weight: bold;
+                width: 65px;
+            }
+
+            /* ============================================
+                       FEE DETAIL TABLE — per fee row
+                       ============================================ */
+
+            .fee-table {
+                width: 100%;
+                border-collapse: collapse;
+                border: 1px solid #000;
+                margin-bottom: 5px;
+            }
+
+                .fee-table th,
+                .fee-table td {
+                    border: 1px solid #000;
+                    padding: 2.5px 3px;
+                    font-size: 7.8px;
+                }
+
+                .fee-table th {
+                    font-weight: bold;
+                    text-align: center;
+                }
+
+                .fee-table td.num {
+                    text-align: right;
+                }
+
+                .fee-table tfoot td {
+                    font-weight: bold;
+                }
+
+            /* ============================================
+                       PAYMENT SUMMARY
+                       ============================================ */
+
+            .summary-box {
+                width: 60%;
+                margin-left: auto;
+                margin-bottom: 6px;
+            }
+
+                .summary-box table {
+                    width: 100%;
+                    border-collapse: collapse;
+                }
+
+                .summary-box td {
+                    font-size: 8.5px;
+                    padding: 1.5px 3px;
+                }
+
+                .summary-box .label {
+                    text-align: right;
+                }
+
+                .summary-box .value {
+                    text-align: right;
+                    width: 75px;
+                }
+
+                .summary-box .grand-total td {
+                    border-top: 1px solid #000;
+                    font-weight: bold;
+                    padding-top: 3px;
+                }
+
+            .concession-note {
+                font-size: 7.5px;
+                font-style: italic;
+                margin-bottom: 4px;
+            }
+
+            .remark-row {
+                font-size: 8.5px;
+                margin-bottom: 10px;
+            }
+
+            /* ============================================
+                       SIGNATURE
+                       ============================================ */
+
+            .signature-row {
+                display: flex;
+                justify-content: flex-end;
+            }
+
+            .signature-block {
+                text-align: center;
+                width: 45%;
+            }
+
+            .signature-line {
+                border-top: 1px solid #000;
+                padding-top: 2px;
+                font-size: 8px;
+            }
+
+    </style>
+    <style>
+            /* ... baaki saara CSS same rahega, bas ye naya add karo ... */
+
+            .terms-box {
+                border-left: 2px solid #000;
+                padding-left: 6px;
+                margin-bottom: 8px;
+            }
+
+                .terms-box strong {
+                    font-size: 8.5px;
+                    display: block;
+                    margin-bottom: 2px;
+                }
+
+                .terms-box ol {
+                    margin: 0;
+                    padding-left: 12px;
+                }
+
+                .terms-box li {
+                    font-size: 7.5px;
+                    line-height: 1.4;
+                }
+    </style>
+</head>
+
+<body onload="window.print()">
+
+    @{
+        var copies = new[] { "School Copy", "Parent Copy" };
+
+        var totalSelectedFee = Model.Details.Sum(x => x.Amount);
+        var totalCurrentlyPaid = Model.Details.Sum(x => x.PaidAmount);
+        var totalBalanceLeft = Model.Details.Sum(x => x.BalanceAmount);
+    }
+
+    <div class="print-container">
+
+        @foreach (var copyName in copies)
+        {
+            <div class="receipt-box">
+
+                <div class="copy-label">@copyName</div>
+
+                <!-- ============================================ -->
+                <!-- SCHOOL HEADER -->
+                <!-- ============================================ -->
+
+                <div class="school-header">
+                    <div class="school-header-inner">
+                        @if (mySchool != null && !string.IsNullOrEmpty(mySchool.LogoPath))
+                        {
+                            <img src="@Url.Content(mySchool.LogoPath)" alt="Logo" class="school-logo" />
+                        }
+                        <p class="school-name">@mySchool?.SchoolName</p>
+                    </div>
+                    <p class="school-address">
+                        @mySchool?.SchoolAddress, @mySchool?.District, @mySchool?.State Pin- @mySchool?.PinCode.
+                    </p>
+                    <p class="school-email"><strong>Email:</strong> @mySchool?.Email</p>
+                </div>
+
+                <hr class="header-rule" />
+
+                <div class="receipt-title">FEE RECEIPT</div>
+
+                <div class="meta-row">
+                    <span><strong>Receipt No:</strong> @Model.ReceiptNumber</span>
+                    <span><strong>Date:</strong> @Model.ReceiptDate.ToString("dd MMM yyyy")</span>
+                </div>
+
+                <!-- ============================================ -->
+                <!-- STUDENT DETAILS -->
+                <!-- ============================================ -->
+
+                <div class="info-box">
+                    <table>
+                        <tr>
+                            <td class="info-label">Name:</td>
+                            <td>@Model.Student?.FirstName @Model.Student?.MiddleName @Model.Student?.LastName</td>
+                            <td class="info-label">Father's Name:</td>
+                            <td>@ViewBag.FatherName</td>
+                        </tr>
+                        <tr>
+                            <td class="info-label">Scholar No:</td>
+                            <td>@Model.Student?.ScholarNumber</td>
+                            <td class="info-label">Application No:</td>
+                            <td>@Model.ApplicationNo</td>
+                        </tr>
+                        <tr>
+                            <td class="info-label">Contact No:</td>
+                            <td colspan="3">@Model.Student?.ContactNo</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- ============================================ -->
+                <!-- FEE DETAIL TABLE — HAR FEE ALAG ALAG -->
+                <!-- ============================================ -->
+
+                <table class="fee-table">
+                    <thead>
+                        <tr>
+                            <th>Fee Type</th>
+                            <th>Total Fee (₹)</th>
+                            <th>Already Paid (₹)</th>
+                            <th>Currently Paid (₹)</th>
+                            <th>Balance Left (₹)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var d in Model.Details)
+                        {
+                            <tr>
+                                <td>@d.FeeType — @d.FeeDescription</td>
+                                <td class="num">@d.Amount.ToString("N2")</td>
+                                <td class="num">@d.PreviousPaidAmount.ToString("N2")</td>
+                                <td class="num">@d.PaidAmount.ToString("N2")</td>
+                                <td class="num">@d.BalanceAmount.ToString("N2")</td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td>Total</td>
+                            <td class="num">@totalSelectedFee.ToString("N2")</td>
+                            <td class="num">@Model.Details.Sum(x => x.PreviousPaidAmount).ToString("N2")</td>
+                            <td class="num">@totalCurrentlyPaid.ToString("N2")</td>
+                            <td class="num">@totalBalanceLeft.ToString("N2")</td>
+                        </tr>
+                    </tfoot>
+                </table>
+
+                <!-- ============================================ -->
+                <!-- PAYMENT SUMMARY -->
+                <!-- ============================================ -->
+
+                <div class="summary-box">
+                    <table>
+                        <tr>
+                            <td class="label">Selected Fee Total:</td>
+                            <td class="value">₹@totalSelectedFee.ToString("N2")</td>
+                        </tr>
+                        <tr>
+                            <td class="label">Fee Amount Paying:</td>
+                            <td class="value">₹@Model.FeeCollectedAmount.ToString("N2")</td>
+                        </tr>
+                        <tr>
+                            <td class="label">Late Fee:</td>
+                            <td class="value">₹@Model.LateFee.ToString("N2")</td>
+                        </tr>
+                        <tr>
+                            <td class="label">Concession Amount:</td>
+                            <td class="value">-₹@Model.ConcessionAmount.ToString("N2")</td>
+                        </tr>
+                        <tr>
+                            <td class="label">Receipt Amount:</td>
+                            <td class="value">₹@Model.ReceiptAmount.ToString("N2")</td>
+                        </tr>
+                        <tr class="grand-total">
+                            <td class="label">Total Paid:</td>
+                            <td class="value">₹@Model.PaidAmount.ToString("N2")</td>
+                        </tr>
+                    </table>
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(Model.Concession))
+                {
+                    <div class="concession-note">
+                        <strong>Concession Note:</strong> @Model.Concession
+                    </div>
+                }
+
+                <!-- ============================================ -->
+                <!-- REMARK -->
+                <!-- ============================================ -->
+
+                <div class="remark-row">
+                    <strong>Remark:</strong> @Model.Remark
+                </div>
+                <!-- ============================================ -->
+                <!-- TERMS & CONDITIONS -->
+                <!-- ============================================ -->
+
+                <div class="terms-box">
+                    <strong>Terms &amp; Conditions:</strong>
+                    <ol>
+                        <li>This receipt is computer generated – no signature required.</li>
+                        <li>Please preserve this receipt for future reference.</li>
+                        <li>Any discrepancy should be reported within 7 days of receipt.</li>
+                    </ol>
+                </div>
+                <!-- ============================================ -->
+                <!-- SIGNATURE -->
+                <!-- ============================================ -->
+
+                <div class="signature-row">
+                    <div class="signature-block">
+                        <div class="signature-line">Authorised Signatory</div>
+                    </div>
+                </div>
+
+            </div>
+        }
+
+    </div>
+
+</body>
+</html>
