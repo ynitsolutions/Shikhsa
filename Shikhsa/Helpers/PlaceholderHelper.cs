@@ -155,7 +155,10 @@
         if (name.Contains("PreviousSchool"))
             return "PreviousSchool";
 
-        return name;
+            if (name.Contains("FeeReceipt")) 
+                return "Fee";   
+
+            return name;
     }
 }
 }

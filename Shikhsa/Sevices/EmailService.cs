@@ -19,7 +19,8 @@ public class EmailService
         _configuration = configuration;
     }
 
-    public async Task<bool> SendEmailAsync( string moduleName, long? referenceId,string toEmail,string subject,string body)
+    public async Task<bool> SendEmailAsync( string moduleName, long? referenceId,string toEmail,string subject,string body, List<(string FileName, byte[] Content, string ContentType)>? attachments = null,
+    string? ccEmail = null)
     {
         var log = new EmailLog
         {
@@ -43,7 +44,9 @@ public class EmailService
                 "EmailSettings:Zoho",
                 toEmail,
                 subject,
-                body);
+                body,
+                attachments,
+                ccEmail);
 
             // If Zoho fails then Gmail
             if (!sent)
@@ -52,7 +55,9 @@ public class EmailService
                     "EmailSettings:Gmail",
                     toEmail,
                     subject,
-                    body);
+                    body,
+                    attachments,
+                ccEmail);
             }
 
             if (sent)
@@ -85,7 +90,8 @@ public class EmailService
         }
 
     }
-    private async Task<bool> SendUsingProvider(string providerSection,string toEmail,string subject,string body)
+    private async Task<bool> SendUsingProvider(string providerSection,string toEmail,string subject,string body, List<(string FileName, byte[] Content, string ContentType)>? attachments = null,
+        string? ccEmail = null)
     {
         try
         {
@@ -98,18 +104,31 @@ public class EmailService
             message.From.Add(new MailboxAddress(settings.FromName,settings.FromEmail));
 
             message.To.Add(MailboxAddress.Parse(toEmail));
-
+            if (!string.IsNullOrWhiteSpace(ccEmail))
+            {
+                message.Cc.Add(MailboxAddress.Parse(ccEmail));
+            }
             message.Subject = subject;
 
             //message.Body = new TextPart("html")
             //{
             //    Text = body
             //};
+
             var builder = new BodyBuilder
             {
                 HtmlBody = body
             };
-
+            if (attachments != null)
+            {
+                foreach (var att in attachments)
+                {
+                    builder.Attachments.Add(
+                        att.FileName,
+                        att.Content,
+                        MimeKit.ContentType.Parse(att.ContentType));   // fully-qualified, System.Net.Mime clash na ho
+                }
+            }
             message.Body = builder.ToMessageBody();
 
             using var smtp = new SmtpClient();

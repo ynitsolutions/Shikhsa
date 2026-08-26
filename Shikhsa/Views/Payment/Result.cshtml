@@ -1,0 +1,27 @@
+@model Shikhsa.Controllers.AtomPaymentResultVM
+@{
+    ViewData["Title"] = "Payment Result";
+}
+<div class="container py-5">
+    <div class="card shadow-sm mx-auto" style="max-width:560px;">
+        <div class="card-body text-center">
+            <h4 class="mb-3">@(Model.Success ? "Payment Successful" : "Payment Failed")</h4>
+            <p class="mb-2">@Model.Message</p>
+            @if (Model.Amount > 0)
+            {
+                <p class="fw-bold">Amount: ₹@Model.Amount.ToString("N2")</p>
+            }
+            @if (!string.IsNullOrWhiteSpace(Model.ReferenceNo))
+            {
+                <p class="small text-muted">Reference: @Model.ReferenceNo</p>
+            }
+            <div class="mt-4">
+                @if (Model.Success && Model.ReceiptId.HasValue)
+                {
+                    <a class="btn btn-primary" asp-controller="FeeHeading" asp-action="PrintReceipt" asp-route-id="@Model.ReceiptId.Value">Print Receipt</a>
+                }
+                <a class="btn btn-outline-secondary ms-2" asp-controller="FeeHeading" asp-action="FeeReceipt">Back to Fee Receipt</a>
+            </div>
+        </div>
+    </div>
+</div>

@@ -87,11 +87,8 @@ namespace Shikhsa.Data
         public DbSet<PaymentTransactionFeeDetail> PaymentTransactionFeeDetail { get; set; }
         public DbSet<StudentFeeCredit> StudentFeeCredit { get; set; }
         public DbSet<StudentFeeCreditAdjustment> StudentFeeCreditAdjustment { get; set; }
-        public DbSet<StudentUnpaidFeeSPResult> StudentUnpaidFeeSPResults
-        {
-            get;
-            set;
-        }
+        public DbSet<StudentUnpaidFeeSPResult> StudentUnpaidFeeSPResults{ get; set; }
+        public DbSet<PaymentGatewaySetting> PaymentGatewaySettings { get; set; }
         #endregion Fee
         protected override void OnModelCreating(ModelBuilder builder)
         {

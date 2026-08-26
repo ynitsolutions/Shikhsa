@@ -201,7 +201,11 @@ namespace Shikhsa.Models
         public int? HostelId { get; set; }
         public string? ScholarNumber { get; set; }
         public long StudentRegisterId { get; set; }
+        [NotMapped]
+        public string? ClassName { get; set; }   // Tbl_Students model me add karo
 
+        [NotMapped]
+        public string? SectionName { get; set; }
         [ForeignKey("ParentId")]
         public virtual Tbl_Parents? Parent { get; set; }
        
