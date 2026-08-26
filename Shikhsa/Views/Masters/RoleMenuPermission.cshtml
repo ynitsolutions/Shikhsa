@@ -35,7 +35,7 @@
                     <select asp-for="UserId" class="form-select select2" id="UserId">
                         <option value="">-- Role Level (All Staff) --</option>
                     </select>
-                    <small class="text-muted">Khaali chhodne par ye Role ke sabhi staff ke liye lagu hoga.</small>
+                    <small class="text-muted">If left blank, this will apply to all staff in the role.</small>
                 </div>
 
                 <!-- MENU -->
@@ -133,19 +133,37 @@
                             </th>
 
                             <th class="text-center">
-                                View
+                                <div class="d-flex flex-column align-items-center">
+                                    <span>View</span>
+                                    <input type="checkbox"
+                                           class="form-check-input mt-1 permission-select-all"
+                                           data-permission="CanView"
+                                           title="Select All View" />
+                                </div>
                             </th>
 
                             <th class="text-center">
-                                Create
+                                <div class="d-flex flex-column align-items-center">
+                                    <span>Create</span>
+                                    <input type="checkbox" class="form-check-input mt-1 permission-select-all"
+                                           data-permission="CanCreate" title="Select All Create" />
+                                </div>
                             </th>
 
                             <th class="text-center">
-                                Update
+                                <div class="d-flex flex-column align-items-center">
+                                    <span>Update</span>
+                                    <input type="checkbox" class="form-check-input mt-1 permission-select-all"
+                                           data-permission="CanUpdate" title="Select All Update" />
+                                </div>
                             </th>
 
                             <th class="text-center">
-                                Delete
+                                 <div class="d-flex flex-column align-items-center">
+                                    <span>Delete</span>
+                                    <input type="checkbox" class="form-check-input mt-1 permission-select-all"
+                                           data-permission="CanDelete" title="Select All Delete" />
+                                </div>
                             </th>
 
                             <th width="120">
@@ -620,6 +638,28 @@
             $("#TabId").html('<option value="">Select Tab</option>');
 
         }
+        $(document).on('change', '.permission-select-all', function() {
 
+            const permission = $(this).data('permission');
+            const isChecked = $(this).is(':checked');
+
+            $('.' + permission).prop('checked', isChecked);
+        });
+
+        // Agar manually kisi permission ko uncheck/check karein,
+        // to header checkbox ki state bhi automatically update hogi.
+        $(document).on('change', '.permission-checkbox', function() {
+
+            const permission = $(this).attr('class').split(' ').find(x =>
+                    x === 'CanView' ||x === 'CanCreate' || x === 'CanUpdate' ||x === 'CanDelete');
+
+            if (!permission) return;
+
+            const total = $('.' + permission).length;
+            const checked = $('.' + permission + ':checked').length;
+
+            $('.permission-select-all[data-permission="' + permission + '"]')
+                .prop('checked', total > 0 && total === checked);
+        });
     </script>
 }

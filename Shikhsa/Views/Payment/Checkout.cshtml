@@ -1,0 +1,35 @@
+@model Shikhsa.Controllers.AtomCheckoutVM
+@{
+    ViewData["Title"] = "Online Fee Payment";
+}
+
+<div class="container py-5">
+    <div class="card shadow-sm mx-auto" style="max-width:520px;">
+        <div class="card-body text-center">
+            <h5 class="mb-3">Online Fee Payment</h5>
+            <div class="small text-muted mb-2">Transaction ID: @Model.MerchantTransactionId</div>
+            <div class="fs-4 fw-bold mb-4">₹@Model.Amount.ToString("N2")</div>
+            <button type="button" class="btn btn-primary px-4" id="payNow">Pay Now</button>
+        </div>
+    </div>
+</div>
+
+<script src="@Model.CheckoutCdn?v=@DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()"></script>
+<script>
+    document.getElementById('payNow').addEventListener('click', function () {
+        const options = {
+            atomTokenId: '@Model.AtomTokenId',
+            merchId: '@Model.MerchId',
+            custEmail: '@Model.CustomerEmail',
+            custMobile: '@Model.CustomerMobile',
+            returnUrl: '@Model.ReturnUrl'
+        };
+
+        if (typeof AtomPaynetz === 'undefined') {
+            alert('Payment gateway could not be loaded. Please try again.');
+            return;
+        }
+
+        new AtomPaynetz(options, '@Model.Environment');
+    });
+</script>

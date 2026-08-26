@@ -1,0 +1,844 @@
+﻿@model Shikhsa.ViewModels.FeeReceiptRecordVM
+
+@{
+    ViewData["Title"] = "Fee Receipt Records";
+}
+
+<style>
+
+    .receipt-page {
+        font-size: 11px;
+    }
+
+    .filter-card,
+    .record-card {
+        background: #fff;
+        border-radius: 5px;
+        box-shadow: 0 1px 8px rgba(0,0,0,.08);
+        margin-bottom: 12px;
+    }
+
+    .filter-header {
+        padding: 8px 12px;
+        border-bottom: 1px solid #eee;
+        font-weight: 600;
+        font-size: 11px;
+    }
+
+    .filter-body {
+        padding: 10px 12px 12px;
+    }
+
+    .form-label {
+        font-size: 9px;
+        margin-bottom: 3px;
+        color: #344054;
+    }
+
+    .form-control,
+    .form-select {
+        height: 29px;
+        font-size: 10px;
+        border-radius: 3px;
+    }
+
+    .record-header {
+        padding: 9px 12px;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .record-title {
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+    .record-count {
+        font-size: 8px;
+        margin-left: 5px;
+        padding: 2px 6px;
+        border-radius: 10px;
+        background: #e6f7fb;
+        color: #17849a;
+    }
+
+    #receiptTable {
+        width: 100% !important;
+    }
+
+    #receiptTable th {
+        font-size: 8px;
+        font-weight: 600;
+        color: #475467;
+        background: #f8fafc;
+        white-space: nowrap;
+    }
+
+    #receiptTable td {
+        font-size: 9px;
+        vertical-align: middle;
+    }
+
+    .student-name {
+        font-weight: 600;
+        color: #17365d;
+    }
+
+    .class-badge {
+        font-size: 7px;
+        background: #e5f3ff;
+        color: #2473a9;
+        padding: 3px 6px;
+        border-radius: 10px;
+    }
+
+    .batch-badge {
+        font-size: 7px;
+        background: #fff4d6;
+        color: #946b00;
+        padding: 3px 6px;
+        border-radius: 10px;
+    }
+
+    .mode-badge {
+        font-size: 7px;
+        background: #e4f8e8;
+        color: #1c7c35;
+        padding: 3px 6px;
+        border-radius: 10px;
+    }
+
+    .amount {
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .fee-headings {
+        min-width: 280px;
+        max-width: 500px;
+        line-height: 1.4;
+    }
+
+    .preview-btn {
+        font-size: 8px;
+        padding: 3px 8px;
+    }
+
+    .export-btn {
+        font-size: 9px;
+        padding: 4px 10px;
+    }
+
+    .reset-btn {
+        font-size: 8px;
+        padding: 4px 9px;
+    }
+
+    .dataTables_wrapper .dataTables_length,
+    .dataTables_wrapper .dataTables_filter {
+        font-size: 9px;
+    }
+
+    .dataTables_wrapper .dataTables_info,
+    .dataTables_wrapper .dataTables_paginate {
+        font-size: 9px;
+    }
+
+    .dataTables_wrapper .dataTables_length select {
+        height: 25px;
+        font-size: 9px;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+        font-size: 9px !important;
+        padding: 3px 7px !important;
+    }
+
+</style>
+
+
+<div class="container-fluid receipt-page">
+    <form id="receiptAntiForgeryForm">
+        @Html.AntiForgeryToken()
+    </form>
+    <!-- =====================================================
+         FILTER
+         ===================================================== -->
+
+    <div class="filter-card">
+
+        <div class="filter-header">
+
+            <i class="fa fa-filter me-1"></i>
+
+            Filter Records
+
+            <button type="button"
+                    id="resetFilters"
+                    class="btn btn-secondary btn-sm float-end reset-btn">
+
+                <i class="fa fa-refresh"></i>
+                Reset Filters
+
+            </button>
+
+        </div>
+
+
+        <div class="filter-body">
+
+            <div class="row g-2">
+
+                <!-- DATE FROM -->
+
+                <div class="col-md-2">
+
+                    <label class="form-label">
+                        <i class="fa fa-calendar"></i>
+                        Date From:
+                    </label>
+
+                    <input type="date"
+                           id="dateFrom"
+                           class="form-control" />
+
+                </div>
+
+
+                <!-- DATE TO -->
+
+                <div class="col-md-2">
+
+                    <label class="form-label">
+                        <i class="fa fa-calendar"></i>
+                        Date To:
+                    </label>
+
+                    <input type="date"
+                           id="dateTo"
+                           class="form-control" />
+
+                </div>
+
+
+                <!-- SEARCH -->
+
+                <div class="col-md-4">
+
+                    <label class="form-label">
+                        <i class="fa fa-search"></i>
+                        Search:
+                    </label>
+
+                    <input type="text"
+                           id="receiptSearch"
+                           class="form-control"
+                           placeholder="Search by student or fee headings..." />
+
+                </div>
+
+
+                <!-- CLASS -->
+
+                <div class="col-md-2">
+
+                    <label class="form-label">
+                        <i class="fa fa-graduation-cap"></i>
+                        Class:
+                    </label>
+
+                    <select id="classId"
+                            class="form-select select2">
+
+                        <option value="">
+                            All Classes
+                        </option>
+
+                        @foreach (var item in Model.Classes)
+                        {
+                            <option value="@item.Value">
+                                @item.Text
+                            </option>
+                        }
+
+                    </select>
+
+                </div>
+
+
+                <!-- PAYMENT MODE -->
+
+                <div class="col-md-2">
+
+                    <label class="form-label">
+                        <i class="fa fa-credit-card"></i>
+                        Payment Mode:
+                    </label>
+
+                    <select id="paymentModeId"
+                            class="form-select select2">
+
+                        <option value="">
+                            All Modes
+                        </option>
+
+                        @foreach (var item in Model.PaymentModes)
+                        {
+                            <option value="@item.Value">
+                                @item.Text
+                            </option>
+                        }
+
+                    </select>
+
+                </div>
+
+
+                <!-- BATCH -->
+
+                <div class="col-md-2">
+
+                    <label class="form-label">
+                        <i class="fa fa-calendar-check"></i>
+                        Batch:
+                    </label>
+
+                    <select id="batchId"
+                            class="form-select select2">
+
+                        <option value="">
+                            All Batches
+                        </option>
+
+                        @foreach (var item in Model.Batches)
+                        {
+                            <option value="@item.Value">
+                                @item.Text
+                            </option>
+                        }
+
+                    </select>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         RECORDS
+         ===================================================== -->
+
+    <div class="record-card">
+
+        <div class="record-header">
+
+            <div>
+
+                <span class="record-title">
+
+                    <i class="fa fa-list-alt me-1"></i>
+
+                    Receipt Records
+
+                </span>
+
+                <span id="recordCount"
+                      class="record-count">
+
+                    Loading...
+
+                </span>
+
+            </div>
+
+
+            <button type="button"
+                    id="exportBtn"
+                    class="btn btn-success btn-sm export-btn">
+
+                <i class="fa fa-file-excel-o"></i>
+
+                Export
+
+            </button>
+
+        </div>
+
+
+        <div class="table-responsive p-2">
+
+            <table id="receiptTable"
+                   class="table table-bordered table-hover table-sm">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            RECEIPT ID
+                        </th>
+
+                        <th>
+                            STUDENT
+                        </th>
+
+                        <th>
+                            CLASS
+                        </th>
+
+                        <th>
+                            BATCH
+                        </th>
+
+                        <th>
+                            FEE HEADINGS
+                        </th>
+
+                        <th>
+                            MODE
+                        </th>
+
+                        <th>
+                            TOTAL FEE
+                        </th>
+
+                        <th>
+                            PAID AMOUNT
+                        </th>
+
+                        <th>
+                            DATE
+                        </th>
+
+                        <th>
+                            ACTION
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+@section Scripts
+{
+    <script>
+
+        $(document).ready(function () {
+
+            let searchTimer = null;
+
+
+            const table = $('#receiptTable').DataTable({
+
+                processing: true,
+
+                serverSide: true,
+
+                searching: false,
+
+                ordering: true,
+
+                pageLength: 10,
+
+                lengthMenu: [
+                    [10, 25, 50, 100],
+                    [10, 25, 50, 100]
+                ],
+
+                ajax: {
+
+                    url: '@Url.Action("FeeReceiptReports", "FeeHeading")',
+
+                    type: 'POST',
+
+                    headers: {
+                        'RequestVerificationToken':
+                            $('input[name="__RequestVerificationToken"]').val()
+                    },
+
+                    data: function (d) {
+
+                        d.DateFrom =
+                            $('#dateFrom').val() || null;
+
+                        d.DateTo =
+                            $('#dateTo').val() || null;
+
+                        d.ClassId =
+                            $('#classId').val() || null;
+
+                        d.BatchId =
+                            $('#batchId').val() || null;
+
+                        d.PaymentModeId =
+                            $('#paymentModeId').val() || null;
+
+                        d.search = $('#receiptSearch').val() || '';
+
+                    },
+
+                    dataSrc: function (json) {
+
+                        $('#recordCount')
+                            .text(
+                                json.recordsFiltered +
+                                ' records found'
+                            );
+
+                        return json.data;
+                    }
+
+                },
+
+
+                order: [
+                    [8, 'desc']
+                ],
+
+
+                columns: [
+
+                    {
+                        data: 'feeReceiptId',
+
+                        render: function (data) {
+
+                            return data;
+                        }
+                    },
+
+
+                    {
+                        data: 'studentName',
+
+                        render: function (data) {
+
+                            return `
+                                <span class="student-name">
+                                    ${escapeHtml(data || '')}
+                                </span>
+                            `;
+                        }
+                    },
+
+
+                    {
+                        data: 'className',
+
+                        render: function (data) {
+
+                            return `
+                                <span class="class-badge">
+                                    ${escapeHtml(data || '')}
+                                </span>
+                            `;
+                        }
+                    },
+
+
+                    {
+                        data: 'academicYear',
+
+                        render: function (data) {
+
+                            return `
+                                <span class="batch-badge">
+                                    ${escapeHtml(data || '')}
+                                </span>
+                            `;
+                        }
+                    },
+
+
+                    {
+                        data: 'feeHeadings',
+
+                        render: function (data) {
+
+                            return `
+                                <div class="fee-headings">
+                                    ${escapeHtml(data || '')}
+                                </div>
+                            `;
+                        }
+                    },
+
+
+                    {
+                        data: 'paymentMode',
+
+                        render: function (data) {
+
+                            return `
+                                <span class="mode-badge">
+                                    <i class="fa fa-money"></i>
+                                    ${escapeHtml(data || '')}
+                                </span>
+                            `;
+                        }
+                    },
+
+
+                    {
+                        data: 'totalFee',
+
+                        className: 'text-end amount',
+
+                        render: function (data) {
+
+                            return '₹' +
+                                Number(data || 0)
+                                    .toLocaleString(
+                                        'en-IN',
+                                        {
+                                            minimumFractionDigits: 2
+                                        });
+                        }
+                    },
+
+
+                    {
+                        data: 'paidAmount',
+
+                        className: 'text-end amount',
+
+                        render: function (data) {
+
+                            return '₹' +
+                                Number(data || 0)
+                                    .toLocaleString(
+                                        'en-IN',
+                                        {
+                                            minimumFractionDigits: 2
+                                        });
+                        }
+                    },
+
+
+                    {
+                        data: 'receiptDate',
+
+                        render: function (data) {
+
+                            if (!data)
+                                return '';
+
+                            const date =
+                                new Date(data);
+
+                            return formatDate(date);
+                        }
+                    },
+
+
+                    {
+                        data: 'feeReceiptId',
+
+                        orderable: false,
+
+                        searchable: false,
+
+                        className: 'text-center',
+
+                        render: function (data) {
+
+                            const url =
+                                '@Url.Action("PrintReceipt", "FeeHeading")'
+                                + '?id=' + data;
+
+                            return `
+                                <a href="${url}"
+                                   target="_blank"
+                                   class="btn btn-primary btn-sm preview-btn">
+
+                                    <i class="fa fa-eye"></i>
+                                    Preview
+
+                                </a>
+                            `;
+                        }
+                    }
+
+                ],
+
+
+                language: {
+
+                    processing:
+                        '<i class="fa fa-spinner fa-spin"></i> Loading...',
+
+                    emptyTable:
+                        'No receipt records found',
+
+                    zeroRecords:
+                        'No matching receipt records found'
+
+                }
+
+            });
+
+
+            /*
+                Filter change
+            */
+
+            $('#dateFrom, #dateTo, #classId, #batchId, #paymentModeId')
+                .on('change', function () {
+
+                    table.ajax.reload();
+
+                });
+
+
+            /*
+                Search
+            */
+
+            $('#receiptSearch')
+                .on('keyup', function () {
+
+                    clearTimeout(searchTimer);
+
+                    searchTimer =
+                        setTimeout(function () {
+
+                            table.ajax.reload();
+
+                        }, 400);
+
+                });
+
+
+            /*
+                Reset
+            */
+
+            $('#resetFilters')
+                .on('click', function () {
+
+                    $('#dateFrom').val('');
+
+                    $('#dateTo').val('');
+
+                    $('#receiptSearch').val('');
+
+                    $('#classId').val('');
+
+                    $('#batchId').val('');
+
+                    $('#paymentModeId').val('');
+
+                    table.ajax.reload();
+
+                });
+
+
+            /*
+                Export
+            */
+
+            $('#exportBtn')
+                .on('click', function () {
+
+                    const params =
+                        new URLSearchParams({
+
+                            dateFrom:
+                                $('#dateFrom').val(),
+
+                            dateTo:
+                                $('#dateTo').val(),
+
+                            search:
+                                $('#receiptSearch').val(),
+
+                            classId:
+                                $('#classId').val(),
+
+                            batchId:
+                                $('#batchId').val(),
+
+                            paymentModeId:
+                                $('#paymentModeId').val()
+
+                        });
+
+
+                    window.location.href =
+                        '@Url.Action("ExportFeeReceiptReports", "FeeHeading")'
+                        + '?' +
+                        params.toString();
+
+                });
+
+        });
+
+
+        /*
+            Date format
+        */
+
+        function formatDate(date) {
+
+            const day =
+                String(date.getDate())
+                    .padStart(2, '0');
+
+            const month =
+                String(date.getMonth() + 1)
+                    .padStart(2, '0');
+
+            const year =
+                date.getFullYear();
+
+            let hours =
+                date.getHours();
+
+            const minutes =
+                String(date.getMinutes())
+                    .padStart(2, '0');
+
+            const ampm =
+                hours >= 12 ? 'pm' : 'am';
+
+            hours =
+                hours % 12;
+
+            hours =
+                hours || 12;
+
+            return `${day}/${month}/${year} ${hours}:${minutes} ${ampm}`;
+        }
+
+
+        /*
+            Prevent HTML injection in DataTables
+        */
+
+        function escapeHtml(value) {
+
+            return $('<div>')
+                .text(value)
+                .html();
+
+        }
+
+    </script>
+}

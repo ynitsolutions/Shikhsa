@@ -33,7 +33,8 @@ namespace Shikhsa.Models.Payment
         public decimal BalanceAmount { get; set; }
 
         public bool IsFullyPaid { get; set; }
-
+        [NotMapped]
+        public string? FeeHeadingName { get; set; }
         public virtual Tbl_Students? Student { get; set; }
         public virtual ICollection<FeeReceiptDetail> ReceiptDetails
         {
@@ -81,7 +82,7 @@ namespace Shikhsa.Models.Payment
 
         public decimal LateFee { get; set; }
 
-        public string Concession { get; set; }
+        public string? Concession { get; set; } = string.Empty;
 
         public decimal ConcessionAmount { get; set; }
 
@@ -121,6 +122,25 @@ namespace Shikhsa.Models.Payment
 
         public virtual ICollection<StudentFeeCredit> Credits { get; set; }
             = new List<StudentFeeCredit>();
+        [NotMapped]
+        public string? BatchName { get; set; }
+
+
+        [NotMapped]
+        public string? AlreadyPaidAmount { get; set; }
+
+        [NotMapped]
+        public string? FeeType { get; set; }
+
+        [NotMapped]
+        public string? FeeDescription { get; set; }
+
+        [NotMapped]
+        public string? FeeMonth { get; set; }
+
+        [NotMapped]
+        public string? FeeYear { get; set; }
+
     }
     /* Receipt में कौन-सी fee/month पर कितना लगा */
     public class FeeReceiptDetail : BaseEntity

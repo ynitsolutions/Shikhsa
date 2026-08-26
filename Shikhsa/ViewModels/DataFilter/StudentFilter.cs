@@ -21,6 +21,7 @@
 
         public int? RegClassId { get; set; }
         public int? SectionId { get; set; }
+        public int? StatusId { get; set; }
         public List<string> SelectedColumns { get; set; } = new();
     }
     public class StudentListReportVM

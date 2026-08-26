@@ -1,5 +1,7 @@
 ﻿using Dapper;
 using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
+using Shikhsa.Data;
 using Shikhsa.Models;
 using Shikhsa.Models.Common;
 using Shikhsa.ViewModels;
@@ -12,10 +14,12 @@ namespace Shikhsa.DataBase.Repositry
     {
 
         private readonly IConfiguration _configuration;
+        private readonly ApplicationDbContext _db;
 
-        public StaffRepository(IConfiguration configuration)
+        public StaffRepository(IConfiguration configuration, ApplicationDbContext db)
         {
             _configuration = configuration;
+            _db = db;
         }
         private IDbConnection Connection
         {
@@ -33,28 +37,10 @@ namespace Shikhsa.DataBase.Repositry
 
             param.Add("@StaffXML", staffXml);
 
-            var result = await con.QueryFirstOrDefaultAsync<ResponseModel>(
-                            "USP_SaveStaff",
-                            param,
-                            commandType: CommandType.StoredProcedure);
+            var result = await con.QueryFirstOrDefaultAsync<ResponseModel>("USP_SaveStaff", param, commandType: CommandType.StoredProcedure);
 
             return result;
         }
-        //public async Task<StaffMaster> GetStaffById(long id)
-        //{
-        //    using var con = Connection;
-
-        //    var param = new DynamicParameters();
-
-        //    param.Add("@StaffId", id);
-
-        //    var result = await con.QueryFirstOrDefaultAsync<StaffMaster>(
-        //                    "USP_GetStaffById",
-        //                    param,
-        //                    commandType: CommandType.StoredProcedure);
-
-        //    return result;
-        //}
         public async Task<StaffMaster?> GetStaffById(long id)
         {
             using var con = Connection;
@@ -126,5 +112,38 @@ namespace Shikhsa.DataBase.Repositry
 
             return result;
         }
+
+        #region Staff Profile
+        public async Task<StaffProfileViewModel> GetStaffProfileAsync(long staffId)
+        {
+            var conn = _db.Database.GetDbConnection();
+            if (conn.State != ConnectionState.Open) await conn.OpenAsync();
+
+            using var multi = await conn.QueryMultipleAsync("sp_GetStaffProfile",new { StaffId = staffId },commandType: CommandType.StoredProcedure);
+
+            var staff = await multi.ReadFirstOrDefaultAsync<StaffMaster>();
+            var extraInfo = await multi.ReadFirstOrDefaultAsync<StaffExtraInfo>();
+            var documents = (await multi.ReadAsync<StaffDocument>()).AsList();
+            var academics = (await multi.ReadAsync<StaffAcademic>()).AsList();
+            var experiences = (await multi.ReadAsync<StaffExperience>()).AsList();
+            var emergencyContacts = (await multi.ReadAsync<StaffEmergencyContact>()).AsList();
+            var currentSalary = await multi.ReadFirstOrDefaultAsync<StaffSalaryHistory>();
+            var salaryHistory = (await multi.ReadAsync<StaffSalaryHistory>()).AsList();
+
+            return new StaffProfileViewModel
+            {
+                Staff = staff,
+                ExtraInfo = extraInfo ?? new StaffExtraInfo(),
+                Documents = documents,
+                Academics = academics,
+                Experiences = experiences,
+                EmergencyContacts = emergencyContacts,
+                CurrentSalary = currentSalary,
+                SalaryHistory = salaryHistory
+            };
+        }
+        #endregion
     }
+
 }
+

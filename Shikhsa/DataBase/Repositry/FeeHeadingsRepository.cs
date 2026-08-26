@@ -1722,7 +1722,63 @@ namespace Shikhsa.Repository
         }
 
         #endregion
+        #region Student wise report
+        public List<FeePaymentReportRowVM> GetFeePaymentReport(int? batchId, int? classId, int? sectionId, long? studentId)
+        {
+            var query = _context.FeeReceiptDetail
+                .AsNoTracking()
+                .Include(x => x.FeeReceipt)
+                .Where(x => x.IsActive && x.FeeReceipt != null && x.FeeReceipt.IsActive);
 
+            if (studentId.HasValue)
+            {
+                query = query.Where(x => x.FeeReceipt.StudentId == studentId.Value);
+            }
+            else
+            {
+                // Agar single student select nahi hai, to batch/class/section se saare students ka data
+                var studentIds = _context.Tbl_Students
+                    .Where(x => x.IsActive
+                        && (!batchId.HasValue || x.AdmitBatchId == batchId.Value)
+                        && (!classId.HasValue || x.AdmitClassId == classId.Value)
+                        && (!sectionId.HasValue || x.AdmitSectionId == sectionId.Value))
+                    .Select(x => x.StudentId)
+                    .ToList();
+
+                query = query.Where(x => studentIds.Contains(x.FeeReceipt.StudentId));
+            }
+
+            if (batchId.HasValue)
+            {
+                query = query.Where(x => x.FeeReceipt.BatchId == batchId.Value);
+            }
+
+            var details = query
+                .OrderBy(x => x.FeeReceipt.ReceiptDate)
+                .ThenBy(x => x.FeeReceiptDetailId)
+                .ToList();
+
+            var rows = details.Select(d => new FeePaymentReportRowVM
+            {
+                ReceiptNumber = d.FeeReceipt.ReceiptNumber ?? "",
+                ReceiptDate = d.FeeReceipt.ReceiptDate,
+                FeeType = d.FeeType ?? "",
+                FeeHeadName = d.FeeDescription ?? "",
+                TotalFee = d.Amount,
+                AlreadyPaid = d.PreviousPaidAmount,
+                PaidAmount = d.PaidAmount,
+
+                // Late Fee/Concession sirf us receipt ke header level pe hote hain,
+                // proportionally is fee item ke liye nahi bante — isliye receipt-level
+                // value tabhi dikhao jab wo AdjustedAmount (concession target) match kare
+                LateFee = d.FeeReceipt.LateFee,
+                Concession = d.AdjustedAmount,   // is item pe jo concession laga wahi
+                RemainingDue = d.BalanceAmount
+            }).ToList();
+
+            return rows;
+        }
+        #endregion
     }
 
 

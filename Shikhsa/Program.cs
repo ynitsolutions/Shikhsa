@@ -93,7 +93,10 @@ builder.Services.AddScoped<LookupRepository>();
 builder.Services.AddScoped<NotificationTemplateRepository>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<EncrypDecrpt>();
-
+builder.Services.AddScoped<IRazorViewToStringRenderer, RazorViewToStringRenderer>();
+builder.Services.AddSingleton<PdfGeneratorService>();   // Singleton better hai — browser download check ek hi baar
+builder.Services.AddScoped<FeeReceiptRecordRepository>();
+builder.Services.AddScoped<AtomPaymentService>();
 var app = builder.Build();
 
 

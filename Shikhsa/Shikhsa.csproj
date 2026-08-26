@@ -11,6 +11,12 @@
     <Compile Remove="Middlewares\PermissionMiddleware.cs" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="..\..\..\..\Downloads\Controllers\PaymentController.cs" Link="Controllers\PaymentController.cs" />
+    <Compile Include="..\..\..\..\Downloads\Models\Payment\Payverify.cs" Link="Models\Payment\Payverify.cs" />
+    <Compile Include="..\..\..\..\Downloads\Services\AtomPaymentService.cs" Link="Sevices\AtomPaymentService.cs" />
+  </ItemGroup>
+
 
   <ItemGroup>
     <PackageReference Include="ClosedXML" Version="0.105.0" />
@@ -28,6 +34,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="10.0.8" />
+    <PackageReference Include="PuppeteerSharp" Version="25.8.0" />
     <PackageReference Include="QRCoder" Version="1.8.0" />
     <PackageReference Include="QuestPDF" Version="2026.7.2" />
     <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />

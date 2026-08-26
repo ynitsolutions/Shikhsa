@@ -10,6 +10,7 @@ using Shikhsa.Helpers;
 using Shikhsa.Models;
 using Shikhsa.Models.Common;
 using Shikhsa.Services;
+using Shikhsa.Sevices;
 using Shikhsa.ViewModels;
 using Shikhsa.ViewModels.DataFilter;
 using System.Text.Json;
@@ -27,6 +28,7 @@ namespace Shikhsa.Controllers
         private readonly IWebHostEnvironment _environment;
         private readonly FileUploadHelper _uploadHelper;
         private readonly LookupService _lookup;
+        private readonly StaffIdCardPdfService _idCardService;
         public StaffController(
             ApplicationDbContext context,
             IConfiguration configuration,
@@ -140,11 +142,7 @@ namespace Shikhsa.Controllers
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SaveStaffs(StaffMaster model,
-    string AcademicJson,
-    string ExperienceJson,
-    string DocumentJson
-    )
+        public async Task<IActionResult> SaveStaffs(StaffMaster model,string AcademicJson,string ExperienceJson,string DocumentJson)
         {
             model.Academics =
     string.IsNullOrWhiteSpace(AcademicJson)
@@ -239,9 +237,7 @@ namespace Shikhsa.Controllers
         }
         [SkipPermission]
         [HttpPost]
-        public async Task<IActionResult> UploadStaffFile(
-    IFormFile file,
-    string fileType)
+        public async Task<IActionResult> UploadStaffFile(IFormFile file,string fileType)
         {
             try
             {
@@ -411,6 +407,29 @@ namespace Shikhsa.Controllers
         {
             var response = await _repositoryUser.UpdateUserRole(userId, oldRoleId, newRoleId);
             return Json(response);
+        }
+        #endregion
+
+        #region Profile
+        [HttpGet]
+        [Route("Staff/Profile/{staffId:long}")]
+        public async Task<IActionResult> Profile(long staffId)
+        {
+            var profile = await _repository.GetStaffProfileAsync(staffId);
+            if (profile?.Staff == null) return NotFound();
+
+            return View(profile);
+        }
+
+        // GET: /Staff/DownloadIdCard?staffId=101
+        [HttpGet]
+        public async Task<IActionResult> DownloadIdCard(long staffId)
+        {
+            var profile = await _repository.GetStaffProfileAsync(staffId);
+            if (profile?.Staff == null) return NotFound();
+
+            byte[] pdfBytes = await _idCardService.GenerateIdCardAsync(profile);
+            return File(pdfBytes, "application/pdf", $"IDCard_{profile.Staff.StaffCode}.pdf");
         }
         #endregion
     }

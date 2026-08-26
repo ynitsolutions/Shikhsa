@@ -1,0 +1,136 @@
+﻿@model Shikhsa.ViewModels.FeePaymentReportVM
+
+@{
+    ViewData["Title"] = "Fee Payment Report";
+}
+
+<div class="container-fluid">
+
+    <div class="card p-3">
+
+        <h5 class="mb-3">Fee Payment Report</h5>
+
+        <form method="get" id="reportFilterForm" class="row g-2 mb-3">
+
+            <div class="col-md-3">
+                <label class="form-label">Batch:</label>
+                <select name="batchId" id="batchId" class="form-select">
+                    <option value="">Select Batch</option>
+                    @foreach (var b in Model.Batches)
+                    {
+                        <option value="@b.BatchId" selected="@(Model.SelectedBatchId == b.BatchId)">@b.AcademicYear</option>
+                    }
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Class:</label>
+                <select name="classId" id="classId" class="form-select">
+                    <option value="">Select Class</option>
+                    @foreach (var c in Model.Classes)
+                    {
+                        <option value="@c.DataListItemId" selected="@(Model.SelectedClassId == c.DataListItemId)">@c.DataListItemText</option>
+                    }
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Section:</label>
+                <select name="sectionId" id="sectionId" class="form-select">
+                    <option value="">Select Section</option>
+                    @foreach (var s in Model.Sections)
+                    {
+                        <option value="@s.DataListItemId" selected="@(Model.SelectedSectionId == s.DataListItemId)">@s.DataListItemText</option>
+                    }
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Student:</label>
+                <select name="studentId" id="studentId" class="form-select">
+                    <option value="">All Students</option>
+                    @foreach (var st in Model.Students)
+                    {
+                        <option value="@st.StudentId" selected="@(Model.SelectedStudentId == st.StudentId)">@st.StudentName</option>
+                    }
+                </select>
+            </div>
+
+            <div class="col-12 mt-2">
+                <button type="submit" class="btn btn-primary btn-sm">🔍 Apply Filter</button>
+
+                <a href="@Url.Action("ExportFeePaymentReportPdf")?batchId=@Model.SelectedBatchId&classId=@Model.SelectedClassId&sectionId=@Model.SelectedSectionId&studentId=@Model.SelectedStudentId"
+                   class="btn btn-outline-danger btn-sm" target="_blank">📄 Export PDF</a>
+
+                <a href="@Url.Action("ExportFeePaymentReportExcel")?batchId=@Model.SelectedBatchId&classId=@Model.SelectedClassId&sectionId=@Model.SelectedSectionId&studentId=@Model.SelectedStudentId"
+                   class="btn btn-outline-success btn-sm">📊 Export Excel</a>
+            </div>
+
+        </form>
+
+        @if (Model.Rows.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-bordered table-sm">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Receipt No</th>
+                            <th>Date</th>
+                            <th>Fee Type</th>
+                            <th>Fee Head</th>
+                            <th class="text-end">Total Fee</th>
+                            <th class="text-end">Already Paid</th>
+                            <th class="text-end">Paid Amount</th>
+                            <th class="text-end">Late Fee</th>
+                            <th class="text-end">Concession</th>
+                            <th class="text-end">Remaining Due</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var r in Model.Rows)
+                        {
+                            <tr>
+                                <td>@r.ReceiptNumber</td>
+                                <td>@r.ReceiptDate.ToString("dd-MMM-yyyy")</td>
+                                <td>@r.FeeType</td>
+                                <td>@r.FeeHeadName</td>
+                                <td class="text-end">@r.TotalFee.ToString("N2")</td>
+                                <td class="text-end">@r.AlreadyPaid.ToString("N2")</td>
+                                <td class="text-end">@r.PaidAmount.ToString("N2")</td>
+                                <td class="text-end">@r.LateFee.ToString("N2")</td>
+                                <td class="text-end">@r.Concession.ToString("N2")</td>
+                                <td class="text-end">@r.RemainingDue.ToString("N2")</td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot class="table-secondary fw-bold">
+                        <tr>
+                            <td colspan="4">Total</td>
+                            <td class="text-end">@Model.Rows.Sum(x => x.TotalFee).ToString("N2")</td>
+                            <td class="text-end">@Model.Rows.Sum(x => x.AlreadyPaid).ToString("N2")</td>
+                            <td class="text-end">@Model.Rows.Sum(x => x.PaidAmount).ToString("N2")</td>
+                            <td class="text-end">@Model.Rows.Sum(x => x.LateFee).ToString("N2")</td>
+                            <td class="text-end">@Model.Rows.Sum(x => x.Concession).ToString("N2")</td>
+                            <td class="text-end">@Model.Rows.Sum(x => x.RemainingDue).ToString("N2")</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="text-center text-muted p-4">Filter select karke report dekhein.</div>
+        }
+
+    </div>
+
+</div>
+
+@section Scripts
+{
+    <script>
+        $(document).ready(function() {
+            $('#batchId, #classId, #sectionId, #studentId').select2({ width: '100%' });
+        });
+    </script>
+}

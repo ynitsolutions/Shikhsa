@@ -1,0 +1,232 @@
+﻿@model Shikhsa.ViewModels.StaffProfileViewModel
+@{
+    ViewData["Title"] = "Staff Profile";
+    var s = Model.Staff;
+    var ex = Model.ExtraInfo;
+    var photoUrl = string.IsNullOrEmpty(s.PhotoPath) ? "/images/no-photo.png" : s.PhotoPath;
+}
+
+<div class="profile-header d-flex align-items-center justify-content-between border rounded p-3 mb-3">
+    <div class="d-flex align-items-center">
+        <img src="@photoUrl" alt="photo" class="rounded-circle me-3"
+             style="width:90px;height:90px;object-fit:cover;" />
+        <div>
+            <h4 class="mb-0">@s.FullName</h4>
+            <div class="text-muted">
+                Staff Code: @s.StaffCode &nbsp;|&nbsp;
+                @ex.DesignationName (@ex.DepartmentName)
+            </div>
+        </div>
+    </div>
+    <div>
+        <a class="btn btn-primary"
+           href="@Url.Action("DownloadIdCard", "Staff", new { staffId = s.StaffId })">
+            <i class="bi bi-download"></i> Download ID Card
+        </a>
+    </div>
+</div>
+
+<ul class="nav nav-tabs" id="profileTabs" role="tablist">
+    <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#personal">Personal Details</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#family">Family Details</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#contact">Contact / Address</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#employment">Employment</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#academic">Academic</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#experience">Experience</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#emergency">Emergency Contact</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#documents">Documents</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#salary">Salary Summary</button></li>
+</ul>
+
+<div class="tab-content border border-top-0 p-3">
+
+    <!-- PERSONAL -->
+    <div class="tab-pane fade show active" id="personal">
+        <table class="table table-sm">
+            <tr><th>DOB</th><td>@s.DOB.ToString("dd-MMM-yyyy") (Age: @s.Age)</td></tr>
+            <tr><th>Gender</th><td>@ex.GenderName</td></tr>
+            <tr><th>Blood Group</th><td>@ex.BloodGroupName</td></tr>
+            <tr><th>Marital Status</th><td>@ex.MaritalStatusName</td></tr>
+            <tr><th>Religion</th><td>@ex.ReligionName</td></tr>
+            <tr><th>Category</th><td>@ex.CategoryName</td></tr>
+            <tr><th>Nationality</th><td>@s.Nationality</td></tr>
+            <tr><th>Aadhaar No</th><td>@s.AadhaarNumber</td></tr>
+            <tr><th>PAN No</th><td>@s.PANNumber</td></tr>
+        </table>
+    </div>
+
+    <!-- FAMILY -->
+    <div class="tab-pane fade" id="family">
+        <div class="row">
+            <div class="col-md-4">
+                <h6>Father</h6>
+                <p>@s.FatherFirstName @s.FatherMiddleName @s.FatherLastName</p>
+            </div>
+            <div class="col-md-4">
+                <h6>Mother</h6>
+                <p>@s.MotherFirstName @s.MotherMiddleName @s.MotherLastName</p>
+            </div>
+            @if (!string.IsNullOrEmpty(s.SpouseName))
+            {
+                <div class="col-md-4">
+                    <h6>Spouse</h6>
+                    <p>@s.SpouseName<br />@s.SpouseMobile</p>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- CONTACT / ADDRESS -->
+    <div class="tab-pane fade" id="contact">
+        <table class="table table-sm">
+            <tr><th>Mobile No</th><td>@s.MobileNo</td></tr>
+            <tr><th>Alternate Mobile</th><td>@s.AlternateMobileNo</td></tr>
+            <tr><th>Email</th><td>@s.Email</td></tr>
+            <tr><th>Alternate Email</th><td>@s.AlternateEmail</td></tr>
+        </table>
+        <div class="row mt-2">
+            <div class="col-md-6">
+                <h6>Current Address</h6>
+                <p>@s.Address</p>
+            </div>
+            <div class="col-md-6">
+                <h6>Permanent Address</h6>
+                <p>@(s.SameAsCurrentAddress == true ? s.Address : s.PermanentAddress)</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- EMPLOYMENT -->
+    <div class="tab-pane fade" id="employment">
+        <table class="table table-sm">
+            <tr><th>Department</th><td>@ex.DepartmentName</td></tr>
+            <tr><th>Designation</th><td>@ex.DesignationName</td></tr>
+            <tr><th>Staff Type</th><td>@ex.StaffTypeName</td></tr>
+            <tr><th>Employment Type</th><td>@ex.EmploymentTypeName</td></tr>
+            <tr><th>Employee Status</th><td>@ex.EmployeeStatusName</td></tr>
+            <tr><th>Reporting To</th><td>@ex.ReportingStaffName</td></tr>
+            <tr><th>Joining Date</th><td>@s.JoiningDate.ToString("dd-MMM-yyyy")</td></tr>
+            <tr><th>Confirmation Date</th><td>@s.ConfirmationDate?.ToString("dd-MMM-yyyy")</td></tr>
+            @if (s.LeavingDate != null)
+            {
+                <tr><th>Leaving Date</th><td>@s.LeavingDate?.ToString("dd-MMM-yyyy")</td></tr>
+                <tr><th>Leaving Reason</th><td>@s.LeavingReason</td></tr>
+            }
+        </table>
+    </div>
+
+    <!-- ACADEMIC -->
+    <div class="tab-pane fade" id="academic">
+        <table class="table table-sm">
+            <thead><tr><th>Degree</th><th>Stream</th><th>Institute</th><th>University</th><th>Passing Year</th><th>%</th><th>Grade</th></tr></thead>
+            <tbody>
+                @foreach (var a in Model.Academics)
+                {
+                    <tr>
+                        <td>@a.DegreeName</td>
+                        <td>@a.StreamName</td>
+                        <td>@a.InstituteName</td>
+                        <td>@a.UniversityName</td>
+                        <td>@a.PassingYear</td>
+                        <td>@a.Percentage%</td>
+                        <td>@a.GradeName</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- EXPERIENCE -->
+    <div class="tab-pane fade" id="experience">
+        <table class="table table-sm">
+            <thead><tr><th>Organisation</th><th>Designation</th><th>From</th><th>To</th><th>Duration</th></tr></thead>
+            <tbody>
+                @foreach (var e in Model.Experiences)
+                {
+                    <tr>
+                        <td>@e.OrganisationName</td>
+                        <td>@e.DesignationName</td>
+                        <td>@e.FromDate.ToString("MMM-yyyy")</td>
+                        <td>@e.ToDate.ToString("MMM-yyyy")</td>
+                        <td>@e.TotalExperienceYears yr @e.TotalExperienceMonths mo</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- EMERGENCY CONTACT -->
+    <div class="tab-pane fade" id="emergency">
+        <table class="table table-sm">
+            <thead><tr><th>Name</th><th>Mobile</th><th>Alternate</th><th>Address</th><th>Primary</th></tr></thead>
+            <tbody>
+                @foreach (var e in Model.EmergencyContacts)
+                {
+                    <tr>
+                        <td>@e.ContactName</td>
+                        <td>@e.MobileNo</td>
+                        <td>@e.AlternateMobileNo</td>
+                        <td>@e.Address</td>
+                        <td>@(e.IsPrimary ? "Yes" : "")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- DOCUMENTS -->
+    <div class="tab-pane fade" id="documents">
+        <table class="table table-sm">
+            <thead><tr><th>Document Type</th><th>Number</th><th>File</th><th>Expiry</th></tr></thead>
+            <tbody>
+                @foreach (var d in Model.Documents)
+                {
+                    <tr>
+                        <td>@d.DocumentTypeName</td>
+                        <td>@d.DocumentNumber</td>
+                        <td><a href="@d.FilePath" target="_blank" class="btn btn-sm btn-outline-secondary">View</a></td>
+                        <td>@d.ExpiryDate?.ToString("dd-MMM-yyyy")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- SALARY -->
+    <div class="tab-pane fade" id="salary">
+        @if (Model.CurrentSalary != null)
+        {
+            var cs = Model.CurrentSalary;
+            <h6>Current Salary Structure</h6>
+            <table class="table table-sm">
+                <tr><th>Basic</th><td>@cs.BasicSalary.ToString("N2")</td></tr>
+                <tr><th>HRA</th><td>@cs.HRA.ToString("N2")</td></tr>
+                <tr><th>DA</th><td>@cs.DA.ToString("N2")</td></tr>
+                <tr><th>Gross Salary</th><td>@cs.GrossSalary.ToString("N2")</td></tr>
+                <tr><th>Total Deduction</th><td>@cs.TotalDeduction.ToString("N2")</td></tr>
+                <tr class="fw-bold"><th>Net Salary</th><td>@cs.NetSalary.ToString("N2")</td></tr>
+            </table>
+        }
+        else
+        {
+            <p class="text-muted">Current salary structure is not set.</p>
+        }
+
+        <h6 class="mt-4">Recent Salary History</h6>
+        <table class="table table-sm">
+            <thead><tr><th>Effective From</th><th>Gross</th><th>Deduction</th><th>Net</th></tr></thead>
+            <tbody>
+                @foreach (var sh in Model.SalaryHistory)
+                {
+                    <tr>
+                        <td>@sh.EffectiveFrom.ToString("dd-MMM-yyyy")</td>
+                        <td>@sh.GrossSalary.ToString("N2")</td>
+                        <td>@sh.TotalDeduction.ToString("N2")</td>
+                        <td>@sh.NetSalary.ToString("N2")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+</div>

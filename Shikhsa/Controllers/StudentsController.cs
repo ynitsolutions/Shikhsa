@@ -23,8 +23,9 @@ namespace Shikhsa.Controllers
         public readonly EmailService _emailService;
         public readonly NotificationService _notificationService;
         private readonly LookupService _lookup;
+        private readonly PdfGeneratorService _idCardService;
         public StudentsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager,
-     PermissionService permissionService, IWebHostEnvironment env,  StudentReportRepository repo, EmailService emailService,NotificationService notificationService,LookupService lookup) : base(userManager, permissionService, context,emailService, lookup)
+     PermissionService permissionService, IWebHostEnvironment env,  StudentReportRepository repo, EmailService emailService,NotificationService notificationService,LookupService lookup,PdfGeneratorService idCardService) : base(userManager, permissionService, context,emailService, lookup)
         {
             _context = context;
             _env = env;
@@ -32,6 +33,7 @@ namespace Shikhsa.Controllers
             _userManager = userManager;
             _notificationService = notificationService;
             _lookup = lookup;
+            _idCardService = idCardService;
         }
         #region Registration
         public async Task<IActionResult> StudentRegistrations()
@@ -327,14 +329,7 @@ namespace Shikhsa.Controllers
         //    }
         #endregion old
         [HttpPost]
-        public async Task<IActionResult> SaveStudentRegistrations(
-    Tbl_StudentsRegistrations model,
-    Tbl_Parents parent,
-    Tbl_PreviousSchoolRecord previousSchool,
-    IFormFile AadhaarFile,
-    IFormFile PhotoFile,
-    IFormFile TCFile,
-    IFormFile MarksheetFile)
+        public async Task<IActionResult> SaveStudentRegistrations(Tbl_StudentsRegistrations model,Tbl_Parents parent,Tbl_PreviousSchoolRecord previousSchool,IFormFile AadhaarFile,IFormFile PhotoFile,IFormFile TCFile,IFormFile MarksheetFile)
         {
             var currentUser = HttpContext.Session.GetCurrentUser();
             string userName = currentUser?.UserName ?? User.Identity?.Name ?? "";
@@ -515,7 +510,6 @@ namespace Shikhsa.Controllers
 
             return RedirectToAction(nameof(StudentRegistrations));
         }
-
         [SkipPermission]
         private async Task SaveDocument(long studentId, string documentType, IFormFile file)
         {
@@ -650,7 +644,6 @@ namespace Shikhsa.Controllers
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        
         public async Task<IActionResult> DeleteStudentRegistrations(long id)
         {
             var student = await _context.Tbl_StudentsRegistrations
@@ -970,6 +963,80 @@ namespace Shikhsa.Controllers
             }
         }
         #endregion Promotion
-    }
+        #region profile
+        // GET: /Students/Profile/101
+        [HttpGet]
+        [Route("Students/Profile/{studentId:long}")]
+        public async Task<IActionResult> Profile(long studentId)
+        {
+            var profile = await _repo.GetStudentProfileAsync(studentId);
+            if (profile?.Student == null) return NotFound();
 
+            return View(profile);
+        }
+
+        // GET (AJAX): /Students/OldBatchSummary?studentId=101&batchId=3
+        [HttpGet]
+        public async Task<IActionResult> OldBatchSummary(long studentId, int batchId)
+        {
+            var result = await _repo.GetBatchSummaryAsync(studentId, batchId);
+
+            return Json(new
+            {
+                batchName = result.BatchInfo?.AcademicYear,
+                startDate = result.BatchInfo?.StartDate.ToString("dd-MMM-yyyy"),
+                endDate = result.BatchInfo?.EndDate.ToString("dd-MMM-yyyy"),
+                totalFee = System.Linq.Enumerable.Sum(result.Fees, f => f.FeeAmount),
+                totalPaid = System.Linq.Enumerable.Sum(result.Fees, f => f.PaidAmount),
+                totalBalance = System.Linq.Enumerable.Sum(result.Fees, f => f.BalanceAmount),
+                attendance = result.Attendance
+            });
+        }
+
+        // GET: /Students/DownloadIdCard?studentId=101
+        [HttpGet]
+        public async Task<IActionResult> DownloadIdCard(long studentId)
+        {
+            var profile = await _repo.GetStudentProfileAsync(studentId);
+            if (profile?.Student == null) return NotFound();
+
+            byte[] pdfBytes = await _idCardService.GenerateIdCardAsync(profile);
+            return File(pdfBytes, "application/pdf", $"IDCard_{profile.Student.ApplicationNo}.pdf");
+        }
+        #endregion
+        #region Student Report
+        public async Task<IActionResult> StudentsReport()
+        {
+            ViewBag.BatchList = _context.Batches.Where(x => x.ActiveForAdmission || x.ActiveForRegistration).ToList();
+            ViewBag.ClassList = GetDataListItems("Class");
+            ViewBag.StatusList = GetDataListItems("Status");
+            ViewBag.SectionList = GetDataListItems("Section");
+            var model = new StudentReportPageVM();
+
+            model.Filter = new StudentListFilterVM();
+
+            model.Filter.SelectedColumns =
+            [
+                "ApplicationNo","StudentName","FatherName", "MotherName"
+            ];
+            model.Students = await _repo.GetStudentReportStatusWise(model.Filter);
+
+            return View(model);
+        }
+        [HttpPost]
+        public async Task<IActionResult> StudentsReport(StudentReportPageVM model)
+        {
+            ViewBag.BatchList = _context.Batches.Where(x => x.ActiveForAdmission || x.ActiveForRegistration).ToList();
+           
+            ViewBag.ClassList = GetDataListItems("Class");
+           
+            ViewBag.StatusList = GetDataListItems("Status");
+            ViewBag.SectionList = GetDataListItems("Section");
+            model.Students = await _repo.GetStudentReportStatusWise(model.Filter);
+
+
+            return View(model);
+        }
+        #endregion
+    }
 }
