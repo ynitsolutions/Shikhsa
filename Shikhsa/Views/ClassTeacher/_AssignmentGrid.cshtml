@@ -33,11 +33,11 @@
 
                             <tr>
 
-                                <th style="width:30%">Teacher</th>
+                                <th style="width:30%">@Localizer.Get("Teacher")</th>
 
-                                <th style="width:45%">Subjects</th>
+                                <th style="width:45%">@Localizer.Get("Subjects")</th>
 
-                                <th style="width:10%">CT</th>
+                                <th style="width:10%">@Localizer.Get("CT")</th>
 
                                 <th style="width:15%"></th>
 
@@ -90,15 +90,14 @@
                                     </td>
 
                                     <td class="text-center">
-
+                                        <permission controller="ClassTeacher" action="TeacherAllocation" type="delete">
                                         <button type="button"
                                                 class="btn btn-danger btn-sm btnDelete">
 
                                             <i class="bi bi-trash"></i>
 
                                         </button>
-
-                                    </td>
+                                        </permission></td>
 
                                 </tr>
 

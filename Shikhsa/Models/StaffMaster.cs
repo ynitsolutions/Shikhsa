@@ -152,10 +152,13 @@ namespace Shikhsa.Models
         public string? LeavingReason { get; set; }
 
         public int? EmployeeStatusId { get; set; }
-
+        [NotMapped]
+        public string? Department { get; set; }
+        [NotMapped]
+        public string? Designation { get; set; }
         #endregion
 
-    
+
 
         #region Bank
 

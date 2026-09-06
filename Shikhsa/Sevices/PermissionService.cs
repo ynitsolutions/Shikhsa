@@ -239,7 +239,39 @@ namespace Shikhsa.Services
                     ? PermissionType.Edit
                     : PermissionType.Create;
             }
+            //Update//
+            else if (action.StartsWith("Update"))
+            {
+                pageAction =
+                    action.Replace("Update", "");
 
+                bool isEdit = false;
+
+                foreach (var item in actionArguments.Values)
+                {
+                    if (item == null)
+                        continue;
+
+                    var idProp =
+                        item.GetType().GetProperty("Id");
+
+                    if (idProp != null)
+                    {
+                        var value =
+                            Convert.ToInt32(
+                                idProp.GetValue(item));
+
+                        isEdit = value > 0;
+
+                        break;
+                    }
+                }
+
+                permissionType =
+                    isEdit
+                    ? PermissionType.Edit
+                    : PermissionType.Create;
+            }
             // =========================
             // NORMAL PAGE
             // =========================
@@ -339,54 +371,121 @@ namespace Shikhsa.Services
 
             if (user == null)
                 return new List<MenuCacheVM>();
-            var roleIds = await (from ur in _db.UserRoles
-                                 join r in _db.Roles
-                                 on ur.RoleId equals r.Id
-                                 where ur.UserId == userId
-                                 select r.Id
-                                  ).ToListAsync();
-            var allowedMenuIds = await _db.RoleMenus
-                .Where(x => roleIds.Contains(x.RoleId) && x.CanView).Select(x => x.MenuId)
-                .Distinct().ToListAsync();
-            var data = await (from p in _db.Menus
-                              join c in _db.Menus
-                              on p.Id equals c.ParentId into childGroup
-                              from child in childGroup.DefaultIfEmpty()
-                              where (p.ParentId == null || p.ParentId == 0)
-                              && p.IsActive && (allowedMenuIds.Contains(p.Id) || (child != null && allowedMenuIds.Contains(child.Id)
-                              ))
-                              orderby p.DisplayOrder, child.DisplayOrder
 
-                              select new
-                              {
-                                  ParentMenuId = p.Id,
+            // ---------------------------------------------------------
+            // 1. Get User Roles
+            // ---------------------------------------------------------
+            var roleIds = await _db.UserRoles
+                .Where(ur => ur.UserId == userId)
+                .Select(ur => ur.RoleId)
+                .ToListAsync();
 
-                                  ParentMenuName = p.Name,
+            if (!roleIds.Any())
+                return new List<MenuCacheVM>();
 
-                                  ParentController = p.ControllerName,
 
-                                  ParentAction = p.ActionName,
+            // ---------------------------------------------------------
+            // 2. Get Role Based Allowed Menus
+            // ---------------------------------------------------------
+            var roleAllowedMenuIds = await _db.RoleMenus
+                .Where(x =>
+                    roleIds.Contains(x.RoleId) &&
+                    x.CanView)
+                .Select(x => x.MenuId)
+                .Distinct()
+                .ToListAsync();
 
-                                  ParentIcon = p.Icon,
 
-                                  ParentDisplayOrder = p.DisplayOrder,
+            // ---------------------------------------------------------
+            // 3. Get User Specific Allowed Menus
+            // ---------------------------------------------------------
+            var userAllowedMenuIds = await _db.RoleMenuPermissions
+                .Where(x =>
+                    x.UserId == userId &&
+                    x.CanView)
+                .Select(x => x.MenuId)
+                .Distinct()
+                .ToListAsync();
 
-                                  ChildMenuId = child != null ? child.Id : 0,
 
-                                  ChildMenuName = child != null ? child.Name : "",
+            // ---------------------------------------------------------
+            // 4. Combine Role + User Permission
+            // ---------------------------------------------------------
+            var allowedMenuIds = roleAllowedMenuIds
+                .Union(userAllowedMenuIds)
+                .Distinct()
+                .ToList();
 
-                                  ChildController = child != null ? child.ControllerName : "",
 
-                                  ChildAction = child != null ? child.ActionName : "",
+            if (!allowedMenuIds.Any())
+                return new List<MenuCacheVM>();
 
-                                  ChildIcon = child != null ? child.Icon : "",
 
-                                  ChildDisplayOrder = child != null ? child.DisplayOrder : 0,
+            // ---------------------------------------------------------
+            // 5. Get Parent + Child Menus
+            // ---------------------------------------------------------
+            var data = await
+                (
+                    from p in _db.Menus
 
-                                  ChildParentId = child != null ? child.ParentId : null,
+                    join c in _db.Menus
+                        on p.Id equals c.ParentId into childGroup
 
-                                  ChildIsActive = child != null ? child.IsActive : false
-                              }).ToListAsync();
+                    from child in childGroup
+                        .DefaultIfEmpty()
+
+                    where
+                        (p.ParentId == null || p.ParentId == 0)
+                        && p.IsActive
+
+                        // Parent is allowed
+                        // OR at least one child is allowed
+                        && (
+                            allowedMenuIds.Contains(p.Id)
+                            ||
+                            (
+                                child != null &&
+                                child.IsActive &&
+                                allowedMenuIds.Contains(child.Id)
+                            )
+                        )
+
+                    orderby
+                        p.DisplayOrder,
+                        child.DisplayOrder
+
+                    select new
+                    {
+                        // Parent
+                        ParentMenuId = p.Id,
+                        ParentMenuName = p.Name,
+                        ParentController = p.ControllerName,
+                        ParentAction = p.ActionName,
+                        ParentIcon = p.Icon,
+                        ParentDisplayOrder = p.DisplayOrder,
+
+                        // Child
+                        ChildMenuId = child != null ? child.Id : 0,
+                        ChildMenuName = child != null ? child.Name : "",
+                        ChildController = child != null ? child.ControllerName : "",
+                        ChildAction = child != null ? child.ActionName : "",
+                        ChildIcon = child != null ? child.Icon : "",
+                        ChildDisplayOrder = child != null
+                            ? child.DisplayOrder
+                            : 0,
+                        ChildParentId = child != null
+                            ? child.ParentId
+                            : null,
+                        ChildIsActive = child != null
+                            && child.IsActive
+                    }
+                )
+                .ToListAsync();
+
+
+            // ---------------------------------------------------------
+            // 6. Build Menu Tree
+            // ---------------------------------------------------------
             var menus = data
                 .GroupBy(x => new
                 {
@@ -397,30 +496,151 @@ namespace Shikhsa.Services
                     x.ParentIcon,
                     x.ParentDisplayOrder
                 })
+
                 .Select(g => new MenuCacheVM
                 {
                     Id = g.Key.ParentMenuId,
+
                     Name = g.Key.ParentMenuName,
+
                     ControllerName = g.Key.ParentController,
-                    ActionName =g.Key.ParentAction,
+
+                    ActionName = g.Key.ParentAction,
+
                     Icon = g.Key.ParentIcon,
-                    DisplayOrder =g.Key.ParentDisplayOrder,
-                    Children = g.Where(x => x.ChildMenuId != 0
-                            && x.ChildIsActive
-                            && allowedMenuIds.Contains(x.ChildMenuId))
-                    .Select(x => new MenuCacheVM
+
+                    DisplayOrder = g.Key.ParentDisplayOrder,
+
+                    Children = g
+                        .Where(x =>
+                            x.ChildMenuId != 0 &&
+                            x.ChildIsActive &&
+                            allowedMenuIds.Contains(x.ChildMenuId)
+                        )
+
+                        .GroupBy(x => x.ChildMenuId)
+
+                        .Select(x =>
                         {
-                            Id = x.ChildMenuId,
-                            Name = x.ChildMenuName,
-                            ControllerName = x.ChildController,
-                            ActionName =x.ChildAction,
-                            Icon = x.ChildIcon,
-                            ParentId =x.ChildParentId
-                        }).ToList()
-                }).OrderBy(x => x.DisplayOrder) .ToList();
+                            var child = x.First();
+
+                            return new MenuCacheVM
+                            {
+                                Id = child.ChildMenuId,
+
+                                Name = child.ChildMenuName,
+
+                                ControllerName = child.ChildController,
+
+                                ActionName = child.ChildAction,
+
+                                Icon = child.ChildIcon,
+
+                                DisplayOrder = child.ChildDisplayOrder,
+
+                                ParentId = child.ChildParentId
+                            };
+                        })
+
+                        .OrderBy(x => x.DisplayOrder)
+                        .ToList()
+                })
+
+                .OrderBy(x => x.DisplayOrder)
+                .ToList();
+
 
             return menus;
         }
+        //private async Task<List<MenuCacheVM>> GetUserMenusAsync(string userId)
+        //{
+        //    var user = await _userManager.FindByIdAsync(userId);
+
+        //    if (user == null)
+        //        return new List<MenuCacheVM>();
+        //    var roleIds = await (from ur in _db.UserRoles
+        //                         join r in _db.Roles
+        //                         on ur.RoleId equals r.Id
+        //                         where ur.UserId == userId
+        //                         select r.Id
+        //                          ).ToListAsync();
+        //    var allowedMenuIds = await _db.RoleMenus
+        //        .Where(x => roleIds.Contains(x.RoleId) && x.CanView).Select(x => x.MenuId)
+        //        .Distinct().ToListAsync();
+        //    var allowedforuser = await _db.RoleMenuPermissions.Where(x => x.UserId == userId && x.CanView).Select(x => x.MenuId).Distinct().ToListAsync();
+        //    var data = await (from p in _db.Menus
+        //                      join c in _db.Menus
+        //                      on p.Id equals c.ParentId into childGroup
+        //                      from child in childGroup.DefaultIfEmpty()
+        //                      where (p.ParentId == null || p.ParentId == 0)
+        //                      && p.IsActive && ((allowedforuser.Contains(p.Id)||(child != null && allowedforuser.Contains(child.Id)))(allowedMenuIds.Contains(p.Id) || (child != null && allowedMenuIds.Contains(child.Id)
+        //                      )))
+        //                      orderby p.DisplayOrder, child.DisplayOrder
+
+        //                      select new
+        //                      {
+        //                          ParentMenuId = p.Id,
+
+        //                          ParentMenuName = p.Name,
+
+        //                          ParentController = p.ControllerName,
+
+        //                          ParentAction = p.ActionName,
+
+        //                          ParentIcon = p.Icon,
+
+        //                          ParentDisplayOrder = p.DisplayOrder,
+
+        //                          ChildMenuId = child != null ? child.Id : 0,
+
+        //                          ChildMenuName = child != null ? child.Name : "",
+
+        //                          ChildController = child != null ? child.ControllerName : "",
+
+        //                          ChildAction = child != null ? child.ActionName : "",
+
+        //                          ChildIcon = child != null ? child.Icon : "",
+
+        //                          ChildDisplayOrder = child != null ? child.DisplayOrder : 0,
+
+        //                          ChildParentId = child != null ? child.ParentId : null,
+
+        //                          ChildIsActive = child != null ? child.IsActive : false
+        //                      }).ToListAsync();
+        //    var menus = data
+        //        .GroupBy(x => new
+        //        {
+        //            x.ParentMenuId,
+        //            x.ParentMenuName,
+        //            x.ParentController,
+        //            x.ParentAction,
+        //            x.ParentIcon,
+        //            x.ParentDisplayOrder
+        //        })
+        //        .Select(g => new MenuCacheVM
+        //        {
+        //            Id = g.Key.ParentMenuId,
+        //            Name = g.Key.ParentMenuName,
+        //            ControllerName = g.Key.ParentController,
+        //            ActionName =g.Key.ParentAction,
+        //            Icon = g.Key.ParentIcon,
+        //            DisplayOrder =g.Key.ParentDisplayOrder,
+        //            Children = g.Where(x => x.ChildMenuId != 0
+        //                    && x.ChildIsActive
+        //                    && allowedMenuIds.Contains(x.ChildMenuId))
+        //            .Select(x => new MenuCacheVM
+        //                {
+        //                    Id = x.ChildMenuId,
+        //                    Name = x.ChildMenuName,
+        //                    ControllerName = x.ChildController,
+        //                    ActionName =x.ChildAction,
+        //                    Icon = x.ChildIcon,
+        //                    ParentId =x.ChildParentId
+        //                }).ToList()
+        //        }).OrderBy(x => x.DisplayOrder) .ToList();
+
+        //    return menus;
+        //}
 
         private string GetPageAction(string action)
         {

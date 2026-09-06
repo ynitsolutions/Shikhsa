@@ -30,6 +30,7 @@ namespace Shikhsa.Models.Payment
 
         public string CheckoutCdn { get; set; } =
             "https://pgtest.atomtech.in/staticdata/ots/js/atomcheckout.js";
+        public string StatusCheckUrl { get; set; } = ""; // e.g. https://caller.atomtech.in/ots/aipay/status  — confirm from NTT DATA docs
 
         [Required]
         public string RequestEncryptKey { get; set; } = string.Empty;

@@ -19,45 +19,45 @@
             <div class="row">
 
                 <div class="col-md-2">
-                    <label>Application No</label>
+                    <label>@Localizer.Get("Application No")</label>
                     <input asp-for="Filter.ApplicationNo"
                            class="form-control" />
                 </div>
 
                 <div class="col-md-2">
-                    <label>Student Name</label>
+                    <label>@Localizer.Get("Student") @Localizer.Get("Name")</label>
                     <input asp-for="Filter.StudentName"
                            class="form-control" />
                 </div>
 
                 <div class="col-md-2">
-                    <label>Father Name</label>
+                    <label>@Localizer.Get("Father") @Localizer.Get("Name")</label>
                     <input asp-for="Filter.FatherName"
                            class="form-control" />
                 </div>
                 <div class="col-md-2">
-                    <label>Mother Name</label>
+                    <label>@Localizer.Get("Mother") @Localizer.Get("Name")</label>
                     <input asp-for="Filter.MotherName"
                            class="form-control" />
                 </div>
                 <div class="col-md-2">
-                    <label>Guardian Name</label>
+                    <label>@Localizer.Get("Guardian") @Localizer.Get("Name")</label>
                     <input asp-for="Filter.GuardianName"
                            class="form-control" />
                 </div>
                 <div class="col-md-2">
-                    <label>Mobile</label>
+                    <label>@Localizer.Get("Mobile")</label>
                     <input asp-for="Filter.MobileNo"
                            class="form-control" />
                 </div>
                 <div class="col-md-2">
 
-                    <label>Class</label>
+                    <label>@Localizer.Get("Class")</label>
 
                     <select asp-for="Filter.RegClassId"
                             class="form-control select2">
 
-                        <option value="">Select</option>
+                        <option value="">@Localizer.Get("Select")</option>
 
                         @foreach (var item in ViewBag.ClassList)
                         {
@@ -71,12 +71,12 @@
                 </div>
                 <div class="col-md-2">
 
-                    <label>Section</label>
+                    <label>@Localizer.Get("Section")</label>
 
                     <select asp-for="Filter.SectionId"
                             class="form-control select2">
 
-                        <option value="">Select</option>
+                        <option value="">@Localizer.Get("Select")</option>
 
                         @foreach (var item in ViewBag.SectionList)
                         {
@@ -90,12 +90,12 @@
                 </div>
                 <div class="col-md-2">
 
-                    <label>Batch</label>
+                    <label>@Localizer.Get("Batch")</label>
 
                     <select asp-for="Filter.AdmissionBatchId"
                             class="form-control select2">
 
-                        <option value="">Select</option>
+                        <option value="">@Localizer.Get("Select")</option>
 
                         @foreach (var item in ViewBag.BatchList)
                         {
@@ -111,12 +111,12 @@
                 </div>
                 <div class="col-md-2">
 
-                    <label>Status</label>
+                    <label>@Localizer.Get("Status")</label>
 
                     <select asp-for="Filter.StatusId"
                             class="form-control select2">
 
-                        <option value="">Select</option>
+                        <option value="">@Localizer.Get("Select")</option>
 
                         @foreach (var item in ViewBag.StatusList)
                         {
@@ -140,7 +140,7 @@
                                    name="Filter.SelectedColumns"
                                    value="ApplicationNo"
                                    checked="@(Model.Filter.SelectedColumns?.Contains("ApplicationNo") == true)" />
-                            Application No
+                            @Localizer.Get("Application No")
                         </label>
                     </div>
 
@@ -150,7 +150,7 @@
                                    name="Filter.SelectedColumns"
                                    value="StudentName"
                                    checked="@(Model.Filter.SelectedColumns?.Contains("StudentName") == true)" />
-                            Student Name
+                            @Localizer.Get("Student") @Localizer.Get("Name")
                         </label>
                     </div>
 
@@ -160,7 +160,7 @@
                                    name="Filter.SelectedColumns"
                                    value="FatherName"
                                    checked="@(Model.Filter.SelectedColumns?.Contains("FatherName") == true)" />
-                            Father Name
+                            @Localizer.Get("Father") @Localizer.Get("Name")
                         </label>
                     </div>
                     <div class="col-md-2">
@@ -169,7 +169,7 @@
                                    name="Filter.SelectedColumns"
                                    value="MotherName"
                                    checked="@(Model.Filter.SelectedColumns?.Contains("MotherName") == true)" />
-                            Mother Name
+                              @Localizer.Get("Mother") @Localizer.Get("Name")
                         </label>
                     </div>
                     <div class="col-md-2">
@@ -187,7 +187,7 @@
                                    name="Filter.SelectedColumns"
                                    value="LocalAddress"
                                    checked="@(Model.Filter.SelectedColumns?.Contains("LocalAddress") == true)" />
-                            Local Address
+                              @Localizer.Get("Local")   @Localizer.Get("Address")
                         </label>
                     </div>
                     <div class="col-md-2">
@@ -196,7 +196,7 @@
                                    name="Filter.SelectedColumns"
                                    value="PermanentAddress"
                                    checked="@(Model.Filter.SelectedColumns?.Contains("PermanentAddress") == true)" />
-                            Permanent Address
+                              @Localizer.Get("Permanent")   @Localizer.Get("Address")
                         </label>
                     </div>
 
@@ -207,7 +207,7 @@
                                    name="Filter.SelectedColumns"
                                    value="FatherMobile"
                                    checked="@(Model.Filter.SelectedColumns?.Contains("FatherMobile") == true)" />
-                            Mobile
+                              @Localizer.Get("Mobile")
                         </label>
                     </div>
 
@@ -216,7 +216,7 @@
                             <input type="checkbox"
                                    name="Filter.SelectedColumns"
                                    value="DOB" checked="@(Model.Filter.SelectedColumns?.Contains("DOB") == true)" />
-                            DOB
+                              @Localizer.Get("DOB")
                         </label>
                     </div>
 
@@ -225,7 +225,7 @@
                             <input type="checkbox"
                                    name="Filter.SelectedColumns"
                                    value="AadhaarNumber" checked="@(Model.Filter.SelectedColumns?.Contains("AadhaarNumer") == true)" />
-                            Aadhaar
+                              @Localizer.Get("Aadhaar")
                         </label>
                     </div>
 
@@ -270,33 +270,33 @@
                             </th>
                             @if (cols.Contains("ApplicationNo"))
                             {
-                                <th>Application No</th>
+                                <th>@Localizer.Get("Application No")</th>
                             }
 
                             @if (cols.Contains("StudentName"))
                             {
-                                <th>Student Name</th>
+                                <th>@Localizer.Get("Student Name")</th>
                             }
 
                             @if (cols.Contains("FatherName"))
                             {
-                                <th>Father Name</th>
+                                <th>@Localizer.Get("Father") @Localizer.Get("Name")</th>
                             }
                             @if (cols.Contains("MotherName"))
                             {
-                                <th>Mother Name</th>
+                                <th>@Localizer.Get("Mother") @Localizer.Get("Name")</th>
                             }
                             @if (cols.Contains("GuardianName"))
                             {
-                                <th>Guardian Name</th>
+                                <th>@Localizer.Get("Guardian") @Localizer.Get("Name")</th>
                             }
                             @if (cols.Contains("LocalAddress"))
                             {
-                                <th>Local Address</th>
+                                <th>@Localizer.Get("Local") @Localizer.Get("Address")</th>
                             }
                             @if (cols.Contains("PermanentAddress"))
                             {
-                                <th>Permanent Address</th>
+                                <th>@Localizer.Get("Permanent") @Localizer.Get("Address")</th>
                             }
 
                             @*  @if (cols.Contains("LocalAddress"))
@@ -305,21 +305,21 @@
                 } *@
                             @if (cols.Contains("FatherMobile"))
                             {
-                                <th>Mobile</th>
+                                <th>@Localizer.Get("Mobile")</th>
                             }
 
                             @if (cols.Contains("DOB"))
                             {
-                                <th>DOB</th>
+                                <th>@Localizer.Get("DOB")</th>
                             }
 
                             @if (cols.Contains("AadhaarNumber"))
                             {
-                                <th>Aadhaar</th>
+                                <th>@Localizer.Get("Aadhaar")</th>
                             }
 
                             <th width="120">
-                                Action
+                                @Localizer.Get("Action")
                             </th>
 
                         </tr>
@@ -386,16 +386,16 @@
                                     <td>
 
                                         <permission controller="Students" action="StudentRegistrations" type="edit">
-                                            <a asp-action="SaveStudentRegistrations" asp-route-id="@item.StudentId">
+                                            <a asp-action="SaveStudentRegistrations" asp-route-ApplicationNo="@item.ApplicationNo">
                                                 <spam class="ti ti-pencil"></spam>
                                             </a>
                                         </permission>
-                                        <permission controller="Students" action="StudentRegistrations" type="delete">
-                                            <a asp-action="DeleteStudentRegistrations" asp-route-id="@item.StudentId">
+                                        <permission controller="Students" action="Registrations" type="delete">
+                                            <a asp-action="DeleteStudentRegistrations" asp-route-id="@item.ApplicationNo">
                                                 <spam class="ti ti-trash"></spam>
                                             </a>
                                         </permission>
-                                        <permission controller="Students" action="StudentRegistrations" type="View">
+                                        <permission controller="Students" action="Profile" type="View">
                                             <a asp-action="Profile" asp-route-id="@item.StudentId">
                                                 <spam class="ti ti-eye"></spam>
                                             </a>
@@ -418,7 +418,7 @@
                                 <td colspan="20"
                                     class="text-center">
 
-                                    No Records Found
+                                    @Localizer.Get("No Records Found")
 
                                 </td>
 
@@ -442,7 +442,7 @@
                         <div class="modal-header">
 
                             <h5 class="modal-title">
-                                Update Student Status
+                               @Localizer.Get("Update Student Status")
                             </h5>
 
                             <button type="button"
@@ -459,11 +459,11 @@
 
                             <div class="mb-3">
 
-                                <label>Status</label>
+                                <label>  @Localizer.Get("Status")</label>
 
                                 <select id="StatusId" class="form-select ">
 
-                                    <option value="">Select</option>
+                                    <option value="">  @Localizer.Get("Select")</option>
                                     @foreach (var item in ViewBag.StatusList)
                                     {
                                         <option value="@item.DataListItemId">
@@ -479,10 +479,10 @@
 
                                 <div class="mb-3">
 
-                                    <label>Class</label>
+                                    <label>  @Localizer.Get("Class")</label>
 
                                     <select id="ClassId" class="form-select ">
-                                        <option value="">Select</option>
+                                        <option value="">  @Localizer.Get("Select")</option>
                                         @foreach (var item in ViewBag.ClassList)
                                         {
                                             <option value="@item.DataListItemId">
@@ -495,10 +495,10 @@
 
                                 <div class="mb-3">
 
-                                    <label>Section</label>
+                                    <label>  @Localizer.Get("Section")</label>
 
                                     <select id="SectionId" class="form-select">
-                                        <option value="">Select</option>
+                                        <option value="">  @Localizer.Get("Select")</option>
                                         @foreach (var item in ViewBag.SectionList)
                                         {
                                             <option value="@item.DataListItemId">
@@ -511,10 +511,10 @@
 
                                 <div class="mb-3">
 
-                                    <label>Batch</label>
+                                    <label>  @Localizer.Get("Batch")</label>
 
                                     <select id="BatchId" class="form-select ">
-                                        <option value="">Select</option>
+                                        <option value="">@Localizer.Get("Select")</option>
 
                                         @foreach (var item in ViewBag.BatchList)
                                         {
@@ -535,7 +535,7 @@
                             <button type="button"
                                     class="btn btn-success"
                                     id="btnSaveStatus">
-                                Save
+                                  @Localizer.Get("Save")
                             </button>
 
                         </div>

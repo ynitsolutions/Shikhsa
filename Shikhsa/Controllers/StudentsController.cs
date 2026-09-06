@@ -1,4 +1,6 @@
 ﻿using ClosedXML.Excel;
+using DocumentFormat.OpenXml.Drawing.Diagrams;
+using DocumentFormat.OpenXml.InkML;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -11,6 +13,7 @@ using Shikhsa.Models;
 using Shikhsa.Services;
 using Shikhsa.ViewModels;
 using Shikhsa.ViewModels.DataFilter;
+using Microsoft.Net.Http.Headers;
 
 namespace Shikhsa.Controllers
 {
@@ -24,8 +27,9 @@ namespace Shikhsa.Controllers
         public readonly NotificationService _notificationService;
         private readonly LookupService _lookup;
         private readonly PdfGeneratorService _idCardService;
+        private readonly IServiceScopeFactory _scopeFactory;
         public StudentsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager,
-     PermissionService permissionService, IWebHostEnvironment env,  StudentReportRepository repo, EmailService emailService,NotificationService notificationService,LookupService lookup,PdfGeneratorService idCardService) : base(userManager, permissionService, context,emailService, lookup)
+     PermissionService permissionService, IWebHostEnvironment env,  StudentReportRepository repo, EmailService emailService,NotificationService notificationService,LookupService lookup,PdfGeneratorService idCardService, IServiceScopeFactory scopeFactory) : base(userManager, permissionService, context,emailService, lookup)
         {
             _context = context;
             _env = env;
@@ -34,6 +38,7 @@ namespace Shikhsa.Controllers
             _notificationService = notificationService;
             _lookup = lookup;
             _idCardService = idCardService;
+            _scopeFactory = scopeFactory;
         }
         #region Registration
         public async Task<IActionResult> StudentRegistrations()
@@ -78,11 +83,146 @@ namespace Shikhsa.Controllers
            
             return View(model);
         }
-       
+
+
+
+        //[HttpGet]
+        //public async Task<IActionResult> SaveStudentRegistrations(long? id,string? ApplicationNo)
+        //{
+        //    ViewBag.BatchList = _context.Batches
+        //        .Where(x => x.ActiveForAdmission || x.ActiveForRegistration)
+        //        .ToList();
+
+        //    ViewBag.CategoryList = GetDataListItems("Category");
+        //    ViewBag.ReligionList = GetDataListItems("Religion");
+        //    ViewBag.BoardList = GetDataListItems("Board");
+        //    ViewBag.ClassList = GetDataListItems("Class");
+        //    ViewBag.GenderList = GetDataListItems("Gender");
+        //    ViewBag.StatusList = GetDataListItems("Status");
+        //    ViewBag.SectionList = GetDataListItems("Section");
+
+        //    ViewBag.TranspotList = GetDataListItems("Transport");
+        //    ViewBag.HostelList = GetDataListItems("Hostel List");
+        //    ViewBag.InitialClassId = (await GetSchoolInfo())?.InitialClassId;
+
+
+        //    // =========================================================
+        //    // Existing Student
+        //    // ID OR ApplicationNo
+        //    // =========================================================
+
+        //    Tbl_StudentsRegistrations? student = null;
+
+        //    // ---------------------------------------------------------
+        //    // 1. Search by ID
+        //    // ---------------------------------------------------------
+
+        //    if (id.HasValue && id.Value > 0)
+        //    {
+        //        student = await _context.Tbl_StudentsRegistrations
+        //            .Include(x => x.Parent)
+        //            .Include(x => x.PreviousSchoolRecord)
+        //            .FirstOrDefaultAsync(x => x.StudentId == id.Value);
+        //    }
+
+        //    // ---------------------------------------------------------
+        //    // 2. If ID not supplied/found, search by ApplicationNo
+        //    // ---------------------------------------------------------
+
+        //    if (student == null && !string.IsNullOrWhiteSpace(ApplicationNo))
+        //    {
+        //        student = await _context.Tbl_StudentsRegistrations
+        //            .Include(x => x.Parent)
+        //            .Include(x => x.PreviousSchoolRecord)
+        //            .FirstOrDefaultAsync(x =>
+        //                x.ApplicationNo == ApplicationNo);
+        //    }
+
+
+        //    // =========================================================
+        //    // Existing Record Found
+        //    // =========================================================
+
+        //    if (student != null)
+        //    {
+        //        ViewBag.Documents = await _context.Tbl_StudentDocument
+        //            .Where(x => x.StudentId == student.StudentId)
+        //            .ToListAsync();
+
+        //        return View(student);
+        //    }
+
+
+        //    // =========================================================
+        //    // ID/ApplicationNo diya tha but record nahi mila
+        //    // =========================================================
+
+        //    if ((id.HasValue && id.Value > 0) ||
+        //        !string.IsNullOrWhiteSpace(ApplicationNo))
+        //    {
+        //        return NotFound();
+        //    }
+
+
+        //    // =========================================================
+        //    // New Registration
+        //    // =========================================================
+
+        //    ViewBag.Documents = new List<Tbl_StudentDocument>();
+
+        //    return View(new Tbl_StudentsRegistrations());
+        //}
         [HttpGet]
-        public async Task<IActionResult> SaveStudentRegistrations(long? id)
+        public async Task<IActionResult> SaveStudentRegistrations(long? id,string? ApplicationNo)
         {
-            ViewBag.BatchList = _context.Batches.Where(x => x.ActiveForAdmission || x.ActiveForRegistration).ToList();
+            await PopulateViewBags();
+            Tbl_StudentsRegistrations? student = null;
+
+            if (id.HasValue && id.Value > 0)
+            {
+                student = await _context.Tbl_StudentsRegistrations
+                    .Include(x => x.Parent)
+                    .Include(x => x.PreviousSchoolRecord)
+                    .FirstOrDefaultAsync(x => x.StudentId == id.Value);
+            }
+
+            if (student == null && !string.IsNullOrWhiteSpace(ApplicationNo))
+            {                                               
+                student = await _context.Tbl_StudentsRegistrations
+                    .Include(x => x.Parent)
+                    .Include(x => x.PreviousSchoolRecord)
+                    .FirstOrDefaultAsync(x => x.ApplicationNo == ApplicationNo);
+            }
+
+            if (student != null)
+            {
+                // 🔥 Ensure navigation properties are not null
+                student.Parent ??= new Tbl_Parents();
+                student.PreviousSchoolRecord ??= new Tbl_PreviousSchoolRecord();
+
+                ViewBag.Documents = await _context.Tbl_StudentDocument
+                    .Where(x => x.StudentId == student.StudentId)
+                    .ToListAsync();
+                return View(student);
+            }
+
+            if ((id.HasValue && id.Value > 0) || !string.IsNullOrWhiteSpace(ApplicationNo))
+                return NotFound();
+
+            // New registration
+            var newStudent = new Tbl_StudentsRegistrations
+            {
+                Parent = new Tbl_Parents(),
+                PreviousSchoolRecord = new Tbl_PreviousSchoolRecord()
+            };
+            ViewBag.Documents = new List<Tbl_StudentDocument>();
+            return View(newStudent);
+        }
+        private async Task PopulateViewBags()
+        {
+            ViewBag.BatchList = _context.Batches
+                .Where(x => x.ActiveForAdmission || x.ActiveForRegistration)
+                .ToList();
             ViewBag.CategoryList = GetDataListItems("Category");
             ViewBag.ReligionList = GetDataListItems("Religion");
             ViewBag.BoardList = GetDataListItems("Board");
@@ -90,275 +230,85 @@ namespace Shikhsa.Controllers
             ViewBag.GenderList = GetDataListItems("Gender");
             ViewBag.StatusList = GetDataListItems("Status");
             ViewBag.SectionList = GetDataListItems("Section");
-
             ViewBag.TranspotList = GetDataListItems("Transport");
             ViewBag.HostelList = GetDataListItems("Hostel List");
             ViewBag.InitialClassId = (await GetSchoolInfo())?.InitialClassId;
-            if (id > 0)
-            {
-                var student = await _context.Tbl_StudentsRegistrations.Include(x => x.Parent).Include(x => x.PreviousSchoolRecord)
-                    .FirstOrDefaultAsync(x => x.StudentId == id);
-                ViewBag.Documents = await _context.Tbl_StudentDocument.Where(x => x.StudentId == id).ToListAsync();
-                if (student == null)
-                    return NotFound();
-
-                return View(student);
-            }
-            else
-            {
-                return View(new Tbl_StudentsRegistrations());
-            }
-
-
         }
-        #region Old
-        //    [HttpPost]
-        //    public async Task<IActionResult> SaveStudentRegistrations(Tbl_StudentsRegistrations model,Tbl_Parents parent,Tbl_PreviousSchoolRecord previousSchool,IFormFile AadhaarFile,IFormFile PhotoFile,IFormFile TCFile,
-        //        IFormFile MarksheetFile)
-        //    {
-        //        var currentUser = HttpContext.Session.GetCurrentUser();
-        //        string userName = currentUser?.UserName ?? User.Identity?.Name ?? "";
-
-        //        try
-        //        {
-        //            using var transaction = await _context.Database.BeginTransactionAsync();
-
-        //            #region Parent Save
-
-        //            if (parent.ParentId == 0)
-        //            {
-        //                parent.AddedBy = userName;
-        //                Console.WriteLine(parent.ParentId);
-
-        //                foreach (var entry in _context.ChangeTracker.Entries<Tbl_Parents>())
-        //                {
-        //                    Console.WriteLine($"Tracked ParentId = {entry.Entity.ParentId}");
-        //                }
-        //                _context.Tbl_Parents.Add(parent);
-        //                await _context.SaveChangesAsync();
-
-        //                model.ParentId = parent.ParentId;
-        //            }
-        //            else
-        //            {
-        //                var dbParent = await _context.Tbl_Parents
-        //                    .FirstOrDefaultAsync(x => x.ParentId == parent.ParentId);
-
-        //                if (dbParent == null)
-        //                    throw new Exception("Parent record not found.");
-        //                Console.WriteLine($"parent object       : {parent?.ParentId}");
-        //                Console.WriteLine($"model.Parent object : {model.Parent?.ParentId}");
-        //                Console.WriteLine(Object.ReferenceEquals(parent, model.Parent));
-        //                dbParent.FatherFirstName = parent.FatherFirstName;
-        //                dbParent.FatherMiddleName = parent.FatherMiddleName;
-        //                dbParent.FatherLastName = parent.FatherLastName;
-        //                dbParent.FatherContactNo = parent.FatherContactNo;
-        //                dbParent.FatherEmail = parent.FatherEmail;
-        //                dbParent.FatherAddress = parent.FatherAddress;
-
-        //                dbParent.MotherFirstName = parent.MotherFirstName;
-        //                dbParent.MotherMiddleName = parent.MotherMiddleName;
-        //                dbParent.MotherLastName = parent.MotherLastName;
-        //                dbParent.MotherContactNo = parent.MotherContactNo;
-        //                dbParent.MotherEmail = parent.MotherEmail;
-        //                dbParent.MotherAddress = parent.MotherAddress;
-
-        //                dbParent.UpdatedBy = userName;
-        //                dbParent.UpdatedDate = DateTime.Now;
-
-        //                await _context.SaveChangesAsync();
-
-        //                model.ParentId = parent.ParentId;
-        //            }
-
-        //            #endregion
-
-        //            #region Student Save
-
-        //            bool isNewStudent = model.StudentId == 0;
-
-        //            if (isNewStudent)
-        //            {
-        //                model.ApplicationNo = GenerateApplicationNo();
-        //                model.AddedDate = DateTime.Now;
-        //                model.AddedBy = userName;
-        //                model.Status = 26;
-        //                _context.Tbl_StudentsRegistrations.Add(model);
-        //                await _context.SaveChangesAsync();
-        //            }
-        //            else
-        //            {
-        //                var dbStudent = await _context.Tbl_StudentsRegistrations
-        //                    .FirstOrDefaultAsync(x => x.StudentId == model.StudentId);
-
-        //                if (dbStudent == null)
-        //                    throw new Exception("Student record not found.");
-
-        //                dbStudent.FirstName = model.FirstName;
-        //                dbStudent.MiddleName = model.MiddleName;
-        //                dbStudent.LastName = model.LastName;
-        //                dbStudent.DOB = model.DOB;
-        //                dbStudent.Email = model.Email;
-        //                dbStudent.ContactNo = model.ContactNo;
-        //                dbStudent.AadhaarNumber = model.AadhaarNumber;
-        //                dbStudent.APAARId = model.APAARId;
-        //                dbStudent.PENNumber = model.PENNumber;
-        //                dbStudent.LocalAddress = model.LocalAddress;
-        //                dbStudent.PermanentAddress = model.PermanentAddress;
-        //                dbStudent.CategoryId = model.CategoryId;
-        //                dbStudent.ReligionId = model.ReligionId;
-        //                dbStudent.IsHandicap = model.IsHandicap;
-        //                dbStudent.HandicapDetails = model.HandicapDetails;
-        //                dbStudent.IdentificationMark = model.IdentificationMark;
-        //                dbStudent.AdmissionBatchId = model.AdmissionBatchId;
-        //                dbStudent.ParentId = model.ParentId;
-        //                dbStudent.Status = 26;
-        //                dbStudent.UpdatedBy = userName;
-        //                dbStudent.UpdatedDate = DateTime.Now;
-
-        //                await _context.SaveChangesAsync();
-        //            }
-
-        //            #endregion
-
-        //            #region Previous School
-
-        //            if (previousSchool != null)
-        //            {
-        //                var dbPrevious = await _context.Tbl_PreviousSchoolRecord
-        //                    .FirstOrDefaultAsync(x => x.StudentId == model.StudentId);
-
-        //                if (dbPrevious == null)
-        //                {
-        //                    previousSchool.StudentId = model.StudentId;
-        //                    previousSchool.AddedBy = userName;
-
-        //                    _context.Tbl_PreviousSchoolRecord.Add(previousSchool);
-        //                }
-        //                else
-        //                {
-        //                    dbPrevious.LastSchoolName = previousSchool.LastSchoolName;
-        //                    dbPrevious.LastSchoolClass = previousSchool.LastSchoolClass;
-        //                    dbPrevious.LastSchoolAddress = previousSchool.LastSchoolAddress;
-        //                    dbPrevious.LastSchoolBoard = previousSchool.LastSchoolBoard;
-        //                    dbPrevious.LastSchoolCode = previousSchool.LastSchoolCode;
-        //                    dbPrevious.LastSchoolUDISECode = previousSchool.LastSchoolUDISECode;
-        //                    dbPrevious.ReasonForChange = previousSchool.ReasonForChange;
-
-        //                    dbPrevious.UpdatedBy = userName;
-        //                    dbPrevious.UpdatedDate = DateTime.Now;
-        //                }
-
-        //                await _context.SaveChangesAsync();
-        //            }
-
-        //            #endregion
-
-        //            #region Documents
-
-        //            await SaveDocument(model.StudentId, "AADHAAR", AadhaarFile);
-        //            await SaveDocument(model.StudentId, "PHOTO", PhotoFile);
-        //            await SaveDocument(model.StudentId, "TC", TCFile);
-        //            await SaveDocument(model.StudentId, "MARKSHEET", MarksheetFile);
-
-        //            #endregion
-
-        //            await transaction.CommitAsync();
-
-        //            SuccessMessage(isNewStudent
-        //                ? "Student Registered Successfully"
-        //                : "Student Updated Successfully");
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            // Log Error Here
-        //            // _logger.LogError(ex, "Student Registration Failed");
-
-        //            ErrorMessage(ex.Message);
-
-        //            ViewBag.BatchList = _context.Batches
-        //                .Where(x => x.ActiveForAdmission || x.ActiveForRegistration)
-        //                .ToList();
-
-        //            ViewBag.CategoryList = GetDataListItems("Category");
-        //            ViewBag.ReligionList = GetDataListItems("Religion");
-        //            ViewBag.BoardList = GetDataListItems("Board");
-        //            ViewBag.ClassList = GetDataListItems("Class");
-        //            ViewBag.GenderList = GetDataListItems("Gender");
-        //            ViewBag.StatusList = GetDataListItems("Status");
-        //            ViewBag.SectionList = GetDataListItems("Section");
-        //            ViewBag.InitialClassId = (await GetSchoolInfo())?.InitialClassId;
-
-        //            return View("SaveStudentRegistrations", model);
-        //        }
-
-        //        // Send Email AFTER transaction is committed
-        //       // try
-        //        {
-        //            string fullName = string.Join(" ",
-        //                new[]
-        //                {
-        //            model.FirstName,
-        //            model.MiddleName,
-        //            model.LastName
-        //                }.Where(x => !string.IsNullOrWhiteSpace(x)));
-
-        //            string guardianName = string.Join(" ",
-        //                new[]
-        //                {
-        //            parent.GuardianFirstName,
-        //            parent.GuardianMiddleName,
-        //            parent.GuardianLastName
-        //                }.Where(x => !string.IsNullOrWhiteSpace(x)));
-        //            await _notificationService.SendAsync(
-        //"STUDENT_REGISTRATION",
-        //model.Email!,
-        //model.StudentId,
-        //model,
-        //parent,
-        //previousSchool);
-
-        //        }
-        //        //catch (Exception ex)
-        //        //{
-
-
-        //        //}
-
-        //        return RedirectToAction(nameof(StudentRegistrations));
-        //    }
-        #endregion old
         [HttpPost]
-        public async Task<IActionResult> SaveStudentRegistrations(Tbl_StudentsRegistrations model,Tbl_Parents parent,Tbl_PreviousSchoolRecord previousSchool,IFormFile AadhaarFile,IFormFile PhotoFile,IFormFile TCFile,IFormFile MarksheetFile)
+        //[ValidateAntiForgeryToken]
+       
+        public async Task<IActionResult> SaveStudentRegistrations([FromForm] Tbl_StudentsRegistrations model,[FromForm] Tbl_Parents parent,[FromForm] Tbl_PreviousSchoolRecord previousSchool,IFormFile? AadhaarFile,IFormFile? PhotoFile,IFormFile? TCFile,IFormFile? MarksheetFile)
         {
+            // सिर्फ यह check करें कि action hit हुआ
             var currentUser = HttpContext.Session.GetCurrentUser();
             string userName = currentUser?.UserName ?? User.Identity?.Name ?? "";
+            // ---------------------- FIX 1: Ensure nested objects exist ----------------------
+            parent ??= new Tbl_Parents();
+            previousSchool ??= new Tbl_PreviousSchoolRecord();
+            model.Parent = parent;
+            model.PreviousSchoolRecord = previousSchool;
+
+            // ---------------------- FIX 2: Remove bogus "Student" errors (if any) ----------
+            // Sometimes ModelState gets errors for navigation properties that aren't bound.
+            ModelState.Remove("Student");    // if present
+            ModelState.Remove("Students");   // if present
+            ModelState.Remove("PreviousSchoolRecordId");
+            ModelState.Remove("PreviousSchoolRecord.Student");    // if present
+            ModelState.Remove("Parent.Student");   // if present
+           //ModelState.Remove("PreviousSchoolRecordId");
+            // ---------------------- FIX 3: Validate ----------------------------------------
+            if (!ModelState.IsValid)
+            {
+                // Log all errors to debug output
+                System.Diagnostics.Debug.WriteLine("========== MODELSTATE ERRORS ==========");
+                foreach (var key in ModelState.Keys)
+                {
+                    var entry = ModelState[key];
+                    if (entry.Errors.Any())
+                    {
+                        foreach (var error in entry.Errors)
+                        {
+                            var msg = error.ErrorMessage ?? error.Exception?.Message ?? "Unknown";
+                            System.Diagnostics.Debug.WriteLine($"Key: {key} | Error: {msg}");
+                        }
+                    }
+                }
+
+                // Store errors in TempData to show in view
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage ?? e.Exception?.Message)
+                    .Where(m => !string.IsNullOrEmpty(m))
+                    .ToList();
+
+                TempData["ValidationErrors"] = string.Join("<br/>", errors);
+
+                await PopulateViewBags();
+                return View(model);
+            }
+
             IDbContextTransaction? transaction = null;
             try
             {
                 transaction = await _context.Database.BeginTransactionAsync();
 
-                // ******** IMPORTANT ********
-                // Remove duplicate Parent instance tracked by MVC Model Binder
-                model.Parent = null;
+                // 3. Ensure nested objects are not null
+                model.Parent ??= new Tbl_Parents();
+                model.PreviousSchoolRecord ??= new Tbl_PreviousSchoolRecord();
 
-                #region Parent Save
-
+                // ---------- Parent Save/Update ----------
                 if (parent.ParentId == 0)
                 {
                     parent.AddedBy = userName;
                     parent.AddedDate = DateTime.Now;
-
                     _context.Tbl_Parents.Add(parent);
                     await _context.SaveChangesAsync();
                 }
                 else
                 {
                     var dbParent = await _context.Tbl_Parents
-                        .FirstOrDefaultAsync(x => x.ParentId == parent.ParentId);
-
-                    if (dbParent == null)
-                        throw new Exception("Parent record not found.");
+                        .FirstOrDefaultAsync(x => x.ParentId == parent.ParentId)
+                        ?? throw new Exception("Parent record not found.");
 
                     dbParent.FatherFirstName = parent.FatherFirstName;
                     dbParent.FatherMiddleName = parent.FatherMiddleName;
@@ -383,135 +333,174 @@ namespace Shikhsa.Controllers
 
                     dbParent.UpdatedBy = userName;
                     dbParent.UpdatedDate = DateTime.Now;
-
                     await _context.SaveChangesAsync();
                 }
 
+                // Set ParentId on the student model
                 model.ParentId = parent.ParentId;
-                model.Parent = null;
 
-                #endregion
-
-                #region Student Save
-
+                // ---------- Student Registration Save/Update ----------
                 bool isNewStudent = model.StudentId == 0;
+                Tbl_StudentsRegistrations dbStudentReg;
 
                 if (isNewStudent)
                 {
                     model.ApplicationNo = GenerateApplicationNo();
                     model.AddedBy = userName;
                     model.AddedDate = DateTime.Now;
-                    model.Status = 26;
+                    model.Status = 26;   // default status
+
+                    // Clear navigation properties to avoid EF tracking conflicts
+                    model.Parent = null;
+                    model.PreviousSchoolRecord = null;
 
                     _context.Tbl_StudentsRegistrations.Add(model);
                     await _context.SaveChangesAsync();
+                    dbStudentReg = model;
                 }
                 else
                 {
-                    var dbStudent = await _context.Tbl_StudentsRegistrations
-                        .FirstOrDefaultAsync(x => x.StudentId == model.StudentId);
+                    dbStudentReg = await _context.Tbl_StudentsRegistrations
+                        .FirstOrDefaultAsync(x => x.StudentId == model.StudentId)
+                        ?? throw new Exception("Student registration not found.");
 
-                    if (dbStudent == null)
-                        throw new Exception("Student record not found.");
-
-                    dbStudent.FirstName = model.FirstName;
-                    dbStudent.MiddleName = model.MiddleName;
-                    dbStudent.LastName = model.LastName;
-                    dbStudent.DOB = model.DOB;
-                    dbStudent.Email = model.Email;
-                    dbStudent.ContactNo = model.ContactNo;
-                    dbStudent.AadhaarNumber = model.AadhaarNumber;
-                    dbStudent.APAARId = model.APAARId;
-                    dbStudent.PENNumber = model.PENNumber;
-                    dbStudent.LocalAddress = model.LocalAddress;
-                    dbStudent.PermanentAddress = model.PermanentAddress;
-                    dbStudent.CategoryId = model.CategoryId;
-                    dbStudent.ReligionId = model.ReligionId;
-                    dbStudent.GenderId = model.GenderId;
-                    dbStudent.IsHandicap = model.IsHandicap;
-                    dbStudent.HandicapDetails = model.HandicapDetails;
-                    dbStudent.IsTranspot = model.IsTranspot;
-                    dbStudent.TranspotId = model.TranspotId;
-                    dbStudent.HostelId = model.HostelId;
-                    dbStudent.IsHostel = model.IsHostel;
-                    dbStudent.IdentificationMark = model.IdentificationMark;
-                    dbStudent.AdmissionBatchId = model.AdmissionBatchId;
-                    dbStudent.ParentId = parent.ParentId;
-                    dbStudent.Status = 26;
-                    dbStudent.UpdatedBy = userName;
-                    dbStudent.UpdatedDate = DateTime.Now;
+                    // Copy all scalar properties
+                    dbStudentReg.FirstName = model.FirstName;
+                    dbStudentReg.MiddleName = model.MiddleName;
+                    dbStudentReg.LastName = model.LastName;
+                    dbStudentReg.DOB = model.DOB;
+                    dbStudentReg.Email = model.Email;
+                    dbStudentReg.ContactNo = model.ContactNo;
+                    dbStudentReg.LastClass = model.LastClass;
+                    dbStudentReg.AadhaarNumber = model.AadhaarNumber;
+                    dbStudentReg.APAARId = model.APAARId;
+                    dbStudentReg.PENNumber = model.PENNumber;
+                    dbStudentReg.LocalAddress = model.LocalAddress;
+                    dbStudentReg.PermanentAddress = model.PermanentAddress;
+                    dbStudentReg.CategoryId = model.CategoryId;
+                    dbStudentReg.GenderId = model.GenderId;
+                    dbStudentReg.ReligionId = model.ReligionId;
+                    dbStudentReg.IsHandicap = model.IsHandicap;
+                    dbStudentReg.HandicapDetails = model.HandicapDetails;
+                    dbStudentReg.IdentificationMark = model.IdentificationMark;
+                    dbStudentReg.AdmissionBatchId = model.AdmissionBatchId;
+                    dbStudentReg.IsInitialClassAdmission = model.IsInitialClassAdmission;
+                    dbStudentReg.RegClassId = model.RegClassId;
+                    dbStudentReg.ParentId = parent.ParentId;
+                    dbStudentReg.IsTranspot = model.IsTranspot;
+                    dbStudentReg.TranspotId = model.TranspotId;
+                    dbStudentReg.IsHostel = model.IsHostel;
+                    dbStudentReg.HostelId = model.HostelId;
+                    dbStudentReg.UpdatedBy = userName;
+                    dbStudentReg.UpdatedDate = DateTime.Now;
 
                     await _context.SaveChangesAsync();
                 }
 
-                #endregion
+                // ---------- Sync Main Student Table ----------
+                if (!string.IsNullOrWhiteSpace(dbStudentReg.ApplicationNo))
+                {
+                    var mainStudent = await _context.Tbl_Students
+                        .FirstOrDefaultAsync(x => x.ApplicationNo == dbStudentReg.ApplicationNo);
 
-                #region Previous School
+                    if (mainStudent != null)
+                    {
+                        mainStudent.FirstName = model.FirstName;
+                        mainStudent.MiddleName = model.MiddleName;
+                        mainStudent.LastName = model.LastName;
+                        mainStudent.DOB = model.DOB;
+                        mainStudent.Email = model.Email;
+                        mainStudent.ContactNo = model.ContactNo;
+                        mainStudent.LastClass = model.LastClass;
+                        mainStudent.AadhaarNumber = model.AadhaarNumber;
+                        mainStudent.APAARId = model.APAARId;
+                        mainStudent.PENNumber = model.PENNumber;
+                        mainStudent.LocalAddress = model.LocalAddress;
+                        mainStudent.PermanentAddress = model.PermanentAddress;
+                        mainStudent.CategoryId = model.CategoryId;
+                        mainStudent.GenderId = model.GenderId;
+                        mainStudent.ReligionId = model.ReligionId;
+                        mainStudent.IsHandicap = model.IsHandicap;
+                        mainStudent.HandicapDetails = model.HandicapDetails;
+                        mainStudent.IdentificationMark = model.IdentificationMark;
+                        mainStudent.AdmissionBatchId = model.AdmissionBatchId;
+                        mainStudent.ParentId = parent.ParentId;
+                        mainStudent.IsTranspot = model.IsTranspot;
+                        mainStudent.TranspotId = model.TranspotId;
+                        mainStudent.IsHostel = model.IsHostel;
+                        mainStudent.HostelId = model.HostelId;
+                        mainStudent.UpdatedBy = userName;
+                        mainStudent.UpdatedDate = DateTime.Now;
 
+                        await _context.SaveChangesAsync();
+                    }
+                }
+
+                // ---------- Previous School ----------
                 if (previousSchool != null)
                 {
-                    var dbPrevious = await _context.Tbl_PreviousSchoolRecord
-                        .FirstOrDefaultAsync(x => x.StudentId == model.StudentId);
+                    var dbPrev = await _context.Tbl_PreviousSchoolRecord
+                        .FirstOrDefaultAsync(x => x.StudentId == dbStudentReg.StudentId); // Use StudentId
 
-                    if (dbPrevious == null)
+                    if (dbPrev == null)
                     {
-                        previousSchool.StudentId = model.StudentId;
+                        previousSchool.StudentId = dbStudentReg.StudentId;
+                        previousSchool.ApplicationNo = dbStudentReg.ApplicationNo;
                         previousSchool.AddedBy = userName;
                         previousSchool.AddedDate = DateTime.Now;
-
                         _context.Tbl_PreviousSchoolRecord.Add(previousSchool);
                     }
                     else
                     {
-                        dbPrevious.LastSchoolName = previousSchool.LastSchoolName;
-                        dbPrevious.LastSchoolClass = previousSchool.LastSchoolClass;
-                        dbPrevious.LastSchoolAddress = previousSchool.LastSchoolAddress;
-                        dbPrevious.LastSchoolBoard = previousSchool.LastSchoolBoard;
-                        dbPrevious.LastSchoolCode = previousSchool.LastSchoolCode;
-                        dbPrevious.LastSchoolUDISECode = previousSchool.LastSchoolUDISECode;
-                        dbPrevious.ReasonForChange = previousSchool.ReasonForChange;
-                        dbPrevious.UpdatedBy = userName;
-                        dbPrevious.UpdatedDate = DateTime.Now;
+                        dbPrev.LastSchoolName = previousSchool.LastSchoolName;
+                        dbPrev.LastSchoolClass = previousSchool.LastSchoolClass;
+                        dbPrev.LastSchoolAddress = previousSchool.LastSchoolAddress;
+                        dbPrev.LastSchoolBoard = previousSchool.LastSchoolBoard;
+                        dbPrev.LastSchoolCode = previousSchool.LastSchoolCode;
+                        dbPrev.LastSchoolUDISECode = previousSchool.LastSchoolUDISECode;
+                        dbPrev.ReasonForChange = previousSchool.ReasonForChange;
+                        dbPrev.UpdatedBy = userName;
+                        dbPrev.UpdatedDate = DateTime.Now;
                     }
-
                     await _context.SaveChangesAsync();
                 }
 
-                #endregion
-
-                #region Documents
-
-                await SaveDocument(model.StudentId, "AADHAAR", AadhaarFile);
-                await SaveDocument(model.StudentId, "PHOTO", PhotoFile);
-                await SaveDocument(model.StudentId, "TC", TCFile);
-                await SaveDocument(model.StudentId, "MARKSHEET", MarksheetFile);
-
-                #endregion
+                // ---------- Documents ----------
+                await SaveOrUpdateDocument(dbStudentReg.StudentId, dbStudentReg.ApplicationNo, "AADHAAR", AadhaarFile);
+                await SaveOrUpdateDocument(dbStudentReg.StudentId, dbStudentReg.ApplicationNo, "PHOTO", PhotoFile);
+                await SaveOrUpdateDocument(dbStudentReg.StudentId, dbStudentReg.ApplicationNo, "TC", TCFile);
+                await SaveOrUpdateDocument(dbStudentReg.StudentId, dbStudentReg.ApplicationNo, "MARKSHEET", MarksheetFile);
 
                 await transaction.CommitAsync();
 
                 SuccessMessage(isNewStudent
                     ? "Student Registered Successfully"
                     : "Student Updated Successfully");
+
+                if (isNewStudent && !string.IsNullOrWhiteSpace(model.Email))
+                {
+                    await _notificationService.SendAsync(
+                        "STUDENT_REGISTRATION",
+                        model.Email,
+                        model.StudentId,
+                        model,
+                        model.Parent,
+                        model.PreviousSchoolRecord);
+                }
+
+                return RedirectToAction(nameof(SaveStudentRegistrations));
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                await transaction.RollbackAsync();
+                if (transaction != null)
+                    await transaction.RollbackAsync();
                 throw;
             }
-
-            await _notificationService.SendAsync(
-                "STUDENT_REGISTRATION",
-                model.Email!,
-                model.StudentId,
-                model,
-                parent,
-                previousSchool);
-
-            return RedirectToAction(nameof(StudentRegistrations));
+            return Json(new { success = true, message = "POST Action called successfully!" });
         }
+
         [SkipPermission]
-        private async Task SaveDocument(long studentId, string documentType, IFormFile file)
+        private async Task SaveOrUpdateDocument(long studentId, string ApplicationNo, string documentType, IFormFile file)
         {
             if (file == null || file.Length == 0)
                 return;
@@ -547,6 +536,7 @@ namespace Shikhsa.Controllers
             var document = new Tbl_StudentDocument
             {
                 StudentId = studentId,
+                ApplicationNo=ApplicationNo,
                 DocumentType = documentType,
                 FileName = file.FileName,
                 FilePath = filePath,
@@ -557,6 +547,48 @@ namespace Shikhsa.Controllers
             _context.Tbl_StudentDocument.Add(document);
 
             await _context.SaveChangesAsync();
+
+        }
+      
+
+[SkipPermission]
+    public IActionResult GetDocumentByType(long studentId, string documentType)
+    {
+        var doc = _context.Tbl_StudentDocument
+            .FirstOrDefault(x => x.StudentId == studentId && x.DocumentType == documentType);
+        if (doc == null || string.IsNullOrEmpty(doc.FilePath))
+            return NotFound();
+
+        var physicalPath = Path.Combine(_env.WebRootPath, doc.FilePath);
+        if (!System.IO.File.Exists(physicalPath))
+            return NotFound();
+
+        var contentType = GetContentType(doc.FileName);
+        var fileStream = System.IO.File.OpenRead(physicalPath);
+
+        // 🔥 Set Content-Disposition to "inline" to display in browser
+        var cd = new ContentDispositionHeaderValue("inline")
+        {
+            FileName = doc.FileName
+        };
+        Response.Headers.Add("Content-Disposition", cd.ToString());
+
+        return File(fileStream, contentType);
+    }
+
+    private string GetContentType(string fileName)
+        {
+            var ext = Path.GetExtension(fileName)?.ToLowerInvariant();
+            return ext switch
+            {
+                ".jpg" or ".jpeg" => "image/jpeg",
+                ".png" => "image/png",
+                ".gif" => "image/gif",
+                ".pdf" => "application/pdf",
+                ".doc" or ".docx" => "application/msword",
+                ".xls" or ".xlsx" => "application/vnd.ms-excel",
+                _ => "application/octet-stream"
+            };
         }
         [SkipPermission]
         private string GenerateApplicationNo()
@@ -1037,6 +1069,7 @@ namespace Shikhsa.Controllers
 
             return View(model);
         }
+       
         #endregion
     }
 }

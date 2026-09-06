@@ -10,7 +10,7 @@
         <div class="card-header bg-primary text-white">
             <h4 class="mb-0">
                 <i class="fa fa-school"></i>
-                School Master
+                @Localizer.Get("School") @Localizer.Get("Master")
             </h4>
         </div>
 
@@ -26,7 +26,7 @@
                 <!-- Basic Information -->
                 <div class="card mb-3">
                     <div class="card-header bg-light">
-                        <strong>Basic Information</strong>
+                        <strong>@Localizer.Get("Basic") @Localizer.Get("Information")</strong>
                     </div>
 
                     <div class="card-body">
@@ -54,7 +54,7 @@
                             </div>
 
                             <div class="col-md-4 mb-3">
-                                <label>School Logo</label>
+                                <label>@Localizer.Get("School") @Localizer.Get("Logo")</label>
                                 <input asp-for="SchoolLogo"
                                        type="file"
                                        class="form-control" />
@@ -77,7 +77,7 @@
                 <!-- Contact Information -->
                 <div class="card mb-3">
                     <div class="card-header bg-light">
-                        <strong>Contact Information</strong>
+                        <strong>@Localizer.Get("Contact") @Localizer.Get("Information")</strong>
                     </div>
 
                     <div class="card-body">
@@ -147,7 +147,7 @@
                 <!-- Academic Information -->
                 <div class="card mb-3">
                     <div class="card-header bg-light">
-                        <strong>Academic Information</strong>
+                        <strong>@Localizer.Get("Academic") @Localizer.Get("Information")</strong>
                     </div>
 
                     <div class="card-body">
@@ -181,12 +181,12 @@
                                 <select asp-for="InitialClassId"
                                         asp-items="ViewBag.ClassList"
                                         class="form-select">
-                                    <option value="">Select Class</option>
+                                    <option value="">@Localizer.Get("Select") @Localizer.Get("Class")</option>
                                 </select>
                             </div>
 
                             <div class="col-md-6 mb-3">
-                                <label>Academic Session Start Month</label>
+                                <label>@Localizer.Get("Academic") @Localizer.Get("Session") @Localizer.Get("Start") @Localizer.Get("Month")</label>
                                 <select asp-for="AcademicSessionStartMonth"
                                         class="form-select">
 
@@ -214,7 +214,7 @@
                 <!-- Management Information -->
                 <div class="card mb-3">
                     <div class="card-header bg-light">
-                        <strong>Management Information</strong>
+                        <strong>@Localizer.Get("Management") @Localizer.Get("Information")</strong>
                     </div>
 
                     <div class="card-body">
@@ -259,7 +259,7 @@
                 <!-- Government Information -->
                 <div class="card mb-3">
                     <div class="card-header bg-light">
-                        <strong>Government Information</strong>
+                        <strong>@Localizer.Get("Government") @Localizer.Get("Information")</strong>
                     </div>
 
                     <div class="card-body">
@@ -292,7 +292,7 @@
                 <!-- Footer Settings -->
                 <div class="card mb-3">
                     <div class="card-header bg-light">
-                        <strong>Report & Certificate Settings</strong>
+                        <strong>@Localizer.Get("Report") @Localizer.Get("&") @Localizer.Get("Certificate") @Localizer.Get("Settings")</strong>
                     </div>
 
                     <div class="card-body">
@@ -332,11 +332,13 @@
                 </div>
 
                 <div class="text-end">
+                     <permission controller="Masters" action="SchoolMasters" type="create">
                     <button type="submit"
                             class="btn btn-success btn-lg">
                         <i class="fa fa-save"></i>
-                        Save School Information
+                        @Localizer.Get("Save") @Localizer.Get("School") @Localizer.Get("Information")
                     </button>
+                    </permission>
                 </div>
 
             </form>

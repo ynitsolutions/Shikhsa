@@ -17,12 +17,13 @@ namespace Shikhsa.DataBase.Repositry
         private readonly UserManager<ApplicationUser> _userManager;
 
         private readonly RoleManager<ApplicationRole> _roleManager;
-
+        public readonly NotificationService _notificationService;
         public StaffUserRepository
         (
             ApplicationDbContext context,
             UserManager<ApplicationUser> userManager,
-            RoleManager<ApplicationRole> roleManager
+            RoleManager<ApplicationRole> roleManager,
+            NotificationService notificationService
         )
         {
             _context = context;
@@ -30,6 +31,7 @@ namespace Shikhsa.DataBase.Repositry
             _userManager = userManager;
 
             _roleManager = roleManager;
+            _notificationService = notificationService;
         }
         public async Task<StaffUserVM> GetPageData()
         {
@@ -275,6 +277,13 @@ namespace Shikhsa.DataBase.Repositry
 
                 response.Status = 1;
                 response.Message = "User Created Successfully.";
+                await _notificationService.SendAsync(
+                     "Staff_Login_Credentials",
+                     staff.Staff.Email,
+                     staff.Staff.StaffId,
+                     staff.Staff,
+                     user
+                    );
             }
             catch (Exception ex)
             {

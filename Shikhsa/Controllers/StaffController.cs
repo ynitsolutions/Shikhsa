@@ -27,6 +27,8 @@ namespace Shikhsa.Controllers
         private readonly StaffUserRepository _repositoryUser;
         private readonly IWebHostEnvironment _environment;
         private readonly FileUploadHelper _uploadHelper;
+        public readonly EmailService _emailService;
+        public readonly NotificationService _notificationService;
         private readonly LookupService _lookup;
         private readonly StaffIdCardPdfService _idCardService;
         public StaffController(
@@ -35,7 +37,7 @@ namespace Shikhsa.Controllers
             StaffRepository repository,
             UserManager<ApplicationUser> userManager,
  PermissionService permissionService, IWebHostEnvironment env, EmailService email,
-            IWebHostEnvironment environment, FileUploadHelper uploadHelper, StaffUserRepository repositoryUser, RoleManager<ApplicationRole> roleManager, LookupService lookup) : base(userManager, permissionService, context, email, lookup)
+            IWebHostEnvironment environment, FileUploadHelper uploadHelper, StaffUserRepository repositoryUser, RoleManager<ApplicationRole> roleManager, LookupService lookup, NotificationService notificationService) : base(userManager, permissionService, context, email, lookup)
         {
             _context = context;
             _configuration = configuration;
@@ -45,6 +47,7 @@ namespace Shikhsa.Controllers
             _repositoryUser = repositoryUser;
             _roleManager = roleManager;
             _lookup = lookup;
+            _notificationService= notificationService;
         }
         public async Task<IActionResult> Staffs(StaffFilterVM filter)
         {
@@ -219,13 +222,22 @@ namespace Shikhsa.Controllers
             string xml =
                 XmlHelper.Serialize(model);
 
-            var result =
-                await _repository.SaveStaff(xml);
+            var result = await _repository.SaveStaff(xml);
 
             if (result.Status == 1)
             {
                 SuccessMessage(result.Message);
-
+                if (model.StaffId == 0)
+                {
+                    model.Designation = _context.DataListItems.Where(x => x.DataListItemId == model.DesignationId).Select(x => x.DataListItemText).FirstOrDefault();
+                    model.Department = _context.DataListItems.Where(x => x.DataListItemId == model.DepartmentId).Select(x => x.DataListItemText).FirstOrDefault();
+                    await _notificationService.SendAsync(
+                         "Staff_Registration",
+                         model.Email,
+                         model.StaffId,
+                         model
+                        );
+                }
                 return RedirectToAction("Staffs");
             }
 
@@ -328,6 +340,7 @@ namespace Shikhsa.Controllers
             if (string.IsNullOrEmpty(model.UserId))
             {
                 response = await _repositoryUser.CreateUser(model.StaffId, model.RoleId);
+               
             }
             else
             {

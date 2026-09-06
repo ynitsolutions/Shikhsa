@@ -17,7 +17,9 @@ namespace Shikhsa.Data
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, IHttpContextAccessor httpContextAccessor)
-            : base(options) { _httpContextAccessor = httpContextAccessor; }
+            : base(options) { _httpContextAccessor = httpContextAccessor;
+            Database.SetCommandTimeout(120);
+        }
 
         public DbSet<Menu> Menus { get; set; }
         public DbSet<RoleMenu> RoleMenus { get; set; }
@@ -185,10 +187,17 @@ namespace Shikhsa.Data
             builder.Entity<NotificationPlaceholder>().HasIndex(x => x.PlaceholderCode).IsUnique();
 
             builder.Entity<NotificationTemplateCategory>().HasKey(x => new { x.NotificationTemplateId, x.NotificationCategoryId });
+            // ApplicationNo must be unique
+            builder.Entity<Tbl_StudentsRegistrations>().HasAlternateKey(x => x.ApplicationNo);
 
-            //builder.Entity<NotificationTemplateCategory>().HasOne(x => x.NotificationTemplate).WithMany(x => x.NotificationTemplateCategories).HasForeignKey(x => x.NotificationTemplateId);
+            // Tbl_Students -> Tbl_StudentsRegistrations
+            builder.Entity<Tbl_Students>().HasOne(x => x.StudentRegistration).WithMany(x => x.Students).HasForeignKey(x => x.ApplicationNo).HasPrincipalKey(x => x.ApplicationNo).OnDelete(DeleteBehavior.Restrict);
 
-            //builder.Entity<NotificationTemplateCategory>().HasOne(x => x.NotificationCategory).WithMany(x => x.NotificationTemplateCategories).HasForeignKey(x => x.NotificationCategoryId);
+            // Student Document -> Registration
+           builder.Entity<Tbl_StudentDocument>().HasOne(x => x.StudentRegistration).WithMany().HasForeignKey(x => x.ApplicationNo).HasPrincipalKey(x => x.ApplicationNo).OnDelete(DeleteBehavior.Restrict);
+
+            // Previous School Record -> Registration
+            builder.Entity<Tbl_PreviousSchoolRecord>().HasOne(x => x.StudentRegistration).WithMany().HasForeignKey(x => x.ApplicationNo).HasPrincipalKey(x => x.ApplicationNo).OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<NotificationPlaceholder>().HasOne(x => x.NotificationCategory).WithMany(x => x.NotificationPlaceholders).HasForeignKey(x => x.NotificationCategoryId).OnDelete(DeleteBehavior.NoAction);
             builder.Entity<NotificationTemplateCategory>().HasOne(x => x.NotificationTemplate).WithMany(x => x.NotificationTemplateCategories).HasForeignKey(x => x.NotificationTemplateId).OnDelete(DeleteBehavior.NoAction);

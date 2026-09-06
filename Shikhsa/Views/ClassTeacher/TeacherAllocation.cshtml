@@ -20,14 +20,14 @@
             <div class="row">
 
                 <div class="col-md-3">
-                    <label>Academic Batch</label>
+                    <label> @Localizer.Get("Academic")  @Localizer.Get("Batch")</label>
 
                     <select asp-for="BatchId"
                             asp-items="Model.Batches"
                             class="form-control select2 required"
                             id="BatchId">
 
-                        <option value="">Select Batch</option>
+                        <option value=""> @Localizer.Get("Select")  @Localizer.Get("Batch")</option>
 
                     </select>
 
@@ -35,14 +35,14 @@
 
                 <div class="col-md-3">
 
-                    <label>Section</label>
+                    <label> @Localizer.Get("Section")</label>
 
                     <select asp-for="SectionId"
                             asp-items="Model.Sections"
                             class="form-control select2 required"
                             id="SectionId">
 
-                        <option value="">Select Section</option>
+                        <option value=""> @Localizer.Get("Select")  @Localizer.Get("Section")</option>
 
                     </select>
 
@@ -50,13 +50,13 @@
 
                 <div class="col-md-3">
 
-                    <label>Copy From Batch</label>
+                    <label> @Localizer.Get("Copy")  @Localizer.Get("From")  @Localizer.Get("Batch")</label>
 
                     <select id="CopyBatchId"
                             asp-items="Model.CopyBatches"
                             class="form-control select2">
 
-                        <option value="">Select Batch</option>
+                        <option value=""> @Localizer.Get("Select")  @Localizer.Get("Batch")</option>
 
                     </select>
 
@@ -69,7 +69,7 @@
 
                         <i class="bi bi-search"></i>
 
-                        Load
+                         @Localizer.Get("Load")
 
                     </button>
 
@@ -78,7 +78,7 @@
 
                         <i class="bi bi-copy"></i>
 
-                        Copy
+                         @Localizer.Get("Copy")
 
                     </button>
 
@@ -92,16 +92,16 @@
             </div>
 
             <div class="text-end mt-3">
+                <permission controller="ClassTeacher" action="TeacherAllocation" type="create">
+                        <button class="btn btn-success"
+                                id="btnSave">
 
-                <button class="btn btn-success"
-                        id="btnSave">
+                            <i class="bi bi-check-circle"></i>
 
-                    <i class="bi bi-check-circle"></i>
+                             @Localizer.Get("Save")  @Localizer.Get("Assignment")
 
-                    Save Assignment
-
-                </button>
-
+                        </button>
+                </permission>
             </div>
 
         </div>

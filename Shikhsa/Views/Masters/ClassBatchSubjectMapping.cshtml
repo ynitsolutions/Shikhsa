@@ -17,12 +17,11 @@
 
                 <div class="col-lg-4 col-md-6 mb-3">
 
-                    <label>Class</label>
+                    <label>@Localizer.Get("Class")</label>
 
-                    <select asp-for="ClassId"
-                            class="form-select select2">
+                    <select asp-for="ClassId" class="form-select select2">
 
-                        <option value="">Select Class</option>
+                        <option value="">@Localizer.Get("Select") @Localizer.Get("Class")</option>
 
                         @foreach (var item in Model.Classes)
                         {
@@ -37,12 +36,12 @@
 
                 <div class="col-lg-4 col-md-6 mb-3">
 
-                    <label>Batch</label>
+                    <label>@Localizer.Get("Batch")</label>
 
                     <select asp-for="BatchId"
                             class="form-select select2">
 
-                        <option value="">Select Batch</option>
+                        <option value="">@Localizer.Get("Select") @Localizer.Get("Batch")</option>
 
                         @foreach (var item in Model.Batches)
                         {
@@ -57,12 +56,12 @@
 
                 <div class="col-lg-4 col-md-6 mb-3">
 
-                    <label>Copy From Batch</label>
+                    <label>@Localizer.Get("Copy") @Localizer.Get("From") @Localizer.Get("Batch")</label>
 
                     <select asp-for="CopyFromBatchId"
                             class="form-select select2">
 
-                        <option value="">Select Batch</option>
+                        <option value="">@Localizer.Get("Select") @Localizer.Get("Batch")</option>
 
                         @foreach (var item in Model.Batches)
                         {
@@ -77,7 +76,7 @@
 
                 <div class="col-12 mb-3">
 
-                    <label>Subjects</label>
+                    <label>@Localizer.Get("Subjects")</label>
 
                     <select asp-for="SubjectIds"
                             class="form-select select2"

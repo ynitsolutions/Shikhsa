@@ -62,11 +62,13 @@ namespace Shikhsa.Models
             public bool IsHostel { get; set; } 
             public int? TranspotId { get; set; }
         public int? HostelId { get; set; }
+        
         [ForeignKey("ParentId")]
             public virtual Tbl_Parents? Parent { get; set; }
 
         public virtual Tbl_StudentDocument? Document { get; set; }
         public virtual Tbl_PreviousSchoolRecord? PreviousSchoolRecord { get; set; }
+        public virtual ICollection<Tbl_Students>? Students { get; set; }
     }
         public class Tbl_Parents:BaseEntity
         {
@@ -103,8 +105,9 @@ namespace Shikhsa.Models
             public long DocumentId { get; set; }
 
             public long StudentId { get; set; }
+        public string? ApplicationNo { get; set; }
 
-            public string? DocumentType { get; set; }
+        public string? DocumentType { get; set; }
 
             public string? FileName { get; set; }
 
@@ -115,6 +118,8 @@ namespace Shikhsa.Models
             public DateTime? UploadDate { get; set; }
             [ForeignKey("StudentId")]
             public virtual Tbl_StudentsRegistrations Student { get; set; }
+        // ApplicationNo based relationship
+        public virtual Tbl_StudentsRegistrations? StudentRegistration { get; set; }
     }
         public class Tbl_PreviousSchoolRecord :BaseEntity
         {
@@ -122,8 +127,10 @@ namespace Shikhsa.Models
             public long PreviousSchoolRecordId { get; set; }
 
             public long StudentId { get; set; }
+        public string? ApplicationNo { get; set; }
 
-            public string? LastSchoolClass { get; set; } = string.Empty;
+
+        public string? LastSchoolClass { get; set; } = string.Empty;
 
             public string? LastSchoolName { get; set; } = string.Empty;
 
@@ -138,6 +145,8 @@ namespace Shikhsa.Models
             public string? ReasonForChange { get; set; } = string.Empty;
         [ForeignKey("StudentId")]
         public virtual Tbl_StudentsRegistrations Student { get; set; }
+        // ApplicationNo based relationship
+        public virtual Tbl_StudentsRegistrations? StudentRegistration { get; set; }
     }
     public class Tbl_Students : BaseEntity 
     {
@@ -204,9 +213,20 @@ namespace Shikhsa.Models
 
         [NotMapped]
         public string? SectionName { get; set; }
+        [NotMapped]
+        public string? GenderName { get; set; }
+        [NotMapped]
+        public string? ClassName { get; set; }
+        [NotMapped]
+        public string? CategoryName { get; set; }
+        [NotMapped]
+        public string? ReligionName { get; set; }
+        [NotMapped]
+        public string? CurrentBatchName { get; set; }
         [ForeignKey("ParentId")]
         public virtual Tbl_Parents? Parent { get; set; }
-       
+        //public virtual Tbl_PreviousSchoolRecord? PreviousSchoolRecord { get; set; }
+        public virtual Tbl_StudentsRegistrations? StudentRegistration { get; set; }
     }
 
 }

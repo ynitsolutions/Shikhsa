@@ -47,7 +47,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] — Shikhsa</title>
-
+   @*  <link rel="icon" type="image/x-icon" href="favicon.ico"> *@
     <!-- Tabler Icons -->
     <link rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/@@tabler/icons-webfont@@3.19.0/dist/tabler-icons.min.css" />
@@ -374,24 +374,44 @@
 
         $(document).ready(function ()
         {
-            $('.select2').select2({
+            $('.select2').select2
+            ({
             width:'100%',
             placeholder: 'Select',
-    allowClear: true});
-            // $(document).on('inp:ut', '.text-only', function () {
-            // this.value = this.value.replace(/[^a-zA-Z\u0900-\u097F]/g, '');
-            // });
-                    document.querySelectorAll('.fp-date').forEach(function (el) {
-
-            flatpickr(el, {
-                wrap: true,
-                dateFormat: "Y-m-d"
+            allowClear: true
             });
 
+          document.querySelectorAll('.fp-date').forEach(function (el) {
+            flatpickr(el, {
+                wrap: true,
+                dateFormat: "Y-m-d", 
+                parseDate: (datestr, format) => {
+                    if (datestr && datestr.includes('-')) {
+                        const parts = datestr.split(' ')[0].split('-'); 
+                        return new Date(parts[2], parts[1] - 1, parts[0]);
+                    }
+                    return new Date(datestr);
+                }
+            });
         });
+                @if (TempData["Success"] != null)
+                    {
+                        <text>ShowSuccess('@Html.Raw(TempData["Success"])');</text>
+                }
+                    @if (TempData["Error"] != null)
+                    {
+                        <text>ShowError('@Html.Raw(TempData["Error"])');</text>
+                }
+                    @if (TempData["Warning"] != null)
+                    {
+                        <text>ShowWarning('@Html.Raw(TempData["Warning"])');</text>
+                }
+                    @if (TempData["Info"] != null)
+                    {
+                        <text>ShowInfo('@Html.Raw(TempData["Info"])');</text>
+                }
 
         });
-                // Automatically initialize Select2 for ANY Bootstrap Modal
         $(document).on('shown.bs.modal', '.modal', function () {
 
             var modal = $(this);
@@ -410,13 +430,70 @@
             });
         });
         
-         // $('#tblSubMenu').DataTable({
-         //        responsive: true,
-         //        autoWidth: false,
-         //        pageLength: 10
-         //    });
-       
+         
+    </script>
+    <script>
+            $(document).ready(function () {
+                // 1. Check if any table with class 'datatable' exists
+                var $tables = $('table.datatable');
+                if ($tables.length === 0) {
+                    return; // ✅ No datatable tables – exit silently, no error
+                }
 
+                // 2. Iterate over each datatable
+                $tables.each(function () {
+                    var $table = $(this);
+
+                    // 3. Prevent duplicate initialisation
+                    if ($.fn.dataTable.isDataTable($table)) {
+                        return;
+                    }
+
+                    // 4. Build default options
+                    var options = {
+                        processing: true,
+                        responsive: true,
+                        language: {
+                            search: "Search:",
+                            lengthMenu: "Show _MENU_ entries",
+                            info: "Showing _START_ to _END_ of _TOTAL_ entries",
+                            infoEmpty: "No entries available",
+                            infoFiltered: "(filtered from _MAX_ total entries)",
+                            zeroRecords: "No matching records found"
+                        }
+                    };
+
+                    // 5. If data-url is provided, enable server‑side AJAX
+                    var ajaxUrl = $table.data('url');
+                    if (ajaxUrl) {
+                        options.serverSide = true;
+                        options.ajax = {
+                            url: ajaxUrl,
+                            type: 'POST',
+                            dataType: 'json'
+                            // You can add additional AJAX settings here (data, headers, etc.)
+                        };
+                    } else {
+                        // 🔥 No AJAX URL – fallback to client‑side processing
+                        options.serverSide = false;
+                        // You can still provide data directly in the table's tbody
+                        // or leave it empty; DataTable will just display static content.
+                    }
+
+                    // 6. Apply any extra table-specific options from data-* attributes
+                    //    (e.g., data-page-length, data-order, etc.)
+                    if ($table.data('page-length')) {
+                        options.pageLength = parseInt($table.data('page-length'));
+                    }
+                    if ($table.data('order')) {
+                        options.order = JSON.parse($table.data('order'));
+                    }
+                    // Add more as needed
+
+                    // 7. Initialise the DataTable
+                    $table.DataTable(options);
+                });
+            });
     </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

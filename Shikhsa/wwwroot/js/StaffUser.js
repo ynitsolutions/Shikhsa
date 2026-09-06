@@ -37,6 +37,7 @@ function RenderGrid(data) {
                     <td>${i + 1}</td>
                     <td>${item.staffName}</td>
                     <td>${item.userName}</td>
+                    <td>${item.password}</td>
                     <td>${item.roleName ?? '-'}</td>
                     <td>
                         ${item.isActive

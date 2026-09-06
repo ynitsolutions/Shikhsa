@@ -97,6 +97,8 @@ builder.Services.AddScoped<IRazorViewToStringRenderer, RazorViewToStringRenderer
 builder.Services.AddSingleton<PdfGeneratorService>();   // Singleton better hai — browser download check ek hi baar
 builder.Services.AddScoped<FeeReceiptRecordRepository>();
 builder.Services.AddScoped<AtomPaymentService>();
+builder.Services.AddScoped<PaymentReconciliationService>();
+builder.Services.AddHostedService<PaymentReconciliationBackgroundService>();
 var app = builder.Build();
 
 

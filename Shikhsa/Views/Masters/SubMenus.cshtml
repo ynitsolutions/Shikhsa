@@ -114,16 +114,11 @@
 
                         <div class="d-flex flex-wrap gap-2">
 
-                            <permission controller="Masters"
-                                        action="SubMenus"
-                                        type="create">
+                            <permission controller="Masters" action="SubMenus" type="create">
 
-                                <button type="submit"
-                                        class="btn btn-success">
+                                <button type="submit" class="btn btn-success">
 
-                                    @(Model.Id == 0
-                                                                        ? Localizer.Get("Save")
-                                                                        : Localizer.Get("Update"))
+                                    @(Model.Id == 0? Localizer.Get("Save"): Localizer.Get("Update"))
 
                                 </button>
 
@@ -131,8 +126,7 @@
 
                             @if (Model.Id > 0)
                             {
-                                <a asp-action="SubMenus"
-                                   class="btn btn-secondary">
+                                <a asp-action="SubMenus" class="btn btn-secondary">
 
                                     @Localizer.Get("Cancel")
 

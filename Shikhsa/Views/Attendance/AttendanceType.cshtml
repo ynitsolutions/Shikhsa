@@ -22,7 +22,7 @@
 
                     <div class="col-md-2">
 
-                        <label>Code</label>
+                        <label>@Localizer.Get("Code")</label>
 
                         <input asp-for="AttendanceType.Code"
                                class="form-control" />
@@ -34,7 +34,7 @@
 
                     <div class="col-md-4">
 
-                        <label>Name</label>
+                        <label>@Localizer.Get("Name")</label>
 
                         <input asp-for="AttendanceType.Name"
                                class="form-control" />
@@ -46,7 +46,7 @@
 
                     <div class="col-md-2">
 
-                        <label>Display Order</label>
+                        <label>@Localizer.Get("Display") @Localizer.Get("Order")</label>
 
                         <input asp-for="AttendanceType.DisplayOrder"
                                class="form-control" />
@@ -66,7 +66,7 @@
 
                             <label asp-for="AttendanceType.IsLeave"
                                    class="form-check-label">
-                                Is Leave
+                                @Localizer.Get("Is") @Localizer.Get("Leave")
                             </label>
 
                         </div>
@@ -82,7 +82,7 @@
 
                             <label asp-for="AttendanceType.IsActive"
                                    class="form-check-label">
-                                Active
+                                @Localizer.Get("Active")
                             </label>
 
                         </div>
@@ -95,14 +95,14 @@
 
                     <button class="btn btn-success">
 
-                        @(Model.AttendanceType.AttendanceTypeId == 0 ? "Save" : "Update")
+                        @(Model.AttendanceType.AttendanceTypeId == 0 ? Localizer.Get("Save") : @Localizer.Get("Update"))
 
                     </button>
 
                     <a asp-action="Index"
                        class="btn btn-secondary">
 
-                        Clear
+                        @Localizer.Get("Clear")
 
                     </a>
 
@@ -120,17 +120,17 @@
 
                         <th>#</th>
 
-                        <th>Code</th>
+                        <th>@Localizer.Get("Code")</th>
 
-                        <th>Name</th>
+                        <th>@Localizer.Get("Name")</th>
 
-                        <th>Leave</th>
+                        <th>@Localizer.Get("Leave")</th>
 
-                        <th>Active</th>
+                        <th>@Localizer.Get("Active")</th>
 
-                        <th>Order</th>
+                        <th>@Localizer.Get("Order")</th>
 
-                        <th width="120">Action</th>
+                        <th width="120">@Localizer.Get("Action")</th>
 
                     </tr>
 
@@ -159,16 +159,16 @@
                             <td>@item.DisplayOrder</td>
 
                             <td>
+                                <permission controller="Attendance" action="AttendanceType" type="edit">
+                                    <a asp-action="AttendanceType" asp-route-id="@item.AttendanceTypeId"
+                                       class="btn btn-warning btn-sm">
 
-                                <a asp-action="Index"
-                                   asp-route-id="@item.AttendanceTypeId"
-                                   class="btn btn-warning btn-sm">
+                                        Edit
 
-                                    Edit
-
-                                </a>
-
-                                <a asp-action="Delete"
+                                    </a>
+                                </permission>
+                                <permission controller="Attendance" action="AttendanceType" type="delete">
+                                    <a asp-action="DeleteAttendanceTypee"
                                    asp-route-id="@item.AttendanceTypeId"
                                    onclick="return confirm('Delete this record?')"
                                    class="btn btn-danger btn-sm">
@@ -176,8 +176,8 @@
                                     Delete
 
                                 </a>
-
-                            </td>
+                            </permission>
+</td>
 
                         </tr>
 

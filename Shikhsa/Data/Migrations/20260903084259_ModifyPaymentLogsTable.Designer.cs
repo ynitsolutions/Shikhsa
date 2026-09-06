@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Shikhsa.Data;
 
@@ -11,9 +12,11 @@ using Shikhsa.Data;
 namespace Shikhsa.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260903084259_ModifyPaymentLogsTable")]
+    partial class ModifyPaymentLogsTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -3955,9 +3958,6 @@ namespace Shikhsa.Data.Migrations
                     b.Property<DateTime>("AddedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("ApplicationNo")
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
@@ -3993,8 +3993,6 @@ namespace Shikhsa.Data.Migrations
 
                     b.HasKey("PreviousSchoolRecordId");
 
-                    b.HasIndex("ApplicationNo");
-
                     b.HasIndex("StudentId")
                         .IsUnique();
 
@@ -4014,9 +4012,6 @@ namespace Shikhsa.Data.Migrations
 
                     b.Property<DateTime>("AddedDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<string>("ApplicationNo")
-                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("DocumentType")
                         .HasColumnType("nvarchar(max)");
@@ -4046,8 +4041,6 @@ namespace Shikhsa.Data.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("DocumentId");
-
-                    b.HasIndex("ApplicationNo");
 
                     b.HasIndex("StudentId")
                         .IsUnique();
@@ -4088,7 +4081,7 @@ namespace Shikhsa.Data.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("ApplicationNo")
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("CategoryId")
                         .HasColumnType("int");
@@ -4183,8 +4176,6 @@ namespace Shikhsa.Data.Migrations
 
                     b.HasKey("StudentId");
 
-                    b.HasIndex("ApplicationNo");
-
                     b.HasIndex("ParentId");
 
                     b.ToTable("Tbl_Students");
@@ -4214,8 +4205,7 @@ namespace Shikhsa.Data.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("ApplicationNo")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("CategoryId")
                         .HasColumnType("int");
@@ -5139,12 +5129,6 @@ namespace Shikhsa.Data.Migrations
 
             modelBuilder.Entity("Shikhsa.Models.Tbl_PreviousSchoolRecord", b =>
                 {
-                    b.HasOne("Shikhsa.Models.Tbl_StudentsRegistrations", "StudentRegistration")
-                        .WithMany()
-                        .HasForeignKey("ApplicationNo")
-                        .HasPrincipalKey("ApplicationNo")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("Shikhsa.Models.Tbl_StudentsRegistrations", "Student")
                         .WithOne("PreviousSchoolRecord")
                         .HasForeignKey("Shikhsa.Models.Tbl_PreviousSchoolRecord", "StudentId")
@@ -5152,18 +5136,10 @@ namespace Shikhsa.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Student");
-
-                    b.Navigation("StudentRegistration");
                 });
 
             modelBuilder.Entity("Shikhsa.Models.Tbl_StudentDocument", b =>
                 {
-                    b.HasOne("Shikhsa.Models.Tbl_StudentsRegistrations", "StudentRegistration")
-                        .WithMany()
-                        .HasForeignKey("ApplicationNo")
-                        .HasPrincipalKey("ApplicationNo")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("Shikhsa.Models.Tbl_StudentsRegistrations", "Student")
                         .WithOne("Document")
                         .HasForeignKey("Shikhsa.Models.Tbl_StudentDocument", "StudentId")
@@ -5171,25 +5147,15 @@ namespace Shikhsa.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Student");
-
-                    b.Navigation("StudentRegistration");
                 });
 
             modelBuilder.Entity("Shikhsa.Models.Tbl_Students", b =>
                 {
-                    b.HasOne("Shikhsa.Models.Tbl_StudentsRegistrations", "StudentRegistration")
-                        .WithMany("Students")
-                        .HasForeignKey("ApplicationNo")
-                        .HasPrincipalKey("ApplicationNo")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("Shikhsa.Models.Tbl_Parents", "Parent")
                         .WithMany()
                         .HasForeignKey("ParentId");
 
                     b.Navigation("Parent");
-
-                    b.Navigation("StudentRegistration");
                 });
 
             modelBuilder.Entity("Shikhsa.Models.Tbl_StudentsRegistrations", b =>
@@ -5322,8 +5288,6 @@ namespace Shikhsa.Data.Migrations
                     b.Navigation("Document");
 
                     b.Navigation("PreviousSchoolRecord");
-
-                    b.Navigation("Students");
                 });
 #pragma warning restore 612, 618
         }

@@ -62,7 +62,7 @@
 
         <div class="card-header bg-primary text-white">
             <h4 class="mb-0">
-                Staff Attendance
+                @Localizer.Get("Staff") @Localizer.Get("Attendance")
             </h4>
         </div>
 
@@ -76,7 +76,7 @@
 
                     <div class="col-md-3">
 
-                        <label>Date</label>
+                        <label>@Localizer.Get("Date")</label>
 
                         <input asp-for="AttendanceDate"
                                type="date"
@@ -86,7 +86,7 @@
 
                     <div class="col-md-3">
 
-                        <label>Search</label>
+                        <label>  @Localizer.Get("Search")</label>
 
                         <input asp-for="Search"
                                class="form-control"
@@ -100,7 +100,7 @@
 
                         <button class="btn btn-primary">
 
-                            Show
+                              @Localizer.Get("Show")
 
                         </button>
 
@@ -119,7 +119,7 @@
                     <div class="card bg-primary summary-card">
                         <div class="card-body text-center">
                             <h3 id="totalCount">@(summary?.TotalStaff ?? 0)</h3>
-                            <p>Total Staff</p>
+                            <p>  @Localizer.Get("Total Staff")</p>
                         </div>
                     </div>
 
@@ -130,7 +130,7 @@
                     <div class="card bg-success summary-card">
                         <div class="card-body text-center">
                             <h3 id="presentCount">@(summary?.Present ?? 0)</h3>
-                            <p>Present</p>
+                            <p>  @Localizer.Get("Present")</p>
                         </div>
                     </div>
 
@@ -141,7 +141,7 @@
                     <div class="card bg-danger summary-card">
                         <div class="card-body text-center">
                             <h3 id="absentCount">@(summary?.Absent ?? 0)</h3>
-                            <p>Absent</p>
+                            <p>  @Localizer.Get("Absent")</p>
                         </div>
                     </div>
 
@@ -152,7 +152,7 @@
                     <div class="card bg-warning summary-card">
                         <div class="card-body text-center">
                             <h3 id="leaveCount">@(summary?.Leave ?? 0)</h3>
-                            <p>Leave</p>
+                            <p>  @Localizer.Get("Leave")</p>
                         </div>
                     </div>
 
@@ -187,21 +187,22 @@
                         Mark All Present
 
                     </button> *@
-                    <button type="submit"
-                            name="submitType"
-                            value="Save"
-                            class="btn btn-success">
+                    <permission controller="Attendance" action="StaffAttendance" type="create">
+                        <button type="submit"
+                                name="submitType"
+                                value="Save"
+                                class="btn btn-success">
 
-                        Save Attendance
+                            @Localizer.Get("Save") @Localizer.Get("Attendance")
 
-                    </button>
-
+                        </button>
+                    </permission>
                     <button type="submit"
                             name="submitType"
                             value="MarkAll"
                             class="btn btn-warning">
 
-                        Mark All Present
+                        @Localizer.Get("Mark") @Localizer.Get("All") @Localizer.Get("Present")
 
                     </button>
 
@@ -209,7 +210,7 @@
 
                 <div class="table-responsive">
 
-                    <table class="table table-bordered table-hover align-middle">
+                    <table class="table table-bordered table-hover align-middle datatable">
 
                         <thead class="table-primary">
 
@@ -217,7 +218,7 @@
 
                                 <th width="70">Code</th>
 
-                                <th>Staff Name</th>
+                                <th>@Localizer.Get("Staff") @Localizer.Get("Name")</th>
 
                                 @foreach (var type in Model.AttendanceTypes.OrderBy(x=>x.DisplayOrder))
                                 {
@@ -230,7 +231,7 @@
 
                                 <th width="250">
 
-                                    Remarks
+                                    @Localizer.Get("Remarks")
 
                                 </th>
 

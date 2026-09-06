@@ -7,7 +7,7 @@
 <div class="card shadow-sm border-0 mb-4">
 
     <div class="card-header bg-white">
-        <h5 class="mb-0">Assign Permissions</h5>
+        <h5 class="mb-0">@Localizer.Get("Assign") @Localizer.Get("Permissions")</h5>
     </div>
 
     <div class="card-body">
@@ -19,9 +19,9 @@
 
                 <!-- ROLE -->
                 <div class="col-12 col-md-6 col-lg-4 mb-3">
-                    <label class="form-label fw-semibold">Select Role</label>
+                    <label class="form-label fw-semibold">@Localizer.Get("Select Role")</label>
                     <select asp-for="RoleId" class="form-select select2" id="RoleId">
-                        <option value="">Select Role</option>
+                        <option value="">@Localizer.Get("Select Role")</option>
                         @foreach (var role in Model.Roles)
                         {
                             <option value="@role.Value" data-name="@role.Text">@role.Text</option>
@@ -31,18 +31,18 @@
 
                 <!-- STAFF (dynamic - sirf non-excluded roles ke liye dikhega) -->
                 <div class="col-12 col-md-6 col-lg-4 mb-3" id="staffWrapper" style="display:none;">
-                    <label class="form-label fw-semibold">Select Staff (optional)</label>
+                    <label class="form-label fw-semibold">@Localizer.Get("Select Staff") (@Localizer.Get("optional"))</label>
                     <select asp-for="UserId" class="form-select select2" id="UserId">
-                        <option value="">-- Role Level (All Staff) --</option>
+                        <option value="">-- @Localizer.Get("Role") @Localizer.Get("Level") (@Localizer.Get("All Staff")) --</option>
                     </select>
-                    <small class="text-muted">If left blank, this will apply to all staff in the role.</small>
+                    <small class="text-muted">@Localizer.Get("If left blank, this will apply to all staff in the role.")</small>
                 </div>
 
                 <!-- MENU -->
                 <div class="col-12 col-md-6 col-lg-4 mb-3">
-                    <label class="form-label fw-semibold">Select Menu</label>
+                    <label class="form-label fw-semibold">@Localizer.Get("Select") @Localizer.Get("Menu")</label>
                     <select asp-for="MenuId" asp-items="Model.Menus" class="form-select select2" id="MenuId">
-                        <option value="">Select Menu</option>
+                        <option value="">@Localizer.Get("Select") @Localizer.Get("Menu")</option>
                     </select>
                 </div>
                 <!-- SUB MENU -->
@@ -59,7 +59,7 @@
 
                     <label class="form-label fw-semibold">
 
-                        Select Sub Menu
+                        @Localizer.Get("Select") @Localizer.Get("Sub") @Localizer.Get("Menu")
 
                     </label>
 
@@ -67,7 +67,7 @@
                             asp-for="SubMenuId"
                             class="form-select">
 
-                        <option value="">Select Sub Menu</option>
+                        <option value="">@Localizer.Get("Select") @Localizer.Get("Sub") @Localizer.Get("Menu")</option>
 
                     </select>
 
@@ -76,7 +76,7 @@
 
                     <label class="form-label fw-semibold">
 
-                        Select Tab
+                        @Localizer.Get("Select") @Localizer.Get("Tab")
 
                     </label>
 
@@ -84,7 +84,7 @@
                             asp-for="TabId"
                             class="form-select">
 
-                        <option value="">Select Tab</option>
+                        <option value="">@Localizer.Get("Select") @Localizer.Get("Tab")</option>
 
                     </select>
 
@@ -104,7 +104,7 @@
 
                         <i class="ti ti-plus"></i>
 
-                        Add Child
+                        @Localizer.Get("Add") @Localizer.Get("Child")
 
                     </button>
 
@@ -129,12 +129,12 @@
                         <tr>
 
                             <th width="40%">
-                                Name
+                                @Localizer.Get("Name")
                             </th>
 
                             <th class="text-center">
                                 <div class="d-flex flex-column align-items-center">
-                                    <span>View</span>
+                                    <span>@Localizer.Get("View")</span>
                                     <input type="checkbox"
                                            class="form-check-input mt-1 permission-select-all"
                                            data-permission="CanView"
@@ -144,7 +144,7 @@
 
                             <th class="text-center">
                                 <div class="d-flex flex-column align-items-center">
-                                    <span>Create</span>
+                                    <span>@Localizer.Get("Create")</span>
                                     <input type="checkbox" class="form-check-input mt-1 permission-select-all"
                                            data-permission="CanCreate" title="Select All Create" />
                                 </div>
@@ -152,7 +152,7 @@
 
                             <th class="text-center">
                                 <div class="d-flex flex-column align-items-center">
-                                    <span>Update</span>
+                                    <span>@Localizer.Get("Update")</span>
                                     <input type="checkbox" class="form-check-input mt-1 permission-select-all"
                                            data-permission="CanUpdate" title="Select All Update" />
                                 </div>
@@ -160,14 +160,14 @@
 
                             <th class="text-center">
                                  <div class="d-flex flex-column align-items-center">
-                                    <span>Delete</span>
+                                    <span>@Localizer.Get("Delete")</span>
                                     <input type="checkbox" class="form-check-input mt-1 permission-select-all"
                                            data-permission="CanDelete" title="Select All Delete" />
                                 </div>
                             </th>
 
                             <th width="120">
-                                Action
+                                @Localizer.Get("Action")"
                             </th>
 
                         </tr>
@@ -179,11 +179,13 @@
 
             <!-- BUTTONS -->
             <div class="mt-3 d-flex gap-2 flex-wrap">
-                <button type="submit" class="btn btn-primary">
-                    <i class="ti ti-device-floppy"></i> Save Permissions
-                </button>
+                <permission controller="Masters" action="RoleMenuPermission" type="create">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="ti ti-device-floppy"></i> @Localizer.Get("Save") @Localizer.Get("Permissions")
+                    </button>
+                 </permission>
                 <button type="reset" class="btn btn-secondary">
-                    <i class="ti ti-refresh"></i> Reset
+                    <i class="ti ti-refresh"></i> @Localizer.Get("Reset")
                 </button>
             </div>
 
@@ -249,7 +251,7 @@
 
                 <h5 class="modal-title">
 
-                    Add Child
+                    @Localizer.Get("Add") @Localizer.Get("Child")
 
                 </h5>
 
@@ -267,28 +269,25 @@
 
                 <div class="mb-3">
 
-                    <label>Name</label>
+                    <label>@Localizer.Get("Name")</label>
 
-                    <input id="ChildName"
-                           class="form-control" />
-
-                </div>
-
-                <div class="mb-3">
-
-                    <label>Controller</label>
-
-                    <input id="ControllerName"
-                           class="form-control" />
+                    <input id="ChildName" class="form-control" />
 
                 </div>
 
                 <div class="mb-3">
 
-                    <label>Action</label>
+                    <label>@Localizer.Get("Controller")</label>
 
-                    <input id="ActionName"
-                           class="form-control" />
+                    <input id="ControllerName" class="form-control" />
+
+                </div>
+
+                <div class="mb-3">
+
+                    <label>@Localizer.Get("Action")</label>
+
+                    <input id="ActionName" class="form-control" />
 
                 </div>
 
@@ -299,18 +298,16 @@
                 <button class="btn btn-secondary"
                         data-bs-dismiss="modal">
 
-                    Close
+                    @Localizer.Get("Close")
 
                 </button>
+                <permission controller="Masters" action="RoleMenuPermission" type="create">
+                <button id="btnSaveChild" type="button" class="btn btn-primary">
 
-                <button id="btnSaveChild"
-                        type="button"
-                        class="btn btn-primary">
-
-                    Save
+                    @Localizer.Get("Save")"
 
                 </button>
-
+                </permission>
             </div>
 
         </div>

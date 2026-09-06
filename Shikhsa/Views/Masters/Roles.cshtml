@@ -57,11 +57,11 @@
 
                     <!-- BUTTONS -->
                     <div class="mt-2">
-
+                         <permission controller="Masters" action="Roles" type="create">
                         <button type="submit" class="btn btn-success">
                             @Localizer.Get("Save")
                         </button>
-
+                        </permission>
                         <button type="reset" class="btn btn-secondary"> @Localizer.Get("Reset") </button>
 
                     </div>
@@ -206,7 +206,7 @@
                                 <td colspan="7"
                                     class="text-center">
 
-                                    No Record Found
+                                    @Localizer.Get("No Record Found")
 
                                 </td>
 

@@ -45,9 +45,7 @@ namespace Shikhsa.Controllers
         #endregion
         [SkipPermission]
         [HttpGet]
-        public async Task<IActionResult> LoadAssignments(
-        int batchId,
-        int sectionId)
+        public async Task<IActionResult> LoadAssignments(int batchId,int sectionId)
         {
             var model = await _repository.LoadAssignments(batchId, sectionId);
 
@@ -77,10 +75,7 @@ namespace Shikhsa.Controllers
         }
         [SkipPermission]
         [HttpPost]
-        public async Task<JsonResult> CopyPreviousBatch(
-        int oldBatchId,
-        int newBatchId,
-        int sectionId)
+        public async Task<JsonResult> CopyPreviousBatch(int oldBatchId,int newBatchId,int sectionId)
         {
             try
             {

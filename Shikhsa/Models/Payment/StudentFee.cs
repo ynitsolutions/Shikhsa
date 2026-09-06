@@ -191,7 +191,19 @@ namespace Shikhsa.Models.Payment
         public int? PaymentModeId { get; set; }
 
         public decimal Amount { get; set; }
+        public string? StudentName { get; set; }
+        public string? FatherName { get; set; }
 
+        public int? ClassId { get; set; }
+        public string? ClassName { get; set; }
+
+        public int? SectionId { get; set; }
+        public string? SectionName { get; set; }
+
+        public int? BatchId { get; set; }
+        public string? BatchName { get; set; }
+
+       // public decimal Amount { get; set; }
         public DateTime TxnDate { get; set; } = DateTime.Now;
 
         // Pending / Success / Failed / Cancelled
