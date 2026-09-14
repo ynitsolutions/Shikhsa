@@ -3,37 +3,213 @@
 @{
     ViewData["Title"] = "Fee Heading Master";
 }
-<div class="container-fluid mt-3">
 
+<style>
+    /* /* ── Custom responsive overrides ── */
+    .card-header .btn {
+        white-space: nowrap;
+    }
+
+    /* Table improvements */
+    #tblFeeHeading_wrapper .dataTables_length,
+    #tblFeeHeading_wrapper .dataTables_filter {
+        margin-bottom: 0.75rem;
+    }
+
+        #tblFeeHeading_wrapper .dataTables_filter input {
+            min-width: 180px;
+        } */
+
+    /* Month checkboxes – uniform sizing */
+    .month-check-group .form-check {
+        padding-left: 1.75rem;
+    }
+
+    .month-check-group .form-check-input {
+        width: 1.1rem;
+        height: 1.1rem;
+        margin-top: 0.15rem;
+    }
+
+    .month-check-group .form-check-label {
+        font-size: 0.9rem;
+    }
+
+    /* Status toggle button in table */
+    .btn-status {
+        min-width: 70px;
+        font-size: 0.75rem;
+        padding: 0.2rem 0.5rem;
+    }
+
+    /* Action buttons – consistent touch targets */
+    .btn-action {
+        min-width: 32px;
+        min-height: 32px;
+        padding: 0.2rem 0.5rem;
+        font-size: 0.85rem;
+    }
+
+    /* ── Mobile-first adjustments ── */
+    @@media (max-width: 575.98px) {
+        .card-header .row {
+            flex-direction: column;
+            align-items: stretch !important;
+            gap: 0.5rem;
+        }
+
+        .card-header .col-md-6.text-md-end {
+            text-align: left !important;
+        }
+
+        .card-header .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .form-actions .btn {
+            width: 100%;
+            margin-bottom: 0.4rem;
+        }
+
+            .form-actions .btn:last-child {
+                margin-bottom: 0;
+            }
+
+        .month-check-group .col-6 {
+            flex: 0 0 50%;
+            max-width: 50%;
+        }
+
+        .month-check-group .form-check-label {
+            font-size: 0.8rem;
+        }
+
+        #tblFeeHeading_wrapper .dataTables_filter input {
+            min-width: 120px;
+            width: 100%;
+        }
+
+        #tblFeeHeading_wrapper .dataTables_length select {
+            width: auto;
+            min-width: 60px;
+        }
+
+        .table thead th,
+        .table tbody td {
+            font-size: 0.75rem;
+            padding: 0.35rem 0.4rem;
+        }
+
+        .btn-status {
+            font-size: 0.65rem;
+            min-width: 56px;
+            padding: 0.1rem 0.3rem;
+        }
+
+        .btn-action {
+            min-width: 28px;
+            min-height: 28px;
+            font-size: 0.75rem;
+            padding: 0.1rem 0.3rem;
+        }
+
+        .badge-total {
+            font-size: 0.7rem;
+            display: inline-block;
+            margin-top: 0.2rem;
+        }
+    }
+
+    @@media (min-width: 576px) and (max-width: 767.98px) {
+        .card-header .btn {
+            padding: 0.25rem 0.6rem;
+            font-size: 0.8rem;
+        }
+
+        .month-check-group .col-sm-4 {
+            flex: 0 0 33.333%;
+            max-width: 33.333%;
+        }
+
+        .table thead th,
+        .table tbody td {
+            font-size: 0.8rem;
+            padding: 0.4rem 0.5rem;
+        }
+    }
+
+    @@media (min-width: 768px) and (max-width: 991.98px) {
+        .month-check-group .col-md-3 {
+            flex: 0 0 25%;
+            max-width: 25%;
+        }
+
+        .table thead th,
+        .table tbody td {
+            font-size: 0.82rem;
+            padding: 0.45rem 0.55rem;
+        }
+    }
+
+    /* DataTable responsive tweaks */
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    #tblFeeHeading {
+        min-width: 900px;
+        width: 100%;
+    }
+
+        #tblFeeHeading thead th {
+            white-space: nowrap;
+            vertical-align: middle;
+        }
+
+        #tblFeeHeading tbody td {
+            vertical-align: middle;
+        }
+
+    /* Better visual for checkmarks */
+    .text-center .fa-check {
+        color: #198754;
+    }
+
+    .text-center .fa-minus {
+        color: #adb5bd;
+    }
+</style> 
+
+<div class="container-fluid mt-2 mt-sm-3">
+
+    <!-- ──── FORM CARD ──── -->
     <div class="card shadow-sm">
 
-        <div class="card-header bg-primary text-white">
+        <div class="card-header bg-primary text-white py-2 py-sm-3">
 
-            <div class="row align-items-center">
+            <div class="row align-items-center g-2">
 
-                <div class="col-md-6">
-                    <h5 class="mb-0">
-                        Fee Heading Master
+                <div class="col-12 col-md-6">
+                    <h5 class="mb-0 fs-6 fs-sm-5">
+                        @Localizer.Get("Fee Heading Master")
                     </h5>
                 </div>
 
-                <div class="col-md-6 text-md-end">
-
+                <div class="col-12 col-md-6 text-md-end">
                     <a asp-action="Index"
-                       class="btn btn-light btn-sm">
-
+                       class="btn btn-light btn-sm w-100 w-md-auto">
                         <i class="fa fa-plus"></i>
-                        New
-
+                        @Localizer.Get("New")
                     </a>
-
                 </div>
 
             </div>
 
         </div>
 
-        <div class="card-body">
+        <div class="card-body p-2 p-sm-3 p-md-4">
 
             <form asp-action="SaveFeeHeadings"
                   method="post"
@@ -47,320 +223,189 @@
                      class="text-danger mb-3">
                 </div>
 
-                <div class="row">
+                <!-- ── Form fields ── -->
+                <div class="row g-2 g-sm-3">
 
-                    <div class="col-lg-5 col-md-6 mb-3">
-
+                    <!-- Fee Heading Name -->
+                    <div class="col-12 col-sm-6 col-lg-5">
                         <label asp-for="Form.FeeHeadingName"
-                               class="form-label fw-semibold">
+                               class="form-label fw-semibold mb-1">
+                            @Localizer.Get("Fee Heading")
                         </label>
-
                         <input asp-for="Form.FeeHeadingName"
-                               class="form-control"
+                               class="form-control form-control-sm"
                                placeholder="Enter Fee Heading" />
-
                         <span asp-validation-for="Form.FeeHeadingName"
-                              class="text-danger">
+                              class="text-danger small">
                         </span>
-
                     </div>
 
-                    <div class="col-lg-3 col-md-6 mb-3">
-
-                        <label class="form-label fw-semibold">
-
-                            Frequency
-
+                    <!-- Frequency -->
+                    <div class="col-12 col-sm-6 col-lg-3">
+                        <label class="form-label fw-semibold mb-1">
+                            @Localizer.Get("Frequency")
                         </label>
-
                         <select asp-for="Form.FrequencyId"
                                 asp-items="Model.FrequencyList"
-                                class="form-select">
-
+                                class="form-select form-select-sm">
                             <option value="">-- Select Frequency --</option>
-
                         </select>
-
                         <span asp-validation-for="Form.FrequencyId"
-                              class="text-danger">
+                              class="text-danger small">
                         </span>
-
                     </div>
 
-                    <div class="col-lg-2 col-md-6 mb-3">
-
-                        <label class="form-label fw-semibold">
-
-                            Status
-
+                    <!-- Status -->
+                    <div class="col-12 col-sm-6 col-lg-2">
+                        <label class="form-label fw-semibold mb-1">
+                            @Localizer.Get("Status")
                         </label>
-
-                        <div class="form-check mt-2">
-
+                        <div class="form-check mt-1 mt-sm-2">
                             <input asp-for="Form.IsActive"
                                    class="form-check-input" />
-
                             <label asp-for="Form.IsActive"
                                    class="form-check-label">
-
-                                Active
-
+                                @Localizer.Get("Active")
                             </label>
-
                         </div>
-
                     </div>
 
                 </div>
 
-                <hr />
+                <hr class="my-3" />
 
-                <h6 class="fw-bold mb-3">
-
-                    Applicable Months
-
+                <!-- ── Applicable Months ── -->
+                <h6 class="fw-bold mb-2 mb-sm-3">
+                    @Localizer.Get("Applicable Months")
                 </h6>
 
-                <div class="row">
+                <div class="row g-2 g-sm-3 month-check-group">
 
-                    <div class="col-lg-2 col-md-3 col-6 mb-3">
-
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2">
                         <div class="form-check">
-
-                            <input asp-for="Form.Jan"
-                                   class="form-check-input" />
-
-                            <label asp-for="Form.Jan"
-                                   class="form-check-label">
-
-                                January
-
+                            <input asp-for="Form.Jan" class="form-check-input" />
+                            <label asp-for="Form.Jan" class="form-check-label">
+                                @Localizer.Get("January")
                             </label>
-
                         </div>
-
                     </div>
 
-                    <div class="col-lg-2 col-md-3 col-6 mb-3">
-
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2">
                         <div class="form-check">
-
-                            <input asp-for="Form.Feb"
-                                   class="form-check-input" />
-
-                            <label asp-for="Form.Feb"
-                                   class="form-check-label">
-
-                                February
-
+                            <input asp-for="Form.Feb" class="form-check-input" />
+                            <label asp-for="Form.Feb" class="form-check-label">
+                                @Localizer.Get("February")
                             </label>
-
                         </div>
-
                     </div>
 
-                    <div class="col-lg-2 col-md-3 col-6 mb-3">
-
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2">
                         <div class="form-check">
-
-                            <input asp-for="Form.Mar"
-                                   class="form-check-input" />
-
-                            <label asp-for="Form.Mar"
-                                   class="form-check-label">
-
-                                March
-
+                            <input asp-for="Form.Mar" class="form-check-input" />
+                            <label asp-for="Form.Mar" class="form-check-label">
+                                @Localizer.Get("March")
                             </label>
-
                         </div>
-
                     </div>
 
-                    <div class="col-lg-2 col-md-3 col-6 mb-3">
-
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2">
                         <div class="form-check">
-
-                            <input asp-for="Form.Apr"
-                                   class="form-check-input" />
-
-                            <label asp-for="Form.Apr"
-                                   class="form-check-label">
-
-                                April
-
+                            <input asp-for="Form.Apr" class="form-check-input" />
+                            <label asp-for="Form.Apr" class="form-check-label">
+                                @Localizer.Get("April")
                             </label>
-
                         </div>
-
                     </div>
 
-                    <div class="col-lg-2 col-md-3 col-6 mb-3">
-
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2">
                         <div class="form-check">
-
-                            <input asp-for="Form.May"
-                                   class="form-check-input" />
-
-                            <label asp-for="Form.May"
-                                   class="form-check-label">
-
-                                May
-
+                            <input asp-for="Form.May" class="form-check-input" />
+                            <label asp-for="Form.May" class="form-check-label">
+                                @Localizer.Get("May")
                             </label>
-
                         </div>
-
                     </div>
 
-                    <div class="col-lg-2 col-md-3 col-6 mb-3">
-
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2">
                         <div class="form-check">
-
-                            <input asp-for="Form.Jun"
-                                   class="form-check-input" />
-
-                            <label asp-for="Form.Jun"
-                                   class="form-check-label">
-
-                                June
-
+                            <input asp-for="Form.Jun" class="form-check-input" />
+                            <label asp-for="Form.Jun" class="form-check-label">
+                                @Localizer.Get("June")
                             </label>
-
                         </div>
-
                     </div>
 
-                    <div class="col-lg-2 col-md-3 col-6 mb-3">
-
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2">
                         <div class="form-check">
-
-                            <input asp-for="Form.Jul"
-                                   class="form-check-input" />
-
-                            <label asp-for="Form.Jul"
-                                   class="form-check-label">
-
-                                July
-
+                            <input asp-for="Form.Jul" class="form-check-input" />
+                            <label asp-for="Form.Jul" class="form-check-label">
+                                @Localizer.Get("July")
                             </label>
-
                         </div>
-
                     </div>
 
-                    <div class="col-lg-2 col-md-3 col-6 mb-3">
-
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2">
                         <div class="form-check">
-
-                            <input asp-for="Form.Aug"
-                                   class="form-check-input" />
-
-                            <label asp-for="Form.Aug"
-                                   class="form-check-label">
-
-                                August
-
+                            <input asp-for="Form.Aug" class="form-check-input" />
+                            <label asp-for="Form.Aug" class="form-check-label">
+                                @Localizer.Get("August")
                             </label>
-
                         </div>
-
                     </div>
 
-                    <div class="col-lg-2 col-md-3 col-6 mb-3">
-
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2">
                         <div class="form-check">
-
-                            <input asp-for="Form.Sep"
-                                   class="form-check-input" />
-
-                            <label asp-for="Form.Sep"
-                                   class="form-check-label">
-
-                                September
-
+                            <input asp-for="Form.Sep" class="form-check-input" />
+                            <label asp-for="Form.Sep" class="form-check-label">
+                                @Localizer.Get("September")
                             </label>
-
                         </div>
-
                     </div>
 
-                    <div class="col-lg-2 col-md-3 col-6 mb-3">
-
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2">
                         <div class="form-check">
-
-                            <input asp-for="Form.Oct"
-                                   class="form-check-input" />
-
-                            <label asp-for="Form.Oct"
-                                   class="form-check-label">
-
-                                October
-
+                            <input asp-for="Form.Oct" class="form-check-input" />
+                            <label asp-for="Form.Oct" class="form-check-label">
+                                @Localizer.Get("October")
                             </label>
-
                         </div>
-
                     </div>
 
-                    <div class="col-lg-2 col-md-3 col-6 mb-3">
-
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2">
                         <div class="form-check">
-
-                            <input asp-for="Form.Nov"
-                                   class="form-check-input" />
-
-                            <label asp-for="Form.Nov"
-                                   class="form-check-label">
-
-                                November
-
+                            <input asp-for="Form.Nov" class="form-check-input" />
+                            <label asp-for="Form.Nov" class="form-check-label">
+                                @Localizer.Get("November")
                             </label>
-
                         </div>
-
                     </div>
 
-                    <div class="col-lg-2 col-md-3 col-6 mb-3">
-
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2">
                         <div class="form-check">
-
-                            <input asp-for="Form.Dec"
-                                   class="form-check-input" />
-
-                            <label asp-for="Form.Dec"
-                                   class="form-check-label">
-
-                                December
-
+                            <input asp-for="Form.Dec" class="form-check-input" />
+                            <label asp-for="Form.Dec" class="form-check-label">
+                                @Localizer.Get("December")
                             </label>
-
                         </div>
-
                     </div>
 
                 </div>
 
-                <hr />
+                <hr class="my-3" />
 
-                <div class="text-end">
+                <!-- ── Form Actions ── -->
+                <div class="d-flex flex-column flex-sm-row justify-content-end gap-2 form-actions">
 
                     <button type="submit"
-                            class="btn btn-success">
-
+                            class="btn btn-success btn-sm order-2 order-sm-1">
                         <i class="fa fa-save"></i>
-
-                        @(Model.Form.FeeHeadingId == 0 ? "Save" : "Update")
-
+                        @(Model.Form.FeeHeadingId == 0 ? @Localizer.Get("Save") : @Localizer.Get("Update"))
                     </button>
 
                     <a asp-action="Index"
-                       class="btn btn-secondary">
-
+                       class="btn btn-secondary btn-sm order-1 order-sm-2">
                         <i class="fa fa-refresh"></i>
-
-                        Reset
-
+                        @Localizer.Get("Reset")
                     </a>
 
                 </div>
@@ -370,161 +415,120 @@
         </div>
 
     </div>
-    <div class="card shadow-sm mt-4">
 
-        <div class="card-header bg-dark text-white">
+    <!-- ──── LIST CARD ──── -->
+    <div class="card shadow-sm mt-3 mt-sm-4">
 
-            <div class="row">
+        <div class="card-header bg-dark text-white py-2 py-sm-3">
 
-                <div class="col-md-6">
+            <div class="row align-items-center g-2">
 
-                    <h5 class="mb-0">
-                        Fee Heading List
+                <div class="col-7 col-sm-6">
+                    <h5 class="mb-0 fs-6 fs-sm-5">
+                        @Localizer.Get("Fee Heading List")
                     </h5>
-
                 </div>
 
-                <div class="col-md-6 text-md-end">
-
-                    <span class="badge bg-light text-dark">
-
-                        Total Records :
+                <div class="col-5 col-sm-6 text-end">
+                    <span class="badge bg-light text-dark badge-total">
+                        @Localizer.Get("Total Records") :
                         @Model.List.Count
-
                     </span>
-
                 </div>
 
             </div>
 
         </div>
 
-        <div class="card-body">
+        <div class="card-body p-1 p-sm-2 p-md-3">
 
             <div class="table-responsive">
 
-                <table class="table table-bordered table-hover align-middle"
+                <table class="table table-bordered table-hover align-middle mb-0 datatable"
                        id="tblFeeHeading">
 
                     <thead class="table-primary">
-
                         <tr>
-
-                            <th width="60">#</th>
-
-                            <th>Fee Heading</th>
-
-                            <th width="180">Frequency</th>
-
-                            <th class="text-center">Jan</th>
-                            <th class="text-center">Feb</th>
-                            <th class="text-center">Mar</th>
-                            <th class="text-center">Apr</th>
-                            <th class="text-center">May</th>
-                            <th class="text-center">Jun</th>
-                            <th class="text-center">Jul</th>
-                            <th class="text-center">Aug</th>
-                            <th class="text-center">Sep</th>
-                            <th class="text-center">Oct</th>
-                            <th class="text-center">Nov</th>
-                            <th class="text-center">Dec</th>
-
-                            <th width="90">Status</th>
-
-                            <th width="130" class="text-center">
-
-                                Action
-
-                            </th>
-
+                            <th width="50" class="text-center">#</th>
+                            <th>@Localizer.Get("Fee Heading")</th>
+                            <th width="140">Frequency</th>
+                            <th class="text-center" width="42">@Localizer.Get("Jan")</th>
+                            <th class="text-center" width="42">@Localizer.Get("Feb")</th>
+                            <th class="text-center" width="42">@Localizer.Get("Mar")</th>
+                            <th class="text-center" width="42">@Localizer.Get("Apr")</th>
+                            <th class="text-center" width="42">@Localizer.Get("May")</th>
+                            <th class="text-center" width="42">@Localizer.Get("Jun")</th>
+                            <th class="text-center" width="42">@Localizer.Get("Jul")</th>
+                            <th class="text-center" width="42">@Localizer.Get("Aug")</th>
+                            <th class="text-center" width="42">@Localizer.Get("Sep")</th>
+                            <th class="text-center" width="42">@Localizer.Get("Oct")</th>
+                            <th class="text-center" width="42">@Localizer.Get("Nov")</th>
+                            <th class="text-center" width="42">@Localizer.Get("Dec")</th>
+                            <th width="90" class="text-center">@Localizer.Get("Status")</th>
+                            <th width="100" class="text-center">@Localizer.Get("Action")</th>
                         </tr>
-
                     </thead>
 
                     <tbody>
-
                         @{
                             int sr = 1;
                         }
-
                         @foreach (var item in Model.List)
                         {
                             <tr>
+                                <td class="text-center">@(sr++)</td>
+                                <td>@item.FeeHeadingName</td>
+                                <td>@item.Frequency?.Text</td>
+                                <td class="text-center">@(item.Jan ? "✓" : "–")</td>
+                                <td class="text-center">@(item.Feb ? "✓" : "–")</td>
+                                <td class="text-center">@(item.Mar ? "✓" : "–")</td>
+                                <td class="text-center">@(item.Apr ? "✓" : "–")</td>
+                                <td class="text-center">@(item.May ? "✓" : "–")</td>
+                                <td class="text-center">@(item.Jun ? "✓" : "–")</td>
+                                <td class="text-center">@(item.Jul ? "✓" : "–")</td>
+                                <td class="text-center">@(item.Aug ? "✓" : "–")</td>
+                                <td class="text-center">@(item.Sep ? "✓" : "–")</td>
+                                <td class="text-center">@(item.Oct ? "✓" : "–")</td>
+                                <td class="text-center">@(item.Nov ? "✓" : "–")</td>
+                                <td class="text-center">@(item.Dec ? "✓" : "–")</td>
 
-                                <td>
-
-                                    @(sr++)
-
-                                </td>
-
-                                <td>
-
-                                    @item.FeeHeadingName
-
-                                </td>
-
-                                <td>
-
-                                    @item.Frequency?.Text
-
-                                </td>
-
-                                <td class="text-center">@(item.Jan ? "✓" : "-")</td>
-                                <td class="text-center">@(item.Feb ? "✓" : "-")</td>
-                                <td class="text-center">@(item.Mar ? "✓" : "-")</td>
-                                <td class="text-center">@(item.Apr ? "✓" : "-")</td>
-                                <td class="text-center">@(item.May ? "✓" : "-")</td>
-                                <td class="text-center">@(item.Jun ? "✓" : "-")</td>
-                                <td class="text-center">@(item.Jul ? "✓" : "-")</td>
-                                <td class="text-center">@(item.Aug ? "✓" : "-")</td>
-                                <td class="text-center">@(item.Sep ? "✓" : "-")</td>
-                                <td class="text-center">@(item.Oct ? "✓" : "-")</td>
-                                <td class="text-center">@(item.Nov ? "✓" : "-")</td>
-                                <td class="text-center">@(item.Dec ? "✓" : "-")</td>
-
-                               <td class="text-center">
-
-                                    @if (item.IsActive)
-                                    {
-                                        <a asp-action="DeleteFeeHeadings"
-                                           asp-route-id="@item.FeeHeadingId"
-                                           class="btn btn-success btn-sm"
-                                           title="Click to Deactivate">
-
-                                            <i class="fa fa-check-circle"></i>
-                                            Active
-
-                                        </a>
-                                    }
-                                    else
-                                    {
-                                        <a asp-action="DeleteFeeHeadings"
-                                           asp-route-id="@item.FeeHeadingId"
-                                           class="btn btn-danger btn-sm"
-                                           title="Click to Activate">
-
-                                            <i class="fa fa-times-circle"></i>
-                                            Inactive
-
-                                        </a>
-                                    }
-
+                                <td class="text-center">
+                                    <permission controller="FeeHeading" action="FeeHeadings" type="delete">
+                                        @if (item.IsActive)
+                                        {
+                                            <a asp-action="DeleteFeeHeadings"
+                                               asp-route-id="@item.FeeHeadingId"
+                                               class="btn btn-success btn-status"
+                                               title="Click to Deactivate">
+                                                <i class="fa fa-check-circle"></i>
+                                                @Localizer.Get("Active")
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <a asp-action="DeleteFeeHeadings"
+                                               asp-route-id="@item.FeeHeadingId"
+                                               class="btn btn-danger btn-status"
+                                               title="Click to Activate">
+                                                <i class="fa fa-times-circle"></i>
+                                                @Localizer.Get("Inactive")
+                                            </a>
+                                        }
+                                    </permission>
                                 </td>
 
                                 <td class="text-center">
-
+                                    <permission controller="FeeHeading" action="FeeHeadings" type="edit">
                                     <a asp-action="FeeHeadings"
                                        asp-route-id="@item.FeeHeadingId"
-                                       class="btn btn-warning btn-sm">
-
+                                       class="btn btn-warning btn-action"
+                                       title="Edit">
                                         <i class="fa fa-edit"></i>
-
                                     </a>
-                                </td>
-
+                                    </permission>
+                                    </td>
                             </tr>
                         }
-
                     </tbody>
 
                 </table>
@@ -534,33 +538,14 @@
         </div>
 
     </div>
+
 </div>
+
 @section Scripts
 {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
 
-    <script>
-
-        $(document).ready(function () {
-
-            $('#tblFeeHeading').DataTable({
-
-                responsive: true,
-
-                autoWidth: false,
-
-                pageLength: 10,
-
-                lengthMenu: [[10,25,50,100],[10,25,50,100]],
-
-                order: []
-
-            });
-
-        });
-
-    </script>
-
+    
 }

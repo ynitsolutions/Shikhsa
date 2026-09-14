@@ -4,32 +4,31 @@
     ViewData["Title"] = "Co-Scholastic Grade Entry";
 }
 
-@* <div class="container-fluid"> *@
-
 <form id="frmCoScholastic" asp-controller="Exam" asp-action="CoScholasticMarkEntry" method="post">
     @Html.AntiForgeryToken()
+
     <div class="card shadow-sm">
         <div class="card-body">
 
-            <div class="row g-3 align-items-end">
+            <!-- Responsive Filter Row -->
+            <div class="row g-2 g-md-3 align-items-end">
 
                 <partial name="~/Views/Shared/_StudentFilterPartial.cshtml" model="Model" />
 
-                <div class="col-md-2">
-                    <label asp-for="ExamCategoryId" class="form-label">
-                        @Localizer.Get("Term")
-                    </label>
-
+                <!-- Term -->
+                <div class="col-6 col-md-4 col-lg-3 col-xl-2">
+                    <label asp-for="ExamCategoryId" class="form-label">@Localizer.Get("Term")</label>
                     <select asp-for="ExamCategoryId"
-                            class="form-select select2"
+                            class="form-select form-select-sm select2"
                             asp-items="@(new SelectList(Model.ExamCategories, "ExamCategoryId", "ExamCategoryName"))">
-                        <option value="">@Localizer.Get("Select") @Localizer.Get("Term")</option>
+                        <option value="">@Localizer.Get("Select Term")</option>
                     </select>
                 </div>
 
-                <div class="col-md-2">
-                    <button type="submit" class="btn btn-primary w-100" id="btnLoadStudents">
-                        <i class="fa fa-search"></i> @Localizer.Get("Load") @Localizer.Get("Students")
+                <!-- Load Button -->
+                <div class="col-6 col-md-4 col-lg-3 col-xl-2">
+                    <button type="submit" class="btn btn-primary w-100 btn-sm" id="btnLoadStudents">
+                        <i class="fa fa-search"></i> @Localizer.Get("Load Students")
                     </button>
                 </div>
 
@@ -37,131 +36,101 @@
 
         </div>
     </div>
+
+    <!-- Co-Scholastic Table Container -->
     <div id="coScholasticContainer">
         <partial name="_ExamCoScholasticMarkTable" model="Model" />
     </div>
-    </form>
 
-@* </div> *@
+</form>
+
 @section Scripts {
-
     <partial name="_ValidationScriptsPartial" />
     <script src="~/js/teacher-filter.js"></script>
+
+    <!-- ✅ Only page‑specific CSS (sticky header & grade color) – rest is in site.css -->
     <style>
-
-        .table-scroll {
-            width: 100%;
-            overflow-x: auto;
-            overflow-y: auto;
-            max-height: 70vh;
-        }
-
-            .table-scroll table {
-                width: max-content;
-                min-width: 100%;
-            }
-
-        table thead th {
+        /* Sticky header – page‑specific, not in common site.css */
+        .table-scroll thead th {
             position: sticky;
             top: 0;
             z-index: 20;
+            background: #212529; /* matches .table-dark */
             white-space: nowrap;
             text-align: center;
             vertical-align: middle;
         }
 
-        table tbody td {
-            vertical-align: middle;
-            white-space: nowrap;
-        }
-
-        /* Sticky Columns */
-
-/*         table th:nth-child(1),
-        table td:nth-child(1) {
-            position: sticky;
-            left: 0;
-            z-index: 10;
-            background: white;
-            text-align: center;
-            min-width: 60px;
-        }
-
-        table th:nth-child(2),
-        table td:nth-child(2) {
-            position: sticky;
-            left: 60px;
-            z-index: 10;
-            background: white;
-            min-width: 120px;
-        }
-
-        table th:nth-child(3),
-        table td:nth-child(3) {
-            position: sticky;
-            left: 180px;
-            z-index: 10;
-            background: white;
-            min-width: 220px;
-        }
-
-        table thead th:nth-child(1),
-        table thead th:nth-child(2),
-        table thead th:nth-child(3) {
-            z-index: 30;
-        } */
-
+        /* Grade select border color – page‑specific feature */
         .form-select-sm {
             min-width: 80px;
             text-align: center;
         }
 
-        .card-header h5,
-        .card-header h6 {
-            margin-bottom: 0;
+        /* Grade colour coding */
+        .border-success {
+            border: 2px solid #28a745;
         }
 
-        .badge {
-            font-size: .75rem;
+        .border-primary {
+            border: 2px solid #0d6efd;
         }
 
-        .table-hover tbody tr:hover {
-            background: #f8f9fa;
+        .border-warning {
+            border: 2px solid #ffc107;
         }
 
-        .btn {
-            min-width: 120px;
+        .border-danger {
+            border: 2px solid #dc3545;
         }
 
+        /* Responsive tweaks for small screens */
+        @@media (max-width: 768px) {
+            .form-select-sm {
+                min-width: 60px;
+                font-size: 0.75rem;
+                padding: 0.2rem 0.3rem;
+            }
+
+            .btn-sm {
+                font-size: 0.8rem;
+                padding: 0.3rem 0.6rem;
+            }
+        }
+
+        @@media (max-width: 576px) {
+            .form-select-sm {
+                min-width: 50px;
+                font-size: 0.7rem;
+                padding: 0.15rem 0.2rem;
+            }
+
+            .freeze-icon {
+                font-size: 1rem !important;
+            }
+        }
     </style>
 
     <script>
-         $(document).ready(function () {
-            $('#tblMarks').DataTable({
-                paging: true,
-                ordering: true,
-                searching: true,
-                info: false
-            });
-        });
-        $("#btnLoadStudents").click(function (e) {
-        e.preventDefault();
-        $.ajax({
+     
 
+        // ── Load students via AJAX ─────────────────────────────
+        $("#btnLoadStudents").click(function(e) {
+            e.preventDefault();
+            $.ajax({
                 url: "/Exam/LoadCoScholasticStudents",
-
                 type: "POST",
-
                 data: $("#frmCoScholastic").serialize(),
-
-                success: function (html) {
-
+                beforeSend: function() {
+                    $("#btnLoadStudents")
+                        .prop("disabled", true)
+                        .html('<i class="fa fa-spinner fa-spin"></i> Loading...');
+                },
+                success: function(html) {
                     $("#coScholasticContainer").html(html);
-
                     if ($.fn.DataTable.isDataTable("#tblMarks")) {
                         $("#tblMarks").DataTable().destroy();
                     }
-
                     $("#tblMarks").DataTable({
                         paging: true,
                         searching: true,
@@ -169,197 +138,104 @@
                         info: false,
                         scrollX: true
                     });
-                       $("#tblMarks tbody tr").each(function () {
-                            var freeze = $(this).find(".freeze-value").val();
-                            freeze = (freeze === "True" || freeze === "true");
-                            setFreezeRow($(this), freeze);
-                        });
+                    // Re-apply freeze states
+                    $("#tblMarks tbody tr").each(function() {
+                        var freeze = $(this).find(".freeze-value").val();
+                        freeze = (freeze === "True" || freeze === "true");
+                        setFreezeRow($(this), freeze);
+                    });
                     updateHeaderFreezeIcon();
-
                 },
-
-                error: function (xhr) {
-
+                complete: function() {
+                    $("#btnLoadStudents")
+                        .prop("disabled", false)
+                        .html('<i class="fa fa-search"></i> Load Students');
+                },
+                error: function(xhr) {
                     console.log(xhr.responseText);
-
                 }
-
             });
         });
-        document.addEventListener("DOMContentLoaded", function () {
 
+        // ── Grade dropdown colour coding ──────────────────────
+        document.addEventListener("DOMContentLoaded", function() {
             const selects = document.querySelectorAll("select.form-select-sm");
-
-            selects.forEach(function (ddl) {
-
+            selects.forEach(function(ddl) {
                 setColor(ddl);
-
-                ddl.addEventListener("change", function () {
-
+                ddl.addEventListener("change", function() {
                     setColor(this);
-
                 });
-
             });
 
             function setColor(control) {
-
-                control.classList.remove(
-                    "border-success",
-                    "border-primary",
-                    "border-warning",
-                    "border-danger"
-                );
-
+                control.classList.remove("border-success", "border-primary", "border-warning", "border-danger");
                 switch (control.value) {
-
                     case "A+":
-                    case "A":
-                        control.classList.add("border-success");
-                        break;
-
+                    case "A": control.classList.add("border-success"); break;
                     case "B+":
-                    case "B":
-                        control.classList.add("border-primary");
-                        break;
-
-                    case "C":
-                        control.classList.add("border-warning");
-                        break;
-
+                    case "B": control.classList.add("border-primary"); break;
+                    case "C": control.classList.add("border-warning"); break;
                     case "D":
-                    case "E":
-                        control.classList.add("border-danger");
-                        break;
+                    case "E": control.classList.add("border-danger"); break;
                 }
-
             }
-
         });
-          function updateHeaderFreezeIcon() {
 
+        // ── Freeze / Unfreeze functions ────────────────────────
+        function updateHeaderFreezeIcon() {
             var total = $(".freeze-value").length;
-
-            var freeze = $(".freeze-value").filter(function () {
+            if (total === 0) return;
+            var freezeCount = $(".freeze-value").filter(function() {
                 return $(this).val() == "True" || $(this).val() == "true";
             }).length;
-
-            if (freeze == total && total > 0) {
-
-                $("#toggleAllFreezeIcon")
-                    .removeClass("fa-lock-open text-success")
-                    .addClass("fa-lock text-danger");
-
-            }
-            else {
-
-                $("#toggleAllFreezeIcon")
-                    .removeClass("fa-lock text-danger")
-                    .addClass("fa-lock-open text-success");
-
+            var icon = $("#toggleAllFreezeIcon");
+            if (freezeCount === total) {
+                icon.removeClass("fa-lock-open text-success").addClass("fa-lock text-danger");
+            } else {
+                icon.removeClass("fa-lock text-danger").addClass("fa-lock-open text-success");
             }
         }
 
-         function setFreezeRow(tr, freeze) 
-         {
-
+        function setFreezeRow(tr, freeze) {
             tr.find(".freeze-value").val(freeze);
-
-            // Radio disable mat karo, sirf click rok do
+            // Disable radio buttons visually (pointer-events)
             tr.find("input[type=radio]")
                 .css("pointer-events", freeze ? "none" : "auto")
                 .css("cursor", freeze ? "not-allowed" : "pointer")
                 .css("opacity", freeze ? "0.6" : "1");
-
             tr.toggleClass("table-secondary", freeze);
-
             var icon = tr.find(".freeze-icon");
-
             if (freeze) {
-
-                icon.removeClass("fa-lock-open text-success")
-                    .addClass("fa-lock text-danger");
-
-            }
-            else {
-
-                icon.removeClass("fa-lock text-danger")
-                    .addClass("fa-lock-open text-success");
-
+                icon.removeClass("fa-lock-open text-success").addClass("fa-lock text-danger");
+            } else {
+                icon.removeClass("fa-lock text-danger").addClass("fa-lock-open text-success");
             }
         }
-        $(document).on("click", ".toggle-freeze", function () {
 
+        $(document).on("click", ".toggle-freeze", function() {
             var tr = $(this).closest("tr");
-
             var freeze = tr.find(".freeze-value").val();
-
-            freeze = freeze === "True" || freeze === "true";
-
+            freeze = (freeze === "True" || freeze === "true");
             setFreezeRow(tr, !freeze);
-
             updateHeaderFreezeIcon();
         });
 
-        $(document).on("click", "#toggleAllFreeze", function () {
-
+        $(document).on("click", "#toggleAllFreeze", function() {
             var freezeAll = !$("#toggleAllFreezeIcon").hasClass("fa-lock");
-
-            $("#tblMarks tbody tr").each(function () {
-
+            $("#tblMarks tbody tr").each(function() {
                 setFreezeRow($(this), freezeAll);
-
             });
-
             updateHeaderFreezeIcon();
-
         });
-        function updateHeaderFreezeIcon() 
-        {
 
-            var rows = $(".freeze-value");
-
-            if (rows.length === 0)
-                return;
-
-            var total = rows.length;
-
-            var freezeCount = rows.filter(function () {
-
-                return $(this).val() === "True" || $(this).val() === "true";
-
-            }).length;
-
-            var icon = $("#toggleAllFreezeIcon");
-
-            if (freezeCount === total) {
-
-                icon.removeClass("fa-lock-open text-success")
-                    .addClass("fa-lock text-danger");
-
-            }
-            else {
-
-                icon.removeClass("fa-lock text-danger")
-                    .addClass("fa-lock-open text-success");
-
-            }
-        }
-         $(function () {
-
-            $("tbody tr").each(function () {
-
+        // ── Initialise freeze states on page load ─────────────
+        $(function() {
+            $("tbody tr").each(function() {
                 var freeze = $(this).find(".freeze-value").val();
-
                 freeze = (freeze === "True" || freeze === "true");
-
                 setFreezeRow($(this), freeze);
-
             });
-
             updateHeaderFreezeIcon();
-
         });
     </script>
-
 }

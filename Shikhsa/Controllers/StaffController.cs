@@ -231,6 +231,7 @@ namespace Shikhsa.Controllers
                 {
                     model.Designation = _context.DataListItems.Where(x => x.DataListItemId == model.DesignationId).Select(x => x.DataListItemText).FirstOrDefault();
                     model.Department = _context.DataListItems.Where(x => x.DataListItemId == model.DepartmentId).Select(x => x.DataListItemText).FirstOrDefault();
+                    await _lookup.PopulateAsync(model);
                     await _notificationService.SendAsync(
                          "Staff_Registration",
                          model.Email,
@@ -390,8 +391,8 @@ namespace Shikhsa.Controllers
 
             bool isAdmin = User.IsInRole("Admin");
 
-            var result = await _repositoryUser.ChangePassword(model, isAdmin);
-
+            //  var result = await _repositoryUser.ChangePassword(model, isAdmin);
+            var result = await _repositoryUser.ChangePassword(model);
             return Json(result);
         }
 
@@ -425,6 +426,7 @@ namespace Shikhsa.Controllers
 
         #region Profile
         [HttpGet]
+        [SkipPermission]
         [Route("Staff/Profile/{staffId:long}")]
         public async Task<IActionResult> Profile(long staffId)
         {

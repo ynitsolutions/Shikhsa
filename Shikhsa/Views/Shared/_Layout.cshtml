@@ -1,9 +1,9 @@
 ﻿@* Views/Shared/_Layout.cshtml *@
+@using System.Security.Claims
 @using Microsoft.AspNetCore.Identity
 @using Shikhsa.Data
-@using Shikhsa.Services
-@using Shikhsa.ViewModels
 @using Shikhsa.Helpers
+@using Shikhsa.Services
 @using Shikhsa.ViewModels
 
 @inject SignInManager<ApplicationUser> SignInManager
@@ -11,35 +11,30 @@
 @inject PermissionService MenuService
 @inject LocalizationService L
 @inject PermissionService PermissionService
+
 @{
-
-
-
     var isAuthenticated = SignInManager.IsSignedIn(User);
-
     List<MenuCacheVM> userMenus = new();
-
     UserSessionVM? currentUser = null;
 
     if (isAuthenticated)
     {
-        currentUser =Context.Session.GetObject<UserSessionVM>("CurrentUser");
-
+        currentUser = Context.Session.GetObject<UserSessionVM>("CurrentUser");
         if (currentUser != null)
         {
             var permissions = MenuService.GetPermissions(currentUser.Id);
-
             if (permissions == null)
             {
-                 MenuService.CacheUserPermissions(currentUser.Id);
+                MenuService.CacheUserPermissions(currentUser.Id);
                 permissions = MenuService.GetPermissions(currentUser.Id);
             }
-
-            userMenus =permissions?.Menus?? new List<MenuCacheVM>();
+            userMenus = permissions?.Menus ?? new List<MenuCacheVM>();
         }
     }
     var currentController = ViewContext.RouteData.Values["controller"]?.ToString()?.ToLower();
     var currentAction = ViewContext.RouteData.Values["action"]?.ToString()?.ToLower();
+    bool isYnItSolutions = User.Claims.Any(c => c.Type == ClaimTypes.Role && string.Equals(c.Value, "YN IT Solutions", StringComparison.OrdinalIgnoreCase));
+    bool isAdmin = User.Claims.Any(c => c.Type == ClaimTypes.Role && string.Equals(c.Value, "Admin", StringComparison.OrdinalIgnoreCase));
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -47,16 +42,14 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] — Shikhsa</title>
-   @*  <link rel="icon" type="image/x-icon" href="favicon.ico"> *@
+
     <!-- Tabler Icons -->
-    <link rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/@@tabler/icons-webfont@@3.19.0/dist/tabler-icons.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@@tabler/icons-webfont@@3.19.0/dist/tabler-icons.min.css" />
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=DM+Sans:wght@400;500&display=swap"
-          rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet" />
 
     <!-- CSS -->
     <link href="~/assets/css/bootstrap.min.css" rel="stylesheet" />
@@ -67,25 +60,23 @@
     <link rel="stylesheet" href="~/css/flatpickr.min.css" />
     <link href="~/css/cropper.min.css" rel="stylesheet" />
     <link href="~/css/sweetalert2.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="~/css/all.min.css">
+    <link rel="stylesheet" href="~/css/all.min.css" />
     @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
 
     @if (isAuthenticated)
     {
-        <!-- ░░ SIDEBAR OVERLAY (mobile) ░░ -->
+        <!-- SIDEBAR OVERLAY (mobile) -->
         <div id="sidebarOverlay" class="sidebar-overlay"></div>
 
         <div class="app-layout">
 
             <!-- ░░░░░░░░░░ SIDEBAR ░░░░░░░░░░ -->
             <aside id="sidebar" class="sidebar" role="navigation" aria-label="Main navigation">
-
                 <!-- Brand -->
                 <div class="sidebar-brand">
                     <div class="brand-icon">
-                        @*  <i class="ti ti-school" aria-hidden="true"></i> *@
                         <img src="~/images/logo.png" alt="Brand Logo" class="brand-logo">
                     </div>
                     <div>
@@ -96,73 +87,55 @@
 
                 <!-- Nav -->
                 <nav class="sidebar-nav">
-
                     <ul style="list-style:none; padding:0; margin:0;">
-
                         @if (!userMenus.Any())
                         {
-                            <li style="padding:1rem; text-align:center;">
-                                No menus assigned
-                            </li>
+                            <li style="padding:1rem; text-align:center;">No menus assigned</li>
                         }
-
-                        @foreach (var menu in userMenus
-                                            .Where(x => x.ParentId == null || x.ParentId == 0))
+                        @foreach (var menu in userMenus.Where(x => x.ParentId == null || x.ParentId == 0))
                         {
-                            var hasChildren =
-                            menu.Children != null &&
-                            menu.Children.Any();
-
+                            var hasChildren = menu.Children != null && menu.Children.Any();
                             var menuId = $"submenu_{menu.Id}";
-                            var isParentActive = menu.Children.Any(c =>c.ControllerName != null && c.ActionName != null && c.ControllerName.ToLower()
-                            == currentController&& c.ActionName.ToLower()== currentAction);
-
-                            var isDirectActive =!hasChildren && menu.ControllerName != null && menu.ActionName != null && menu.ControllerName.ToLower()
-                            == currentController && menu.ActionName.ToLower()== currentAction;
+                            var isParentActive = hasChildren && menu.Children.Any(c =>
+                                c.ControllerName != null && c.ActionName != null &&
+                                c.ControllerName.ToLower() == currentController &&
+                                c.ActionName.ToLower() == currentAction);
+                            var isDirectActive = !hasChildren && menu.ControllerName != null && menu.ActionName != null &&
+                                menu.ControllerName.ToLower() == currentController &&
+                                menu.ActionName.ToLower() == currentAction;
 
                             <li class="nav-item">
-
                                 @if (hasChildren)
                                 {
-                                    <a class="nav-link @(isParentActive ? "active" : "")" href="#"data-submenu="@menuId" 
-                                    aria-expanded="@(isParentActive ? "true" : "false")">
+                                    <a class="nav-link @(isParentActive ? "active" : "")" href="#" data-submenu="@menuId"
+                                       aria-expanded="@(isParentActive ? "true" : "false")">
                                         <i class="ti @(menu.Icon ?? "ti-circle")"></i><span>@menu.Name</span>
-                                        <i class="ti ti-chevron-right nav-arrow"
-                                           style="@(isParentActive ? "transform:rotate(90deg)" : "")">
-                                        </i>
-
+                                        <i class="ti ti-chevron-right nav-arrow" style="@(isParentActive ? "transform:rotate(90deg)" : "")"></i>
                                     </a>
-
                                     <ul id="@menuId" class="nav-submenu @(isParentActive ? "open" : "")">
-
                                         @foreach (var child in menu.Children)
                                         {
-                                            var isChildActive =child.ControllerName != null && child.ActionName != null && child.ControllerName.ToLower()
-                                            == currentController && child.ActionName.ToLower() == currentAction;
+                                            var isChildActive = child.ControllerName != null && child.ActionName != null &&
+                                                child.ControllerName.ToLower() == currentController &&
+                                                child.ActionName.ToLower() == currentAction;
                                             <li>
-                                                <a class="nav-link @(isChildActive ? "active" : "")" href="@Url.Action(child.ActionName,child.ControllerName)">
+                                                <a class="nav-link @(isChildActive ? "active" : "")" href="@Url.Action(child.ActionName, child.ControllerName)">
                                                     <i class="ti @(child.Icon ?? "ti-point")"></i><span>@child.Name</span>
-                                                 </a>
-
+                                                </a>
                                             </li>
-                                                        }
-
+                                        }
                                     </ul>
                                 }
                                 else
                                 {
-                                    <a class="nav-link @(isDirectActive ? "active" : "")" href="@Url.Action(menu.ActionName,menu.ControllerName)">
+                                    <a class="nav-link @(isDirectActive ? "active" : "")" href="@Url.Action(menu.ActionName, menu.ControllerName)">
                                         <i class="ti @(menu.Icon ?? "ti-circle")"></i> <span>@menu.Name</span>
-                                     </a>
-                                 }
-
+                                    </a>
+                                }
                             </li>
                         }
-
                     </ul>
-
                 </nav>
-
 
                 <!-- Sidebar Footer -->
                 <div style="padding:1rem; border-top:1px solid var(--border);">
@@ -171,29 +144,21 @@
                             @((currentUser?.FullName ?? "U").Substring(0, 1).ToUpper())
                         </div>
                         <div style="flex:1; min-width:0;">
-                            <div style="font-size:0.82rem; font-weight:600;
-                                            color:var(--text-primary); white-space:nowrap;
-                                            overflow:hidden; text-overflow:ellipsis;">
+                            <div style="font-size:0.82rem; font-weight:600; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
                                 @(currentUser?.FullName ?? User.Identity?.Name)
                             </div>
-                            <div style="font-size:0.72rem; color:var(--text-muted);
-                                            white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                            <div style="font-size:0.72rem; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
                                 @currentUser?.Email
                             </div>
                         </div>
-                        <form asp-controller="Account" asp-action="Logout" method="post"
-                              style="margin:0;">
+                        <form asp-controller="Account" asp-action="Logout" method="post" style="margin:0;">
                             @Html.AntiForgeryToken()
-                            <button type="submit"
-                                    class="btn btn-sm btn-outline"
-                                    style="padding:5px 8px;"
-                                    title="Sign out">
+                            <button type="submit" class="btn btn-sm btn-outline" style="padding:5px 8px;" title="Sign out">
                                 <i class="ti ti-logout" aria-hidden="true"></i>
                             </button>
                         </form>
                     </div>
                 </div>
-
             </aside>
             <!-- ░░░░░░░░ END SIDEBAR ░░░░░░░░ -->
             <!-- ░░░░░░░░ MAIN CONTENT ░░░░░░░░ -->
@@ -202,80 +167,76 @@
                 <!-- Top Bar -->
                 <header class="topbar">
                     <div class="topbar-left">
-                        <button id="sidebarToggle" class="sidebar-toggle"
-                                aria-label="Toggle sidebar">
+                        <button id="sidebarToggle" class="sidebar-toggle" aria-label="Toggle sidebar">
                             <i class="ti ti-menu-2" aria-hidden="true"></i>
                         </button>
                         <div>
-                            <div style="font-family:var(--font-main); font-size:0.95rem;
-                                            font-weight:600; color:var(--text-primary);">
+                            <div style="font-family:var(--font-main); font-size:0.95rem; font-weight:600; color:var(--text-primary);">
                                 @ViewData["Title"]
                             </div>
                             @if (ViewData["Subtitle"] != null)
                             {
-                                <div style="font-size:0.75rem; color:var(--text-muted);">
-                                    @ViewData["Subtitle"]
-                                </div>
+                                <div style="font-size:0.75rem; color:var(--text-muted);">@ViewData["Subtitle"]</div>
                             }
                         </div>
                     </div>
                     <div class="topbar-right">
-                        <!-- Role badge -->
-                     @*    @{
-                            var roles = currentUser != null
-                            ? await UserManager.GetRolesAsync(currentUser)
-                            : new List<string>();
-                        }
-                        @if (roles.Any())
-                        {
-                            <span class="badge badge-primary">
-                                <i class="ti ti-shield-check" aria-hidden="true"></i>
-                                @roles.First()
-                            </span>
-                        } *@
                         @if (!string.IsNullOrWhiteSpace(currentUser?.RoleName))
                         {
                             <span class="badge badge-primary">
-                                <i class="ti ti-shield-check"
-                                   aria-hidden="true"></i>
-
+                                <i class="ti ti-shield-check" aria-hidden="true"></i>
                                 @currentUser.RoleName
                             </span>
                         }
                         <!-- User avatar dropdown -->
                         <div style="position:relative;" id="userDropdownWrap">
-                            <button id="userDropdownBtn"
-                                    style="background:none; border:none; cursor:pointer;
-                                               display:flex; align-items:center; gap:8px; padding:4px;"
+                            <button id="userDropdownBtn" style="background:none; border:none; cursor:pointer; display:flex; align-items:center; gap:8px; padding:4px;"
                                     aria-haspopup="true" aria-expanded="false">
                                 <div class="avatar" style="width:34px; height:34px; font-size:0.78rem;">
                                     @((currentUser?.FullName ?? "U").Substring(0, 1).ToUpper())
                                 </div>
-                                <i class="ti ti-chevron-down"
-                                   style="font-size:0.8rem; color:var(--text-muted);"
-                                   aria-hidden="true"></i>
+                                <i class="ti ti-chevron-down" style="font-size:0.8rem; color:var(--text-muted);" aria-hidden="true"></i>
                             </button>
-
-                            <div id="userDropdown" style="display:none; position:absolute; right:0; top:calc(100% + 8px);
-                                            background:var(--bg-card); border:1px solid var(--border);
-                                            border-radius:var(--radius-md); box-shadow:var(--shadow-md);
-                                            min-width:200px; z-index:500; padding:6px 0;">
+                            <div id="userDropdown" style="display:none; position:absolute; right:0; top:calc(100% + 8px); background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); box-shadow:var(--shadow-md); min-width:200px; z-index:500; padding:6px 0;">
                                 <div style="padding:10px 14px; border-bottom:1px solid var(--border);">
-                                    <div style="font-size:0.85rem; font-weight:600; color:var(--text-primary);">
-                                        @currentUser?.FullName
-                                    </div>
-                                    <div style="font-size:0.75rem; color:var(--text-muted);">
-                                        @currentUser?.Email
-                                    </div>
+                                    <div style="font-size:0.85rem; font-weight:600; color:var(--text-primary);">@currentUser?.FullName</div>
+                                    <div style="font-size:0.75rem; color:var(--text-muted);">@currentUser?.Email</div>
                                 </div>
-                                <form asp-controller="Account" asp-action="Logout"
-                                      method="post" style="padding:4px 0;">
+                              
+                                    @if (!isYnItSolutions)
+                                    {
+                                        <button type="button"
+                                        onclick="TriggerGlobalPasswordModal('@UserManager.GetUserId(User)')"
+                                        style="width:100%; background:none; border:none; padding:8px 14px; text-align:left; cursor:pointer; font-size:0.85rem; color:var(--primary); display:flex; align-items:center; gap:8px;">
+                                            <i class="ti ti-key" aria-hidden="true"></i> Change Password
+                                        </button>
+                                    }
+                                @if (!isYnItSolutions)
+                                {
+                                   @if (User.IsInRole("Students"))
+                                    {
+                                        var studentId = Context.Session.GetString("StudentID"); // Apne session key ke mutabik change karein
+        
+                                        <a href="@Url.Action("Profile", "Students", new { studentId = studentId })"
+                                           style="width:100%; background:none; border:none; padding:8px 14px; text-align:left; cursor:pointer; font-size:0.85rem; color:var(--primary); display:flex; align-items:center; gap:8px; text-decoration:none;">
+                                            <i class="ti ti-key" aria-hidden="true"></i> Profile
+                                        </a>
+                                   }
+                                    else if (!User.IsInRole("Students"))
+                                    {
+                                            var staffId = Context.Session.GetString("StaffID"); // Apne session key ke mutabik change karein
+                                            if (!string.IsNullOrEmpty(staffId) && staffId != "0")
+                                            {
+                                                <a href="@Url.Action("Profile", "Staff", new { staffId = staffId })"
+                                                style="width:100%; background:none; border:none; padding:8px 14px; text-align:left; cursor:pointer; font-size:0.85rem; color:var(--primary); display:flex; align-items:center; gap:8px; text-decoration:none;">
+                                                    <i class="fa-solid fa-user" aria-hidden="true"></i> Profile
+                                                </a>
+                                            }
+                                        }
+                                }
+                                <form asp-controller="Account" asp-action="Logout" method="post" style="padding:4px 0;">
                                     @Html.AntiForgeryToken()
-                                    <button type="submit"
-                                            style="width:100%; background:none; border:none;
-                                                       padding:8px 14px; text-align:left; cursor:pointer;
-                                                       font-size:0.85rem; color:var(--danger);
-                                                       display:flex; align-items:center; gap:8px;">
+                                    <button type="submit" style="width:100%; background:none; border:none; padding:8px 14px; text-align:left; cursor:pointer; font-size:0.85rem; color:var(--danger); display:flex; align-items:center; gap:8px;">
                                         <i class="ti ti-logout" aria-hidden="true"></i> Sign out
                                     </button>
                                 </form>
@@ -288,32 +249,22 @@
                 <main class="page-content" role="main">
                     @if (TempData["Success"] != null)
                     {
-                        <script>
-                            ShowSuccess('@TempData["Success"]');
-                        </script>
+                        <script>ShowSuccess('@TempData["Success"]');</script>
                     }
-
                     @if (TempData["Error"] != null)
                     {
-                        <script>
-                            ShowError('@TempData["Error"]');
-                        </script>
+                        <script>ShowError('@TempData["Error"]');</script>
                     }
-
                     @if (TempData["Warning"] != null)
                     {
-                        <script>
-                            ShowWarning('@TempData["Warning"]');
-                        </script>
+                        <script>ShowWarning('@TempData["Warning"]');</script>
                     }
-
                     @if (TempData["Info"] != null)
                     {
-                        <script>
-                            ShowInfo('@TempData["Info"]');
-                        </script>
+                        <script>ShowInfo('@TempData["Info"]');</script>
                     }
                     @RenderBody()
+                    @await Html.PartialAsync("~/Views/Staff/_ChangePassword.cshtml")
                 </main>
 
             </div>
@@ -324,20 +275,10 @@
     else
     {
         @RenderBody()
+        @await Html.PartialAsync("~/Views/Staff/_ChangePassword.cshtml")
     }
 
     <!-- JS -->
-@*     <script src="~/assets/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js"></script>
-    <script src="~/js/toastr.min.js"></script>
-    <script src="~/js/jquery-3.7.1.min.js"></script>
-    <script src="~/js/jquery.datatables.min.js"></script>
-    <script src="~/js/datatables.bootstrap5.min.js"></script>
-    <script src="~/js/select2.min.js"></script>
-    <script src="~/js/flatpickr.min.js"></script>
-    <script src="~/js/cropper.min.js"></script>
-    <script src="~/js/sweetalert2.min.js"></script>
-    <script src="~/js/common.js"></script> *@
     <script src="~/js/jquery-3.7.1.min.js"></script>
     <script src="~/assets/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/toastr.min.js"></script>
@@ -350,149 +291,176 @@
     <script src="~/js/site.js"></script>
     <script src="~/js/common.js"></script>
     <script src="~/js/Validations.js"></script>
-    <!-- Dropdown toggle -->
+
+    <!-- User dropdown toggle -->
     <script>
-        (function () {
-            const btn      = document.getElementById('userDropdownBtn');
-            const dropdown = document.getElementById('userDropdown');
-            if (!btn || !dropdown) return;
+            (function() {
+                const btn = document.getElementById('userDropdownBtn');
+                const dropdown = document.getElementById('userDropdown');
+                if (!btn || !dropdown) return;
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const isOpen = dropdown.style.display === 'block';
+                    dropdown.style.display = isOpen ? 'none' : 'block';
+                    btn.setAttribute('aria-expanded', String(!isOpen));
+                });
+                document.addEventListener('click', function() {
+                    dropdown.style.display = 'none';
+                    btn?.setAttribute('aria-expanded', 'false');
+                });
+            })();
+            function TriggerGlobalPasswordModal(targetUserId) {
+                // 1. Map values directly down to the root level elements loaded by the partial view
+                $("#PasswordUserId").val(targetUserId);
 
-            btn.addEventListener('click', function (e) {
-                e.stopPropagation();
-                const isOpen = dropdown.style.display === 'block';
-                dropdown.style.display = isOpen ? 'none' : 'block';
-                btn.setAttribute('aria-expanded', String(!isOpen));
-            });
+                var currentLoggedInUser = $("#CurrentLoggedInUserId").val();
 
-            document.addEventListener('click', function () {
-                dropdown.style.display = 'none';
-                btn?.setAttribute('aria-expanded', 'false');
-            });
-        })();
-    </script>
-    <script>
-
-        $(document).ready(function ()
-        {
-            $('.select2').select2
-            ({
-            width:'100%',
-            placeholder: 'Select',
-            allowClear: true
-            });
-
-          document.querySelectorAll('.fp-date').forEach(function (el) {
-            flatpickr(el, {
-                wrap: true,
-                dateFormat: "Y-m-d", 
-                parseDate: (datestr, format) => {
-                    if (datestr && datestr.includes('-')) {
-                        const parts = datestr.split(' ')[0].split('-'); 
-                        return new Date(parts[2], parts[1] - 1, parts[0]);
-                    }
-                    return new Date(datestr);
+                // 2. Control field visibility based on user context matches
+                if (currentLoggedInUser === targetUserId) {
+                    $("#OldPasswordDiv").show();
+                } else {
+                    $("#OldPasswordDiv").hide();
+                    $("#OldPassword").val("");
                 }
+
+                // 3. Launch the component without encountering backdrop conflicts
+                try {
+                    var myModal = new bootstrap.Modal(document.getElementById('passwordModal'));
+                    myModal.show();
+                } catch (e) {
+                    // Fallback execution branch if running an older jQuery-bound theme layout
+                    $("#passwordModal").modal("show");
+                }
+            }
+
+    </script>
+
+    <!-- Sidebar toggle -->
+    <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const sidebar = document.getElementById('sidebar');
+                const overlay = document.getElementById('sidebarOverlay');
+                const toggle = document.getElementById('sidebarToggle');
+                if (!sidebar || !overlay || !toggle) return;
+
+                function openSidebar() {
+                    sidebar.classList.add('open');
+                    overlay.classList.add('open');
+                    document.body.style.overflow = 'hidden';
+                }
+                function closeSidebar() {
+                    sidebar.classList.remove('open');
+                    overlay.classList.remove('open');
+                    document.body.style.overflow = '';
+                }
+                toggle.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    if (sidebar.classList.contains('open')) closeSidebar();
+                    else openSidebar();
+                });
+                overlay.addEventListener('click', closeSidebar);
+                // close on escape key
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape') closeSidebar();
+                });
             });
-        });
+    </script>
+
+    <!-- Select2 & Flatpickr init (global) -->
+    <script>
+            $(document).ready(function() {
+                $('.select2').select2({
+                    width: '100%',
+                    placeholder: 'Select',
+                    allowClear: true
+                });
+
+                document.querySelectorAll('.fp-date').forEach(function(el) {
+                    flatpickr(el, {
+                        wrap: true,
+                        dateFormat: "Y-m-d",
+                        parseDate: (datestr, format) => {
+                            if (datestr && datestr.includes('-')) {
+                                const parts = datestr.split(' ')[0].split('-');
+                                return new Date(parts[2], parts[1] - 1, parts[0]);
+                            }
+                            return new Date(datestr);
+                        }
+                    });
+                });
+
                 @if (TempData["Success"] != null)
-                    {
-                        <text>ShowSuccess('@Html.Raw(TempData["Success"])');</text>
+                {
+                    <text>ShowSuccess('@Html.Raw(TempData["Success"])');</text>
                 }
                     @if (TempData["Error"] != null)
                     {
                         <text>ShowError('@Html.Raw(TempData["Error"])');</text>
-                }
-                    @if (TempData["Warning"] != null)
-                    {
-                        <text>ShowWarning('@Html.Raw(TempData["Warning"])');</text>
-                }
-                    @if (TempData["Info"] != null)
-                    {
-                        <text>ShowInfo('@Html.Raw(TempData["Info"])');</text>
-                }
-
-        });
-        $(document).on('shown.bs.modal', '.modal', function () {
-
-            var modal = $(this);
-
-            modal.find('.select2').each(function () {
-
-                if ($(this).hasClass('select2-hidden-accessible')) {
-                    $(this).select2('destroy');
-                }
-
-                $(this).select2({
-                    dropdownParent: modal,
-                    width: '100%'
+                    }
+                        @if (TempData["Warning"] != null)
+                        {
+                            <text>ShowWarning('@Html.Raw(TempData["Warning"])');</text>
+                        }
+                            @if (TempData["Info"] != null)
+                            {
+                                <text>ShowInfo('@Html.Raw(TempData["Info"])');</text>
+                            }
                 });
 
+            // Re-initialize select2 inside modals
+            $(document).on('shown.bs.modal', '.modal', function() {
+                var modal = $(this);
+                modal.find('.select2').each(function() {
+                    if ($(this).hasClass('select2-hidden-accessible')) {
+                        $(this).select2('destroy');
+                    }
+                    $(this).select2({
+                        dropdownParent: modal,
+                        width: '100%'
+                    });
+                });
             });
-        });
-        
-         
     </script>
+    <!-- Global DataTable Initialization -->
     <script>
             $(document).ready(function () {
-                // 1. Check if any table with class 'datatable' exists
-                var $tables = $('table.datatable');
-                if ($tables.length === 0) {
-                    return; // ✅ No datatable tables – exit silently, no error
+
+                // Check whether DataTable plugin is available
+                if (!$.fn.DataTable) {
+                    return;
                 }
 
-                // 2. Iterate over each datatable
-                $tables.each(function () {
-                    var $table = $(this);
+                // Find all tables having .datatable class
+                $('.datatable').each(function () {
 
-                    // 3. Prevent duplicate initialisation
-                    if ($.fn.dataTable.isDataTable($table)) {
+                    var table = $(this);
+
+                    // Prevent re-initialization
+                    if ($.fn.DataTable.isDataTable(this)) {
                         return;
                     }
 
-                    // 4. Build default options
-                    var options = {
-                        processing: true,
+                    // Initialize DataTable
+                    table.DataTable({
                         responsive: true,
+                        autoWidth: false,
+                        pageLength: 10,
+                        lengthMenu: [
+                            [10, 25, 50, 100, -1],
+                            [10, 25, 50, 100, "All"]
+                        ],
                         language: {
                             search: "Search:",
                             lengthMenu: "Show _MENU_ entries",
                             info: "Showing _START_ to _END_ of _TOTAL_ entries",
-                            infoEmpty: "No entries available",
-                            infoFiltered: "(filtered from _MAX_ total entries)",
-                            zeroRecords: "No matching records found"
+                            infoEmpty: "Showing 0 to 0 of 0 entries",
+                            zeroRecords: "No matching records found",
+                            emptyTable: "No data available in table"
                         }
-                    };
+                    });
 
-                    // 5. If data-url is provided, enable server‑side AJAX
-                    var ajaxUrl = $table.data('url');
-                    if (ajaxUrl) {
-                        options.serverSide = true;
-                        options.ajax = {
-                            url: ajaxUrl,
-                            type: 'POST',
-                            dataType: 'json'
-                            // You can add additional AJAX settings here (data, headers, etc.)
-                        };
-                    } else {
-                        // 🔥 No AJAX URL – fallback to client‑side processing
-                        options.serverSide = false;
-                        // You can still provide data directly in the table's tbody
-                        // or leave it empty; DataTable will just display static content.
-                    }
-
-                    // 6. Apply any extra table-specific options from data-* attributes
-                    //    (e.g., data-page-length, data-order, etc.)
-                    if ($table.data('page-length')) {
-                        options.pageLength = parseInt($table.data('page-length'));
-                    }
-                    if ($table.data('order')) {
-                        options.order = JSON.parse($table.data('order'));
-                    }
-                    // Add more as needed
-
-                    // 7. Initialise the DataTable
-                    $table.DataTable(options);
                 });
+
             });
     </script>
     @await RenderSectionAsync("Scripts", required: false)

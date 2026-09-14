@@ -1,0 +1,510 @@
+﻿@model Shikhsa.ViewModels.CertificateBuilderViewModel
+@{
+    ViewData["Title"] = (Model.Type == "tc" ? "Transfer Certificate" : "Character Certificate") + " Builder";
+    bool isTc = Model.Type == "tc";
+}
+
+<div class="cert-builder">
+    <form method="post" asp-action="Create" asp-route-type="@Model.Type" id="certForm">
+        @Html.AntiForgeryToken()
+
+        @* ============ LEFT PANEL : FORM ============ *@
+        <div class="cert-panel cert-panel--form">
+            <div class="cert-panel__header">
+                <h2>@(isTc ? "Transfer Certificate" : "Character Certificate") Builder</h2>
+                <div class="cert-tabs">
+                    <a asp-action="Create" asp-route-type="tc" class="@(isTc ? "active" : "")">Transfer Certificate</a>
+                    <a asp-action="Create" asp-route-type="cc" class="@(!isTc ? "active" : "")">Character Certificate</a>
+                </div>
+            </div>
+
+            <div asp-validation-summary="All" class="text-danger"></div>
+
+            <div class="cert-field-group">
+                <h4>Register Details</h4>
+                <div class="cert-row cert-row--3">
+                    <label>
+                        Book No.
+                        <input type="text" name="BookNo" data-preview="book_no" />
+                    </label>
+                    <label>
+                        Sl. No.
+                        <input type="text" name="SerialNo" data-preview="serial_no" />
+                    </label>
+                    <label>
+                        Admission No.
+                        <input type="text" name="AdmissionNo" data-preview="admission_no" />
+                    </label>
+                </div>
+            </div>
+
+            <div class="cert-field-group">
+                <h4>Student Details</h4>
+                <label>
+                    Name of Pupil
+                    <input type="text" name="StudentName" required data-preview="student_name" />
+                </label>
+                <div class="cert-row">
+                    <label>
+                        Father's / Guardian's Name
+                        <input type="text" name="FatherName" data-preview="father_name" />
+                    </label>
+                    <label>
+                        Mother's Name
+                        <input type="text" name="MotherName" data-preview="mother_name" />
+                    </label>
+                </div>
+                <div class="cert-row">
+                    <label>
+                        Nationality
+                        <input type="text" name="Nationality" value="Indian" data-preview="nationality" />
+                    </label>
+                    <label>
+                        Category (SC/ST/OBC/General)
+                        <input type="text" name="Category" data-preview="category" />
+                    </label>
+                </div>
+                <div class="cert-row">
+                    <label>
+                        Date of Birth
+                        <input type="date" name="Dob" data-preview="dob" data-format="date" />
+                    </label>
+                    <label>
+                        Date of Birth (in words)
+                        <input type="text" name="DobInWords" data-preview="dob_in_words" />
+                    </label>
+                </div>
+            </div>
+
+            @if (isTc)
+            {
+                <div class="cert-field-group">
+                    <h4>Academic Record</h4>
+                    <div class="cert-row">
+                        <label>
+                            Date of First Admission
+                            <input type="date" name="FirstAdmissionDate" data-preview="first_admission_date" data-format="date" />
+                        </label>
+                        <label>
+                            Class at First Admission
+                            <input type="text" name="FirstAdmissionClass" data-preview="first_admission_class" />
+                        </label>
+                    </div>
+                    <div class="cert-row">
+                        <label>
+                            Class Last Studied (figures)
+                            <input type="text" name="LastClassFigures" data-preview="last_class_figures" />
+                        </label>
+                        <label>
+                            Class Last Studied (words)
+                            <input type="text" name="LastClassWords" data-preview="last_class_words" />
+                        </label>
+                    </div>
+                    <label>
+                        Last School/Board Exam & Result
+                        <input type="text" name="LastExamResult" data-preview="last_exam_result" />
+                    </label>
+                    <label>
+                        Failed (if any, once/twice, in which class)
+                        <input type="text" name="FailedDetails" data-preview="failed_details" />
+                    </label>
+                    <label>
+                        Subjects Studied (comma separated)
+                        <input type="text" name="SubjectsStudied" id="subjectsInput"
+                               placeholder="English, Hindi, Maths, Science, Social Science, Computer"
+                               data-preview="subjects_studied" />
+                    </label>
+                    <div class="cert-row">
+                        <label>
+                            Qualified for Promotion?
+                            <select name="QualifiedForPromotion" data-preview="qualified_for_promotion">
+                                <option value="">--Select--</option>
+                                <option value="Yes">Yes</option>
+                                <option value="No">No</option>
+                            </select>
+                        </label>
+                        <label>
+                            Promoted To Class
+                            <input type="text" name="PromotedClass" data-preview="promoted_class" />
+                        </label>
+                    </div>
+                </div>
+
+                <div class="cert-field-group">
+                    <h4>Fees</h4>
+                    <div class="cert-row">
+                        <label>
+                            Dues Paid Upto (month)
+                            <input type="text" name="FeePaidUpto" data-preview="fee_paid_upto" />
+                        </label>
+                        <label>
+                            Fee Concession Availed
+                            <input type="text" name="FeeConcession" data-preview="fee_concession" />
+                        </label>
+                    </div>
+                </div>
+
+                <div class="cert-field-group">
+                    <h4>Attendance</h4>
+                    <div class="cert-row">
+                        <label>
+                            Total Working Days
+                            <input type="number" min="0" name="TotalWorkingDays" id="totalDays" data-preview="total_working_days" />
+                        </label>
+                        <label>
+                            Total Days Present
+                            <input type="number" min="0" name="TotalPresentDays" id="presentDays" data-preview="total_present_days" />
+                        </label>
+                    </div>
+                    <p class="cert-hint">Attendance %: <span id="attendancePercent">--</span></p>
+                </div>
+
+                <div class="cert-field-group">
+                    <h4>Activities & Conduct</h4>
+                    <label>
+                        NCC Cadet / Boy Scout / Girl Guide
+                        <input type="text" name="NccScoutGuide" data-preview="ncc_scout_guide" />
+                    </label>
+                    <label>
+                        Games / Extra-Curricular Activities
+                        <textarea name="ExtraCurricular" rows="2" data-preview="extra_curricular"></textarea>
+                    </label>
+                    <label>
+                        General Conduct
+                        <select name="GeneralConduct" data-preview="general_conduct">
+                            <option value="">--Select--</option>
+                            @foreach (var opt in Model.Conducts)
+                            {
+                                <option value="@opt.Value">@opt.Text</option>
+                            }
+                        </select>
+                    </label>
+                </div>
+
+                <div class="cert-field-group">
+                    <h4>Leaving Details</h4>
+                    <label>
+                        Reason for Leaving
+                        <select name="ReasonForLeaving" required data-preview="reason_for_leaving">
+                            @foreach (var opt in Model.Reasons)
+                            {
+                                <option value="@opt.Value">@opt.Text</option>
+                            }
+                        </select>
+                    </label>
+                    <div class="cert-row">
+                        <label>
+                            Date of Application
+                            <input type="date" name="ApplicationDate" data-preview="application_date" data-format="date" />
+                        </label>
+                        <label>
+                            Date of Issue
+                            <input type="date" name="IssueDate" data-preview="issue_date" data-format="date" />
+                        </label>
+                    </div>
+                    <label>
+                        Any Other Remarks
+                        <textarea name="Remarks" rows="2" data-preview="remarks"></textarea>
+                    </label>
+                </div>
+            }
+            else
+            {
+                <div class="cert-field-group">
+                    <h4>Character Certificate Details</h4>
+                    <div class="cert-row">
+                        <label>
+                            Class
+                            <input type="text" name="LastClassWords" data-preview="last_class_words" />
+                        </label>
+                        <label>
+                            General Conduct
+                            <select name="GeneralConduct" data-preview="general_conduct">
+                                <option value="">--Select--</option>
+                                @foreach (var opt in Model.Conducts)
+                                {
+                                    <option value="@opt.Value">@opt.Text</option>
+                                }
+                            </select>
+                        </label>
+                    </div>
+                    <div class="cert-row">
+                        <label>
+                            Studied From
+                            <input type="date" name="FirstAdmissionDate" data-preview="first_admission_date" data-format="date" />
+                        </label>
+                        <label>
+                            Studied Till
+                            <input type="date" name="IssueDate" data-preview="issue_date" data-format="date" />
+                        </label>
+                    </div>
+                    <label>
+                        Purpose of Issue
+                        <input type="text" name="PurposeOfIssue" placeholder="e.g. Admission in another school" data-preview="purpose_of_issue" />
+                    </label>
+                    <label>
+                        Additional Remarks
+                        <textarea name="CharacterRemarks" rows="3" data-preview="character_remarks"></textarea>
+                    </label>
+                </div>
+            }
+
+            <div class="cert-actions">
+                <button type="submit" class="btn btn--primary">Save & Preview / Print</button>
+            </div>
+        </div>
+
+        @* ============ RIGHT PANEL : LIVE PREVIEW ============ *@
+        <div class="cert-panel cert-panel--preview">
+            <div class="cert-preview-toolbar">Live Preview</div>
+
+            <div class="certificate-sheet" id="previewSheet">
+                @{
+                    ViewData["Preview"] = true;
+                }
+                @if (isTc)
+                {
+                    @await Html.PartialAsync("_TcTemplate", (Shikhsa.Models.Certificates?)null)
+                }
+                else
+                {
+                    @await Html.PartialAsync("_CcTemplate", (Shikhsa.Models.Certificates?)null)
+                }
+            </div>
+        </div>
+    </form>
+</div>
+
+<style>
+    .cert-builder {
+        display: flex;
+        gap: 24px;
+        align-items: flex-start;
+        padding: 24px;
+        background: #f4f5f7;
+    }
+
+    .cert-panel {
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 1px 4px rgba(0,0,0,.08);
+    }
+
+    .cert-panel--form {
+        flex: 0 0 420px;
+        max-height: 90vh;
+        overflow-y: auto;
+        padding: 20px;
+    }
+
+    .cert-panel--preview {
+        flex: 1;
+        padding: 20px;
+        position: sticky;
+        top: 16px;
+    }
+
+    .cert-panel__header h2 {
+        margin: 0 0 8px;
+        font-size: 18px;
+    }
+
+    .cert-tabs {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+
+        .cert-tabs a {
+            padding: 6px 12px;
+            border-radius: 6px;
+            background: #eef0f3;
+            text-decoration: none;
+            color: #333;
+            font-size: 13px;
+        }
+
+            .cert-tabs a.active {
+                background: #2563eb;
+                color: #fff;
+            }
+
+    .cert-field-group {
+        margin-bottom: 18px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid #eee;
+    }
+
+        .cert-field-group h4 {
+            margin: 0 0 8px;
+            font-size: 13px;
+            text-transform: uppercase;
+            color: #6b7280;
+            letter-spacing: .03em;
+        }
+
+        .cert-field-group label {
+            display: block;
+            font-size: 12px;
+            color: #374151;
+            margin-bottom: 10px;
+        }
+
+        .cert-field-group input, .cert-field-group select, .cert-field-group textarea {
+            width: 100%;
+            margin-top: 4px;
+            padding: 7px 9px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+
+    .cert-row {
+        display: flex;
+        gap: 10px;
+    }
+
+        .cert-row label {
+            flex: 1;
+        }
+
+    .cert-hint {
+        font-size: 12px;
+        color: #6b7280;
+    }
+
+    .cert-actions {
+        position: sticky;
+        bottom: -20px;
+        background: #fff;
+        padding-top: 10px;
+    }
+
+    .btn--primary {
+        width: 100%;
+        padding: 10px;
+        background: #2563eb;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        cursor: pointer;
+    }
+
+        .btn--primary:hover {
+            background: #1d4ed8;
+        }
+
+    .cert-preview-toolbar {
+        font-size: 12px;
+        color: #6b7280;
+        margin-bottom: 10px;
+        text-transform: uppercase;
+        letter-spacing: .04em;
+    }
+
+    .certificate-sheet {
+        border: 2px solid #333;
+        padding: 28px 34px;
+        font-family: 'Times New Roman', serif;
+        background: #fffdf6;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+        .certificate-sheet h1 {
+            text-align: center;
+            margin: 0;
+            font-size: 22px;
+        }
+
+        .certificate-sheet .school-sub {
+            text-align: center;
+            font-size: 12px;
+            margin: 2px 0;
+        }
+
+        .certificate-sheet .cert-title {
+            text-align: center;
+            text-decoration: underline;
+            margin: 14px 0;
+            font-size: 16px;
+        }
+
+        .certificate-sheet .reg-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            margin-bottom: 12px;
+        }
+
+        .certificate-sheet .cert-line {
+            display: flex;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+            .certificate-sheet .cert-line .num {
+                width: 26px;
+            }
+
+            .certificate-sheet .cert-line .label {
+                flex: 0 0 300px;
+            }
+
+            .certificate-sheet .cert-line .value {
+                flex: 1;
+                border-bottom: 1px dotted #333;
+                min-height: 16px;
+            }
+
+        .certificate-sheet .sign-row {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 40px;
+            font-size: 12px;
+            text-align: center;
+        }
+</style>
+
+<script>
+    const form = document.getElementById('certForm');
+
+    function formatDate(value) {
+        if (!value) return '';
+        const d = new Date(value);
+        if (isNaN(d)) return value;
+        return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    }
+
+    function updatePreview(el) {
+        const key = el.dataset.preview;
+        if (!key) return;
+        const targets = document.querySelectorAll('[data-slot="' + key + '"]');
+        let value = el.value || '';
+        if (el.dataset.format === 'date') value = formatDate(value);
+        targets.forEach(t => t.textContent = value || '________________');
+    }
+
+    form.querySelectorAll('[data-preview]').forEach(el => {
+        el.addEventListener('input', () => updatePreview(el));
+        el.addEventListener('change', () => updatePreview(el));
+    });
+
+    // Attendance % helper
+    const totalDays = document.getElementById('totalDays');
+    const presentDays = document.getElementById('presentDays');
+    function updateAttendance() {
+        const t = parseFloat(totalDays.value), p = parseFloat(presentDays.value);
+        const out = document.getElementById('attendancePercent');
+        if (t > 0 && !isNaN(p)) {
+            out.textContent = ((p / t) * 100).toFixed(1) + '%';
+        } else {
+            out.textContent = '--';
+        }
+    }
+    if (totalDays && presentDays) {
+        totalDays.addEventListener('input', updateAttendance);
+        presentDays.addEventListener('input', updateAttendance);
+    }
+</script>

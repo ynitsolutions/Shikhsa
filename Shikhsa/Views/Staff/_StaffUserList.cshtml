@@ -1,30 +1,17 @@
-﻿
-
-<table class="table table-bordered table-striped table-hover" id="tblStaffUser">
-
-    <thead>
-
-        <tr>
-
-            <th>#</th>
-
-            <th>Staff</th>
-
-            <th>User Name</th>
-
-            <th>Role</th>
-
-            <th>Password</th>
-
-            <th width="150">Action</th>
-
-        </tr>
-
-    </thead>
-
-    <tbody>
-
-      
-    </tbody>
-
-</table>
+﻿<div class="table-responsive">
+    <table class="table table-bordered table-striped table-hover align-middle datatable" id="tblStaffUser">
+        <thead class="table-light">
+            <tr>
+                <th style="width:50px;">#</th>
+                <th>@Localizer.Get("Staff")</th>
+                <th>@Localizer.Get("User Name")</th>
+                <th>@Localizer.Get("Role")</th>
+                <th>@Localizer.Get("Password")</th>
+                <th style="min-width:150px;">@Localizer.Get("Action")</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Data will be loaded dynamically -->
+        </tbody>
+    </table>
+</div>

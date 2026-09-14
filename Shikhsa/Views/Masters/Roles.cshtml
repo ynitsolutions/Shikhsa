@@ -1,225 +1,130 @@
-﻿
-@model ApplicationRole
+﻿@model ApplicationRole
 
 @{
-   
-    ViewData["Title"] = @Localizer.Get("Roles");
+    ViewData["Title"] = Localizer.Get("Roles");
 }
 
-<div class="row">
+<div class="container-fluid">
 
-    <!-- LEFT SIDE FORM -->
-    <div class="col-md-12">
+    <!-- FORM CARD -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h4 class="mb-0">@(Model.Id == string.Empty ? Localizer.Get("Add") : Localizer.Get("Update"))</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Roles" method="post">
+                        <input type="hidden" asp-for="Id" />
 
-        <div class="card">
+                        <div class="row g-3">
+                            <!-- Role Name -->
+                            <div class="col-12 col-md-6 col-lg-4">
+                                <label class="form-label">@Localizer.Get("Role Name")</label>
+                                <input asp-for="Name" class="form-control required" />
+                            </div>
 
-            <div class="card-header">
-                <h4>@(Model.Id == string.Empty ? @Localizer.Get("Add") : @Localizer.Get("Update")) </h4>
+                            <!-- Normalized Name -->
+                            <div class="col-12 col-md-6 col-lg-4">
+                                <label class="form-label">@Localizer.Get("Normalized Name")</label>
+                                <input asp-for="NormalizedName" class="form-control required" />
+                            </div>
+
+                            <!-- Description -->
+                            <div class="col-12 col-md-6 col-lg-4">
+                                <label class="form-label">@Localizer.Get("Description")</label>
+                                <input asp-for="Description" class="form-control" />
+                            </div>
+                        </div>
+
+                        <!-- Buttons -->
+                        <div class="mt-3 d-flex flex-wrap gap-2">
+                            <permission controller="Masters" action="Roles" type="create">
+                                <button type="submit" class="btn btn-success">@Localizer.Get("Save")</button>
+                            </permission>
+                            <button type="reset" class="btn btn-secondary">@Localizer.Get("Reset")</button>
+                        </div>
+                    </form>
+                </div>
             </div>
-
-            <div class="card-body">
-
-                <form asp-action="Roles" method="post">
-
-                    <input type="hidden" asp-for="Id" /> 
-
-                    <div class="row">
-
-                        <!-- MENU NAME -->
-                        <div class="col-md-6 col-lg-4 mb-3">
-
-                            <label class="form-label">
-                                @Localizer.Get("Role Name")
-                            </label>
-
-                            <input asp-for="Name" class="form-control required" />
-
-                        </div>
-                        <div class="col-md-6 col-lg-4 mb-3">
-
-                            <label class="form-label">
-                                @Localizer.Get("Normalized Name")
-                            </label>
-
-                            <input asp-for="NormalizedName" class="form-control required" />
-
-                        </div>
-                        <!-- URL -->
-                        <div class="col-md-6 col-lg-4 mb-3">
-
-                            <label class="form-label"> @Localizer.Get("Description")</label>
-
-                            <input asp-for="Description" class="form-control" />
-
-                        </div>
-
-                    </div>
-
-                    <!-- BUTTONS -->
-                    <div class="mt-2">
-                         <permission controller="Masters" action="Roles" type="create">
-                        <button type="submit" class="btn btn-success">
-                            @Localizer.Get("Save")
-                        </button>
-                        </permission>
-                        <button type="reset" class="btn btn-secondary"> @Localizer.Get("Reset") </button>
-
-                    </div>
-
-                </form>
-
-            </div>
-
         </div>
-
     </div>
 
-
-</div>
-<div class="row">
-
-    <!-- RIGHT SIDE LIST -->
-    <div class="col-md-12">
-
-        <div class="card">
-
-            <div class="card-header">
-                <h4> @Localizer.Get("Menu List")</h4>
-            </div>
-
-            <div class="card-body">
-
-                <table class="table table-bordered table-hover">
-
-                    <thead>
-
-                        <tr>
-
-                            <th> #</th>
-
-                            <th> @Localizer.Get("Name")</th>
-                            @* 
-                            <th>URL</th> *@
-
-                            <th> @Localizer.Get("Normalized Name")</th>
-
-                            <th> @Localizer.Get("Description")</th>
-
-                            <th> @Localizer.Get("Status")</th>
-
-                            <th width="180">
-                                @Localizer.Get("Action")
-                            </th>
-
-                        </tr>
-
-                    </thead>
-
-                    <tbody>
-
-                        @if (ViewBag.Roles != null)
-                        {
-                            int i = 1;
-
-                            foreach (var item in ViewBag.Roles)
-                            {
+    <!-- LIST CARD -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h4 class="mb-0">@Localizer.Get("Role List")</h4>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover align-middle datatable">
+                            <thead>
                                 <tr>
-
-                                    <td>@i</td>
-
-                                    <td>
-                                        @item.Name
-                                    </td>
-
-                                    @*  <td>
-                                        @item.Url
-                                    </td> *@
-
-                                    <td>
-                                        <i class="@item.NormalizedName"></i>
-                                        @item.NormalizedName
-                                    </td>
-
-                                    <td>
-                                        @item.Description
-                                    </td>
-
-                                    <td>
-
-                                        @if (item.IsActive)
-                                        {
-                                            <span class="badge bg-success">
-                                                Active
-                                            </span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-danger">
-                                                InActive
-                                            </span>
-                                        }
-
-                                    </td>
-
-                                    <td>
-                                        <permission controller="Masters" action="Roles" type="edit">
-                                            <a asp-action="Roles" asp-route-id="@item.Id" class="btn btn-warning btn-sm">
-                                                @Localizer.Get("Edit")
-                                            </a>
-                                        </permission>
-                                        @*  <a asp-action="Menus"asp-route-id="@item.Id" class="btn btn-warning btn-sm">
-
-                                    Edit
-
-                                </a> *@
-                                <permission controller="Masters" action="Roles" type="delete">
-                                    <form asp-action="DeleteRoles"
-                                          method="post"
-                                          style="display:inline">
-
-                                        <input type="hidden" name="id" value="@item.Id" />
-
-                                        <button type="submit"
-                                                class="btn @(item.IsActive ? "btn-danger" : "btn-success") btn-sm"
-                                                onclick="return confirm('Are you sure?');">
-
-                                            @(item.IsActive
-                                                                                        ? Localizer.Get("InActive")
-                                                                                        : Localizer.Get("Active"))
-
-                                        </button>
-
-                                            </form>
-                                        </permission>
-
-                                    </td>
-
+                                    <th>#</th>
+                                    <th>@Localizer.Get("Name")</th>
+                                    <th>@Localizer.Get("Normalized Name")</th>
+                                    <th>@Localizer.Get("Description")</th>
+                                    <th>@Localizer.Get("Status")</th>
+                                    <th style="min-width:180px;">@Localizer.Get("Action")</th>
                                 </tr>
-
-                                i++;
-                            }
-                        }
-                        else
-                        {
-                            <tr>
-
-                                <td colspan="7"
-                                    class="text-center">
-
-                                    @Localizer.Get("No Record Found")
-
-                                </td>
-
-                            </tr>
-                        }
-
-                    </tbody>
-
-                </table>
-
+                            </thead>
+                            <tbody>
+                                @if (ViewBag.Roles != null)
+                                {
+                                    int i = 1;
+                                    foreach (var item in ViewBag.Roles)
+                                    {
+                                        <tr>
+                                            <td>@i</td>
+                                            <td>@item.Name</td>
+                                            <td>@item.NormalizedName</td>
+                                            <td>@item.Description</td>
+                                            <td>
+                                                @if (item.IsActive)
+                                                {
+                                                    <span class="badge bg-success">@Localizer.Get("Active")</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-danger">@Localizer.Get("InActive")</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <div class="d-flex flex-wrap gap-1">
+                                                    <permission controller="Masters" action="Roles" type="edit">
+                                                        <a asp-action="Roles" asp-route-id="@item.Id" class="btn btn-warning btn-sm">
+                                                            @Localizer.Get("Edit")
+                                                        </a>
+                                                    </permission>
+                                                    <permission controller="Masters" action="Roles" type="delete">
+                                                        <form asp-action="DeleteRoles" method="post" style="display:inline;">
+                                                            <input type="hidden" name="id" value="@item.Id" />
+                                                            <button type="submit" class="btn @(item.IsActive ? "btn-danger" : "btn-success") btn-sm" onclick="return confirm('Are you sure?');">
+                                                                @(item.IsActive ? Localizer.Get("InActive") : Localizer.Get("Active"))
+                                                            </button>
+                                                        </form>
+                                                    </permission>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        i++;
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="6" class="text-center text-muted">
+                                            @Localizer.Get("No Record Found")
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
-
         </div>
-
     </div>
 </div>

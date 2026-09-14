@@ -1,90 +1,35 @@
-﻿    @model Shikhsa.ViewModels.ExamMarksEntryVM
+﻿@model Shikhsa.ViewModels.ExamMarksEntryVM
 
-    @{
-        ViewData["Title"] = "Exam Marks Entry";
-    }
-    <style>
-        .table-scroll {
-        width: 100%;
-        max-width: 100%;
-        overflow-x: auto;
-        overflow-y: auto;
-        max-height: 600px;   /* Vertical Scroll */
-        white-space: nowrap;
-    }
+@{
+    ViewData["Title"] = "Exam Marks Entry";
+}
 
-    .table-scroll table {
-        width: max-content;
-        min-width: 100%;
-    }
 
-    .card,
-    .card-body {
-        overflow: hidden;
-    }
-
-        .toggle-freeze {
-            border: none;
-            background: none;
-            padding: 0;
-        }
-
-            .toggle-freeze i {
-                font-size: 20px;
-                cursor: pointer;
-                transition: .2s;
-            }
-
-                .toggle-freeze i:hover {
-                    transform: scale(1.15);
-                }
-    </style>
-    @if (TempData["Success"] != null)
-    {
-        <div class="alert alert-success">
-
-            @TempData["Success"]
-
-        </div>
-    }
-
-    @if (TempData["Error"] != null)
-    {
-        <div class="alert alert-danger">
-
-            @TempData["Error"]
-
-        </div>
-    }
- @*    <form asp-action="LoadStudents" asp-controller="Exam" method="post">
-
-        @Html.AntiForgeryToken()
- *@
-
- <form id="frmMarks" asp-controller="Exam" asp-action="ExamMarksEntry" method="post">
+<form id="frmMarks" asp-controller="Exam" asp-action="ExamMarksEntry" method="post">
     @Html.AntiForgeryToken()
+
     <div class="card shadow-sm">
         <div class="card-body">
 
-            <div class="row g-3 align-items-end">
+            <!-- Responsive Filter Row -->
+            <div class="row g-2 g-md-3 align-items-end">
 
                 <partial name="~/Views/Shared/_StudentFilterPartial.cshtml" model="Model" />
 
-                <div class="col-md-2">
-                    <label asp-for="ExamCategoryId" class="form-label">
-                        @Localizer.Get("Term")
-                    </label>
-
+                <!-- Term -->
+                <div class="col-6 col-md-4 col-lg-3 col-xl-2">
+                    <label asp-for="ExamCategoryId" class="form-label">@Localizer.Get("Term")</label>
                     <select asp-for="ExamCategoryId"
-                            class="form-select select2"
+                            class="form-select form-select-sm select2"
                             asp-items="@(new SelectList(Model.ExamCategories, "ExamCategoryId", "ExamCategoryName"))">
-                        <option value="">Select Term</option>
+                        <option value="">@Localizer.Get("Select Term")</option>
                     </select>
                 </div>
 
-                <div class="col-md-2">
-                <button type="submit" class="btn btn-primary w-100" id="btnLoadStudents">
-                        <i class="fa fa-search"></i> @Localizer.Get("Load") @Localizer.Get("Students")
+                <!-- Load Button -->
+                <div class="col-6 col-md-4 col-lg-3 col-xl-2">
+                    <button type="submit" class="btn btn-primary w-100 btn-sm" id="btnLoadStudents">
+                        <i class="fa fa-search"></i> @Localizer.Get("Load Students")
                     </button>
                 </div>
 
@@ -92,269 +37,95 @@
 
         </div>
     </div>
-<div id="marksContainer">
-    <partial name="_ExamMarksTable" model="Model" />
-</div>
+
+    <!-- Marks Table Container -->
+    <div id="marksContainer">
+        <partial name="_ExamMarksTable" model="Model" />
+    </div>
 </form>
 
-    
-    @section Scripts {
+@section Scripts {
     <script src="~/js/teacher-filter.js"></script>
+    <partial name="_ValidationScriptsPartial" />
 
- 
-        <partial name="_ValidationScriptsPartial" />
-
-        <script>
-            $(document).ready(function () {
-                $('#tblMarks').DataTable({
-                    paging: true,
-                    ordering: true,
-                    searching: true,
-                    info: false,
-                    scrollX: true,
-                    scrollCollapse: true
-
-                });
-                      
+    <script>
+        $(document).ready(function () {
+            $('#tblMarks').DataTable({
+                paging: true,
+                ordering: true,
+                searching: true,
+                info: false,
+                scrollX: true,
+                scrollCollapse: true
             });
-            $(document).on("click", "#btnLoadStudents", function (e) {
+        });
 
+        $(document).on("click", "#btnLoadStudents", function (e) {
             e.preventDefault();
 
             $.ajax({
-
                 url: "/Exam/LoadStudents",
-
                 type: "POST",
-
                 data: $("#frmMarks").serialize(),
-
                 beforeSend: function () {
-
                     $("#btnLoadStudents")
                         .prop("disabled", true)
                         .html('<i class="fa fa-spinner fa-spin"></i> Loading...');
-
                 },
-
                 success: function (html) {
-
                     $("#marksContainer").html(html);
-
-                   // initMarksTable();
-
                     calculateAll();
-
                     updateHeaderFreezeIcon();
-
                 },
-
                 complete: function () {
-
                     $("#btnLoadStudents")
                         .prop("disabled", false)
                         .html('<i class="fa fa-search"></i> Load Students');
-
                 },
-
                 error: function (xhr) {
-
                     console.log(xhr.responseText);
-
                 }
-
             });
-
         });
-            // $(document).on("click",".toggle-freeze",function()
-            // {
 
-            //     let hidden=$(this).closest("td").find(".freeze-value");
+        // ---- Marks calculation & ranking ----
+        $(function () {
+            calculateAll();
 
-            //     let value=hidden.val()==="True" || hidden.val()==="true";
+            $(document).on("keyup change", ".mark-input", function () {
+                calculateRow($(this).closest("tr"));
+                calculateRank();
+            });
+        });
 
-            //     value=!value;
+        function calculateAll() {
+            $("#tblMarks tbody tr").each(function () {
+                calculateRow($(this));
+            });
+            calculateRank();
+        }
 
-            //     hidden.val(value);
+        function calculateRow(row) {
+            var total = 0;
+            var maxMarks = 0;
 
-            //     if(value)
-            //     {
-            //         $(this).html('<i class="fa-solid fa-lock text-danger fs-5"></i>');
-
-            //         $(this).closest("tr")
-            //                .find(".mark-input,.remark-input")
-            //                .prop("readonly",true);
-            //                 $(this).closest("tr").find(".absent-input").prop("disabled", true);
-            //     }
-            //     else
-            //     {
-            //         $(this).html('<i class="fa-solid fa-lock-open text-success fs-5"></i>');
-
-            //         $(this).closest("tr")
-            //                .find(".mark-input,.remark-input")
-            //                .prop("readonly",false);
-
-            //         $(this).closest("tr")
-            //                .find(".absent-input")
-            //                .prop("disabled",false);
-            //     }
-
-            // });
-
-            // $(document).on("click", ".toggle-freeze", function () {
-
-            //     let row = $(this).closest("tr");
-            //     let hidden = row.find(".freeze-value");
-            //     let icon = $(this).find(".freeze-icon");
-
-            //     let isFreeze = String(hidden.val()).toLowerCase() === "true";
-
-            //     isFreeze = !isFreeze;
-
-            //     hidden.val(isFreeze);
-
-            //     icon.toggleClass("fa-lock", !isFreeze);
-            //     icon.toggleClass("text-danger", !isFreeze);
-
-            //     icon.toggleClass("fa-lock-open", isFreeze);
-            //     icon.toggleClass("text-success", isFreeze);
-
-            //     row.find(".mark-input,.remark-input")
-            //         .prop("readonly", isFreeze);
-
-            //     row.find(".absent-input")
-            //         .prop("disabled", isFreeze);
-            // });
-        </script>
-        <script>
-
-            $(function () {
-
-                calculateAll();
-
-                $(document).on("keyup change", ".mark-input", function () {
-
-                    calculateRow($(this).closest("tr"));
-
-                    calculateRank();
-
-                });
-
+            row.find(".mark-input").each(function () {
+                var mark = parseFloat($(this).val()) || 0;
+                var max = Number(this.dataset.max) || 0;
+                if (mark > max) mark = max;
+                total += mark;
+                maxMarks += max;
             });
 
+            var percent = maxMarks > 0 ? (total * 100) / maxMarks : 0;
 
-            function calculateAll() {
+            row.find(".total").val(total.toFixed(2));
+            row.find(".percent").val(percent.toFixed(2));
+            row.find(".grade").val(getGrade(percent));
+        }
 
-                $("#tblMarks tbody tr").each(function () {
-
-                    calculateRow($(this));
-
-                });
-
-                calculateRank();
-
-            }
-
-
-            function calculateRow(row) {
-
-                var total = 0;
-
-                var maxMarks = 0;
-
-                row.find(".mark-input").each(function () {
-
-                    var mark = parseFloat($(this).val());
-                   var max = Number(this.dataset.max);
-
-                    if (isNaN(mark))
-                        mark = 0;
-
-                    if (mark > max)
-                        mark = max;
-
-                    total += mark;
-
-                    maxMarks += max;
-
-                });
-
-                var percent = 0;
-
-                if (maxMarks > 0)
-                    percent = (total * 100) / maxMarks;
-                            console.log("Total :", total);
-            console.log("Max :", maxMarks);
-            console.log("Percent :", percent);
-
-                row.find(".total").val(total.toFixed(2));
-
-                row.find(".percent").val(percent.toFixed(2));
-
-                row.find(".grade").val(getGrade(percent));
-
-            }
-
-
-            function getGrade(percent) {
-
-                for (var i = 0; i < grades.length; i++) {
-
-                    if (percent >= grades[i].min &&
-                        percent <= grades[i].max) {
-
-                        return grades[i].grade;
-
-                    }
-
-                }
-
-                return "";
-
-            }
-
-
-            function calculateRank() {
-
-                var students = [];
-
-                $("#tblMarks tbody tr").each(function () {
-
-                    students.push({
-
-                        row: $(this),
-
-                        total: parseFloat($(this).find(".total").val()) || 0
-
-                    });
-
-                });
-
-                students.sort(function (a, b) {
-
-                    return b.total - a.total;
-
-                });
-
-                var rank = 1;
-
-                for (var i = 0; i < students.length; i++) {
-
-                    if (i > 0 &&
-                        students[i].total < students[i - 1].total) {
-
-                        rank = i + 1;
-
-                    }
-
-                    students[i].row.find(".rank").val(rank);
-
-                }
-
-            }
-
-            const grades = [
-
+        function getGrade(percent) {
+            var grades = [
                 { min: 91, max: 100, grade: "A1" },
                 { min: 81, max: 90, grade: "A2" },
                 { min: 71, max: 80, grade: "B1" },
@@ -363,93 +134,84 @@
                 { min: 41, max: 50, grade: "C2" },
                 { min: 33, max: 40, grade: "D" },
                 { min: 0, max: 32, grade: "E" }
-
             ];
-            $(function () {
+            for (var i = 0; i < grades.length; i++) {
+                if (percent >= grades[i].min && percent <= grades[i].max)
+                    return grades[i].grade;
+            }
+            return "";
+        }
 
-                updateHeaderFreezeIcon();
-
-                // Individual Freeze/Unfreeze
-                $(document).on("click", ".toggle-freeze", function () {
-
-                    toggleFreeze($(this).closest("tr"));
-
-                    updateHeaderFreezeIcon();
+        function calculateRank() {
+            var students = [];
+            $("#tblMarks tbody tr").each(function () {
+                students.push({
+                    row: $(this),
+                    total: parseFloat($(this).find(".total").val()) || 0
                 });
-
-                // Header Freeze/Unfreeze
-                $("#toggleAllFreeze").on("click", function () {
-
-                    let allFreeze = $(".freeze-value").length > 0 &&
-                                    $(".freeze-value").filter(function () {
-                                        return $(this).val() === "True" || $(this).val() === "true";
-                                    }).length === $(".freeze-value").length;
-
-                    // Agar sab freeze hain to unfreeze karo
-                    // warna sab freeze karo
-                    let newValue = !allFreeze;
-
-                    $("#tblMarks tbody tr").each(function () {
-                        setFreeze($(this), newValue);
-                    });
-
-                    updateHeaderFreezeIcon();
-                });
-
             });
 
-            function toggleFreeze(row) {
+            students.sort(function (a, b) { return b.total - a.total; });
 
-                let hidden = row.find(".freeze-value");
-
-                let value = hidden.val() === "True" || hidden.val() === "true";
-
-                setFreeze(row, !value);
-            }
-
-            function setFreeze(row, freeze) {
-
-                row.find(".freeze-value").val(freeze);
-
-                row.find(".freeze-icon")
-                    .removeClass("fa-lock fa-lock-open text-danger text-success")
-                    .addClass(freeze
-                        ? "fa-lock text-danger"
-                        : "fa-lock-open text-success");
-
-                row.find(".mark-input,.remark-input")
-                    .prop("readonly", freeze);
-
-                row.find(".absent-input")
-                    .prop("disabled", freeze);
-            }
-
-            function updateHeaderFreezeIcon() {
-
-                let total = $(".freeze-value").length;
-
-                if (total === 0)
-                    return;
-
-                let freezeCount = $(".freeze-value").filter(function () {
-                    return $(this).val() === "True" || $(this).val() === "true";
-                }).length;
-
-                $("#headerFreezeIcon")
-                    .removeClass("fa-lock fa-lock-open text-danger text-success");
-
-                if (freezeCount === total) {
-
-                    // Sab Freeze
-                    $("#headerFreezeIcon")
-                        .addClass("fa-lock text-danger");
-
-                } else {
-
-                    // Sab Unfreeze ya Mixed
-                    $("#headerFreezeIcon")
-                        .addClass("fa-lock-open text-success");
+            var rank = 1;
+            for (var i = 0; i < students.length; i++) {
+                if (i > 0 && students[i].total < students[i - 1].total) {
+                    rank = i + 1;
                 }
+                students[i].row.find(".rank").val(rank);
             }
-        </script>
-    }
+        }
+
+        // ---- Freeze / Unfreeze logic ----
+        $(function () {
+            updateHeaderFreezeIcon();
+
+            $(document).on("click", ".toggle-freeze", function () {
+                toggleFreeze($(this).closest("tr"));
+                updateHeaderFreezeIcon();
+            });
+
+            $("#toggleAllFreeze").on("click", function () {
+                var allFreeze = $(".freeze-value").length > 0 &&
+                    $(".freeze-value").filter(function () {
+                        return $(this).val() === "True" || $(this).val() === "true";
+                    }).length === $(".freeze-value").length;
+
+                var newValue = !allFreeze;
+                $("#tblMarks tbody tr").each(function () {
+                    setFreeze($(this), newValue);
+                });
+                updateHeaderFreezeIcon();
+            });
+        });
+
+        function toggleFreeze(row) {
+            var hidden = row.find(".freeze-value");
+            var value = hidden.val() === "True" || hidden.val() === "true";
+            setFreeze(row, !value);
+        }
+
+        function setFreeze(row, freeze) {
+            row.find(".freeze-value").val(freeze);
+            row.find(".freeze-icon")
+                .removeClass("fa-lock fa-lock-open text-danger text-success")
+                .addClass(freeze ? "fa-lock text-danger" : "fa-lock-open text-success");
+
+            row.find(".mark-input,.remark-input").prop("readonly", freeze);
+            row.find(".absent-input").prop("disabled", freeze);
+        }
+
+        function updateHeaderFreezeIcon() {
+            var total = $(".freeze-value").length;
+            if (total === 0) return;
+
+            var freezeCount = $(".freeze-value").filter(function () {
+                return $(this).val() === "True" || $(this).val() === "true";
+            }).length;
+
+            $("#headerFreezeIcon")
+                .removeClass("fa-lock fa-lock-open text-danger text-success")
+                .addClass(freezeCount === total ? "fa-lock text-danger" : "fa-lock-open text-success");
+        }
+    </script>
+}

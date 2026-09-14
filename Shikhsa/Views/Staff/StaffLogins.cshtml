@@ -1,4 +1,4 @@
-﻿@* @model List<Shikhsa.ViewModels.StaffUserVM> *@
+﻿@model List<Shikhsa.ViewModels.StaffUserVM>
 
 @{
     ViewData["Title"] = "Staff User Management";
@@ -22,146 +22,90 @@
     </style>
 }
 
-@* <input type="hidden" asp-for="UserId" /> *@
-<div class="card shadow-sm">
-
-    <div class="card-header bg-primary text-white">
-
-        <h5 class="mb-0">
-
-            Staff User Management
-
-        </h5>
-
-    </div>
-
-    <div class="card-body">
-
-        <div class="row">
-
-            <div class="col-md-4">
-
-                <label>
-
-                    Staff
-
-                </label>
-                <select id="StaffId" class="form-select select2">
-
-                            <option value="">Select</option>
-
-                            @foreach (var item in ViewBag.StaffList)
-                            {
-                                <option value="@item.Value">
-
-                                    @item.Text
-
-                                </option>
-                            }
-                                
-                        </select>
-               @*  <select asp-for="StaffId"
-                        asp-items="Model.StaffList"
-                        class="form-select">
-
-                    <option value="">Select Staff</option>
-
-                </select> *@
-
-            </div>
-
-            <div class="col-md-4">
-
-                <label>
-
-                    Role
-
-                </label>
-                <input type="hidden" id="UserId" />
-                <input type="hidden" id="OldRoleId" />
-                 <select id="RoleId" class="form-select select2">
-
-                            <option value="">Select</option>
-
-                            @foreach (var item in ViewBag.RoleList)
-                            {
-                                <option value="@item.Value">
-
-                                    @item.Text
-
-                                </option>
-                            }
-                                
-                        </select>
-@* 
-                <select asp-for="RoleId"
-                        asp-items="Model.RoleList"
-                        class="form-select">
-
-                    <option value="">Select Role</option>
-
-                </select> *@
-
-            </div>
-
-            <div class="col-md-2 d-flex align-items-end">
-
-                <button type="button"
-                        class="btn btn-success w-100"
-                        id="btnSave">
-
-                    Save
-
-                </button>
-
-            </div>
-            <div class="col-md-2 d-flex align-items-end">
-
-                <button type="button"
-                        class="btn btn-secondary"
-                        id="btnClear">
-
-                    Clear
-
-                </button>
-
-            </div>
-
+<div class="container-fluid">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">@Localizer.Get("Staff User Management")</h5>
         </div>
 
-     
+        <div class="card-body">
+            <!-- Form Row (responsive) -->
+            <div class="row g-3 align-items-end">
+                <!-- Staff Dropdown -->
+                <div class="col-12 col-md-6 col-lg-4">
+                    <label class="form-label">@Localizer.Get("Staff")</label>
+                    <select id="StaffId" class="form-select select2">
+                        <option value="">@Localizer.Get("Select")</option>
+                        @foreach (var item in ViewBag.StaffList)
+                        {
+                            <option value="@item.Value">@item.Text</option>
+                        }
+                    </select>
+                </div>
 
+                <!-- Role Dropdown -->
+                <div class="col-12 col-md-6 col-lg-4">
+                    <label class="form-label">@Localizer.Get("Role")</label>
+                    <input type="hidden" id="UserId" />
+                    <input type="hidden" id="OldRoleId" />
+                    <select id="RoleId" class="form-select select2">
+                        <option value="">@Localizer.Get("Select")</option>
+                        @foreach (var item in ViewBag.RoleList)
+                        {
+                            <option value="@item.Value">@item.Text</option>
+                        }
+                    </select>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="col-12 col-sm-6 col-lg-2">
+                    <button type="button" class="btn btn-success w-100" id="btnSave">
+                        <i class="ti ti-device-floppy"></i> @Localizer.Get("Save")
+                    </button>
+                </div>
+                <div class="col-12 col-sm-6 col-lg-2">
+                    <button type="button" class="btn btn-secondary w-100" id="btnClear">
+                        <i class="ti ti-refresh"></i> @Localizer.Get("Clear")
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="card mt-3">
+
+    <!-- Staff User List Card -->
+    <div class="card mt-3 shadow-sm">
         <div class="card-header">
-            <h5>Staff User List</h5>
+            <h5 class="mb-0">@Localizer.Get("Staff User List")</h5>
         </div>
         <div class="card-body">
-            <table class="table table-bordered table-striped table-hover datatable" id="tblStaffUser">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Staff</th>
-                        <th>User Name</th>
-                        <th>Password</th>
-                        <th>Role</th>
-                        <th>Status</th>
-                        <th width="150">Action</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped table-hover align-middle datatable" id="tblStaffUser">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width:50px;">#</th>
+                            <th>@Localizer.Get("Staff")</th>
+                            <th>@Localizer.Get("User Name")</th>
+                            <th>@Localizer.Get("Password")</th>
+                            <th>@Localizer.Get("Role")</th>
+                            <th>@Localizer.Get("Status")</th>
+                            <th style="min-width:150px;">@Localizer.Get("Action")</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
         </div>
         <partial name="_ChangePassword" />
     </div>
+
+    <!-- Loader -->
     <div id="loader" style="display:none;">
-    <div class="overlay">
-        <div class="spinner-border text-primary"></div>
+        <div class="overlay">
+            <div class="spinner-border text-primary"></div>
+        </div>
     </div>
-</div>
 </div>
 
 @section Scripts {
-
     <script src="~/js/StaffUSer.js"></script>
 }

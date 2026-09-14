@@ -3,165 +3,121 @@
 @{
     ViewData["Title"] = "Co-Scholastic Master";
 }
-<div class="card mb-4">
 
-    <div class="card-header">
-        <h5>
-            @(Model.CoScholastic.CoScholasticId == 0 ? "Add Co-Scholastic" : "Edit Co-Scholastic")
+<div class="card mb-4 shadow">
+
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">
+            @(Model.CoScholastic.CoScholasticId == 0 ? Localizer.Get("Add Co-Scholastic") : Localizer.Get("Edit Co-Scholastic"))
         </h5>
     </div>
 
     <div class="card-body">
 
         <form asp-action="SaveCoScholastic" method="post">
-
+            @Html.AntiForgeryToken()
             <input asp-for="CoScholastic.CoScholasticId" type="hidden" />
 
-            <div class="row">
+            <div class="row g-3">
 
-                <div class="col-md-6 mb-3">
-
-                    <label asp-for="CoScholastic.Title"></label>
-
+                <div class="col-12 col-md-6">
+                    <label asp-for="CoScholastic.Title" class="form-label"></label>
                     <input asp-for="CoScholastic.Title"
-                           class="form-control required nospecialchars" />
-
-                    <span asp-validation-for="CoScholastic.Title"
-                          class="text-danger"></span>
-
+                           class="form-control form-control-sm required nospecialchars" />
+                    <span asp-validation-for="CoScholastic.Title" class="text-danger small"></span>
                 </div>
 
-                <div class="col-md-6 mb-3">
-
-                    <label asp-for="CoScholastic.SubjectNameInLanguage"></label>
-
+                <div class="col-12 col-md-6">
+                    <label asp-for="CoScholastic.SubjectNameInLanguage" class="form-label"></label>
                     <input asp-for="CoScholastic.SubjectNameInLanguage"
-                           class="form-control required textspaceonly" />
-
-                    <span asp-validation-for="CoScholastic.SubjectNameInLanguage"
-                          class="text-danger"></span>
-
+                           class="form-control form-control-sm required textspaceonly" />
+                    <span asp-validation-for="CoScholastic.SubjectNameInLanguage" class="text-danger small"></span>
                 </div>
 
             </div>
 
-            <button class="btn btn-primary">
-
-                @(Model.CoScholastic.CoScholasticId == 0 ? "Save" : "Update")
-
-            </button>
-
-            <a asp-action="Index"
-               class="btn btn-secondary">
-
-                Reset
-
-            </a>
+            <div class="mt-3 d-flex flex-wrap gap-2">
+                <button class="btn btn-primary btn-sm d-flex align-items-center gap-1">
+                    <i class="fa fa-save"></i>
+                    @(Model.CoScholastic.CoScholasticId == 0 ? Localizer.Get("Save") : Localizer.Get("Update"))
+                </button>
+                <a asp-action="Index" class="btn btn-secondary btn-sm d-flex align-items-center gap-1">
+                    <i class="fa fa-undo"></i> @Localizer.Get("Reset")
+                </a>
+            </div>
 
         </form>
 
     </div>
 
 </div>
-<div class="card">
 
-    <div class="card-header">
-        <h5>Co-Scholastic List</h5>
+<div class="card shadow">
+
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">@Localizer.Get("Co-Scholastic List")</h5>
     </div>
 
-    <div class="card-body">
-
-        <table class="table table-bordered table-striped datatable">
-
-            <thead>
-
-                <tr>
-
-                    <th>#</th>
-
-                    <th>Title</th>
-
-                    <th>Regional Name</th>
-
-                    <th>Status</th>
-
-                    <th width="170">Action</th>
-
-                </tr>
-
-            </thead>
-
-            <tbody>
-
-                @{
-                    int sr = 1;
-                }
-
-                @foreach (var item in Model.CoScholasticList)
-                {
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped table-hover align-middle mb-0 datatable">
+                <thead class="table-primary">
                     <tr>
-
-                        <td>@sr</td>
-
-                        <td>@item.Title</td>
-
-                        <td>@item.SubjectNameInLanguage</td>
-
-                        <td>
-
-                            @if (item.IsActive)
-                            {
-                                <span class="badge bg-success">
-                                    Active
-                                </span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-danger">
-                                    Inactive
-                                </span>
-                            }
-
-                        </td>
-
-                        <td>
-
-                            <a asp-action="CoScholastic"
-                               asp-route-id="@item.CoScholasticId"
-                               class="btn btn-sm btn-warning">
-
-                                <spam class="ti ti-pencil"></spam>
-
-                            </a>
-
-                           @*  <a asp-action="Delete"
-                               asp-route-id="@item.Id"
-                               onclick="return confirm('Delete this record?')"
-                               class="btn btn-sm btn-danger">
-
-                                Delete
-
-                            </a> *@
-
-                            <a asp-action="DeleteCoScholastic"
-                               asp-route-id="@item.CoScholasticId"
-                               class="btn btn-sm btn-danger" type="button">
-
-                                <spam class="ti ti-trash"></spam>
-
-                            </a>
-
-                        </td>
-
+                        <th style="width:60px;">#</th>
+                        <th style="min-width:120px;">@Localizer.Get("Title")</th>
+                        <th style="min-width:120px;">@Localizer.Get("Regional Name")</th>
+                        <th style="min-width:100px;">@Localizer.Get("Status")</th>
+                        <th style="min-width:150px;">@Localizer.Get("Action")</th>
                     </tr>
-
-                    sr++;
-                }
-
-            </tbody>
-
-        </table>
-
+                </thead>
+                <tbody>
+                    @{
+                        int sr = 1;
+                    }
+                    @foreach (var item in Model.CoScholasticList)
+                    {
+                        <tr>
+                            <td class="text-center">@sr</td>
+                            <td>@item.Title</td>
+                            <td>@item.SubjectNameInLanguage</td>
+                            <td>
+                                @if (item.IsActive)
+                                {
+                                    <span class="badge bg-success">@Localizer.Get("Active")</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">@Localizer.Get("Inactive")</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="d-flex flex-wrap gap-1">
+                                     <permission controller="Exam" action="CoScholastic" type="edit">
+                                        <a asp-action="CoScholastic"
+                                           asp-route-id="@item.CoScholasticId"
+                                           class="btn btn-warning btn-sm d-flex align-items-center gap-1">
+                                            <i class="ti ti-pencil"></i> @Localizer.Get("Edit")
+                                        </a>
+                                    </permission>
+                                    <permission controller="Exam" action="CoScholastic" type="delete">
+                                        <a asp-action="DeleteCoScholastic"
+                                           asp-route-id="@item.CoScholasticId"
+                                           class="btn btn-danger btn-sm d-flex align-items-center gap-1"
+                                           onclick="return confirm('@Localizer.Get("Delete this record?")')">
+                                            <i class="ti ti-trash"></i> @Localizer.Get("Delete")
+                                        </a>
+                                    </permission>
+                                </div>
+                            </td>
+                        </tr>
+                        sr++;
+                    }
+                </tbody>
+            </table>
+        </div>
     </div>
 
 </div>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

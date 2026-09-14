@@ -40,10 +40,11 @@ namespace Shikhsa.Models
 
             [Required]
             public string? PermanentAddress { get; set; }
-
-            public int? CategoryId { get; set; }
+        [MapName("Category", nameof(CategoryName))]
+        public int? CategoryId { get; set; }
+        [MapName("Gender", nameof(GenderName))]
         public int? GenderId { get; set; }
-
+        [MapName("Religion", nameof(ReligionName))]
         public int? ReligionId { get; set; }
 
             public bool IsHandicap { get; set; }
@@ -51,18 +52,42 @@ namespace Shikhsa.Models
             public string? HandicapDetails { get; set; }
 
             public string? IdentificationMark { get; set; }
-
-            public int? AdmissionBatchId { get; set; }
+        [MapName(typeof(Batches), nameof(RegistrationBatchName), lookupKeyProperty: "BatchId", lookupNameProperty: "BatchName")]
+        public int? AdmissionBatchId { get; set; }
 
             public bool? IsInitialClassAdmission { get; set; }
-            public int? RegClassId { get; set; }
+         [MapName("Class", nameof(ClassName))]
+        public int? RegClassId { get; set; }
             public long? ParentId { get; set; }
-            public int? Status { get; set; }
+        [MapName("Status", nameof(StatusName))]
+        public int? Status { get; set; }
+
             public bool IsTranspot { get; set; }
-            public bool IsHostel { get; set; } 
-            public int? TranspotId { get; set; }
+            public bool IsHostel { get; set; }
+        [MapName("Transport", nameof(TransportName))]
+        public int? TranspotId { get; set; }
+        [MapName("Hostel", nameof(HostelName))]
         public int? HostelId { get; set; }
-        
+        [NotMapped]
+        public string? SectionName { get; set; }
+        [NotMapped]
+        public string? GenderName { get; set; }
+        [NotMapped]
+        public string? ClassName { get; set; }
+        [NotMapped]
+        public string? CategoryName { get; set; }
+        [NotMapped]
+        public string? ReligionName { get; set; }
+        [NotMapped]
+        public string? CurrentBatchName { get; set; }
+        [NotMapped]
+        public string? RegistrationBatchName { get; set; }
+        [NotMapped]
+        public string? StatusName { get; set; }
+        [NotMapped]
+        public string? HostelName { get; set; }
+        [NotMapped]
+        public string? TransportName { get; set; }
         [ForeignKey("ParentId")]
             public virtual Tbl_Parents? Parent { get; set; }
 
@@ -183,10 +208,11 @@ namespace Shikhsa.Models
 
         [Required]
         public string? PermanentAddress { get; set; }
-
+        [MapName("Category", nameof(CategoryName))]
         public int? CategoryId { get; set; }
+        [MapName("Gender", nameof(GenderName))]
         public int? GenderId { get; set; }
-
+        [MapName("Religion", nameof(ReligionName))]
         public int? ReligionId { get; set; }
 
         public bool IsHandicap { get; set; }
@@ -194,19 +220,25 @@ namespace Shikhsa.Models
         public string? HandicapDetails { get; set; }
 
         public string? IdentificationMark { get; set; }
-
+        [MapName(typeof(Batches), nameof(RegistrationBatchName), lookupKeyProperty: "BatchId", lookupNameProperty: "AcademicYear")]
         public int? AdmissionBatchId { get; set; }
 
         public bool? IsInitialClassAdmission { get; set; }
+        [MapName("Class", nameof(ClassName))]
         public int? AdmitClassId { get; set; }
         public long? ParentId { get; set; }
+        [MapName("Status", nameof(StatusName))]
         public int? Status { get; set; }
+        [MapName("Section", nameof(SectionName))]
         public int? AdmitSectionId { get; set; }
+        [MapName(typeof(Batches), nameof(CurrentBatchName), lookupKeyProperty: "BatchId", lookupNameProperty: "AcademicYear")]
         public int? AdmitBatchId { get; set; }
         public string? UserId { get; set; }
         public bool IsTranspot { get; set; }
         public bool IsHostel { get; set; }
+        [MapName("Transport", nameof(TransportName))]
         public int? TranspotId { get; set; }
+        [MapName("Hostel", nameof(HostelName))]
         public int? HostelId { get; set; }
         public string? ScholarNumber { get; set; }
         public long StudentRegisterId { get; set; }
@@ -223,6 +255,14 @@ namespace Shikhsa.Models
         public string? ReligionName { get; set; }
         [NotMapped]
         public string? CurrentBatchName { get; set; }
+        [NotMapped]
+        public string? RegistrationBatchName { get; set; }
+        [NotMapped]
+        public string? StatusName { get; set; }
+        [NotMapped]
+        public string? HostelName { get; set; }
+        [NotMapped]
+        public string? TransportName { get; set; }
         [ForeignKey("ParentId")]
         public virtual Tbl_Parents? Parent { get; set; }
         //public virtual Tbl_PreviousSchoolRecord? PreviousSchoolRecord { get; set; }

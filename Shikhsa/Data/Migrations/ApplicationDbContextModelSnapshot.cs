@@ -695,6 +695,307 @@ namespace Shikhsa.Data.Migrations
                     b.ToTable("Batches");
                 });
 
+            modelBuilder.Entity("Shikhsa.Models.Certificate.CertificateTemplate", b =>
+                {
+                    b.Property<long>("CertificateTemplateId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("CertificateTemplateId"));
+
+                    b.Property<string>("AddedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("AddedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("CertificateTypeId")
+                        .HasColumnType("bigint");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("TemplateCode")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
+                    b.Property<string>("TemplateName")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("CertificateTemplateId");
+
+                    b.HasIndex("CertificateTypeId");
+
+                    b.ToTable("CertificateTemplates");
+                });
+
+            modelBuilder.Entity("Shikhsa.Models.Certificate.CertificateTemplateCategory", b =>
+                {
+                    b.Property<long>("CertificateTemplateCategoryId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("CertificateTemplateCategoryId"));
+
+                    b.Property<long>("CertificateTemplateId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("NotificationCategoryId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("CertificateTemplateCategoryId");
+
+                    b.HasIndex("CertificateTemplateId");
+
+                    b.HasIndex("NotificationCategoryId");
+
+                    b.ToTable("CertificateTemplateCategories");
+                });
+
+            modelBuilder.Entity("Shikhsa.Models.Certificate.CertificateTypeMaster", b =>
+                {
+                    b.Property<long>("CertificateTypeId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("CertificateTypeId"));
+
+                    b.Property<string>("AppliesTo")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("TypeCode")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<string>("TypeName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("CertificateTypeId");
+
+                    b.ToTable("CertificateTypes");
+                });
+
+            modelBuilder.Entity("Shikhsa.Models.Certificate.GeneratedCertificate", b =>
+                {
+                    b.Property<long>("GeneratedCertificateId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("GeneratedCertificateId"));
+
+                    b.Property<string>("AddedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("AddedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("CertificateTemplateId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("FinalBodyHtml")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("ManualValuesJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long?>("SubjectId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("SubjectType")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("GeneratedCertificateId");
+
+                    b.HasIndex("CertificateTemplateId");
+
+                    b.ToTable("GeneratedCertificates");
+                });
+
+            modelBuilder.Entity("Shikhsa.Models.Certificates", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("AdmissionNo")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime?>("ApplicationDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("BookNo")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Category")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("CharacterRemarks")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("Dob")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DobInWords")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("ExtraCurricular")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("FailedDetails")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("FatherName")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("FeeConcession")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("FeePaidUpto")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("FirstAdmissionClass")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime?>("FirstAdmissionDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("GeneralConduct")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime?>("IssueDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastClassFigures")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("LastClassWords")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("LastExamResult")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("MotherName")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("Nationality")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("NccScoutGuide")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("PromotedClass")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("PurposeOfIssue")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("QualifiedForPromotion")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("ReasonForLeaving")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("Remarks")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("SerialNo")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int?>("StudentId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("StudentName")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("SubjectsStudied")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int?>("TotalPresentDays")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalWorkingDays")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(2)
+                        .HasColumnType("nvarchar(2)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Certificates");
+                });
+
             modelBuilder.Entity("Shikhsa.Models.ClassBatchSubjectDetail", b =>
                 {
                     b.Property<long>("DetailId")
@@ -4556,6 +4857,47 @@ namespace Shikhsa.Data.Migrations
                     b.Navigation("Tab");
                 });
 
+            modelBuilder.Entity("Shikhsa.Models.Certificate.CertificateTemplate", b =>
+                {
+                    b.HasOne("Shikhsa.Models.Certificate.CertificateTypeMaster", "CertificateType")
+                        .WithMany()
+                        .HasForeignKey("CertificateTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CertificateType");
+                });
+
+            modelBuilder.Entity("Shikhsa.Models.Certificate.CertificateTemplateCategory", b =>
+                {
+                    b.HasOne("Shikhsa.Models.Certificate.CertificateTemplate", "CertificateTemplate")
+                        .WithMany("CertificateTemplateCategories")
+                        .HasForeignKey("CertificateTemplateId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Shikhsa.Models.Notification.NotificationCategory", "NotificationCategory")
+                        .WithMany()
+                        .HasForeignKey("NotificationCategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CertificateTemplate");
+
+                    b.Navigation("NotificationCategory");
+                });
+
+            modelBuilder.Entity("Shikhsa.Models.Certificate.GeneratedCertificate", b =>
+                {
+                    b.HasOne("Shikhsa.Models.Certificate.CertificateTemplate", "CertificateTemplate")
+                        .WithMany()
+                        .HasForeignKey("CertificateTemplateId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CertificateTemplate");
+                });
+
             modelBuilder.Entity("Shikhsa.Models.ClassBatchSubjectDetail", b =>
                 {
                     b.HasOne("Shikhsa.Models.ClassBatchSubjectHeader", "Header")
@@ -5255,6 +5597,11 @@ namespace Shikhsa.Data.Migrations
                     b.Navigation("Children");
 
                     b.Navigation("RoleMenus");
+                });
+
+            modelBuilder.Entity("Shikhsa.Models.Certificate.CertificateTemplate", b =>
+                {
+                    b.Navigation("CertificateTemplateCategories");
                 });
 
             modelBuilder.Entity("Shikhsa.Models.ClassBatchSubjectHeader", b =>

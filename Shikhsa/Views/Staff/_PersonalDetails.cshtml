@@ -2,13 +2,12 @@
 
 <div class="row g-3">
 
-    <!-- Photo -->
-    <div class="col-xl-2 col-lg-3 col-md-4 text-center">
-
+    <!-- Photo (stack above on small screens) -->
+    <div class="col-12 col-md-4 col-lg-3 col-xl-2 text-center">
         <img id="imgPhotoPreview"
              src="@(string.IsNullOrEmpty(Model.PhotoPath) ? "/images/no-image.png" : Model.PhotoPath)"
              class="img-thumbnail mb-2"
-             style="height:170px;width:150px;" />
+             style="height:170px;width:150px;object-fit:cover;" />
 
         <input asp-for="PhotoFile"
                type="file"
@@ -16,659 +15,342 @@
                accept=".jpg,.jpeg,.png" />
         <input asp-for="PhotoPath" type="hidden" />
         <span asp-validation-for="PhotoFile" class="text-danger"></span>
-
     </div>
 
-    <div class="col-xl-10">
-
+    <!-- Rest of personal details -->
+    <div class="col-12 col-md-8 col-lg-9 col-xl-10">
         <div class="row g-3">
 
             <!-- Staff Code -->
-
-            <div class="col-xl-3 col-lg-4 col-md-6">
-
-                <label class="form-label">
-
-                    Staff Code
-
-                </label>
-
-                <input asp-for="StaffCode"
-                       class="form-control"
-                       readonly />
-
+            <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+                <label class="form-label">@Localizer.Get("Staff Code")</label>
+                <input asp-for="StaffCode" class="form-control" readonly />
             </div>
 
             <!-- First Name -->
-
-            <div class="col-xl-3 col-lg-4 col-md-6">
-
-                <label class="form-label">
-
-                    First Name
-                    
-
-                </label>
-
-                <input asp-for="FirstName"
-                       class="form-control text-only required" />
-
+            <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+                <label class="form-label">@Localizer.Get("First Name") <span class="text-danger">*</span></label>
+                <input asp-for="FirstName" class="form-control text-only required" />
                 <span asp-validation-for="FirstName" class="text-danger"></span>
-
             </div>
 
-            <!-- Middle -->
-
-            <div class="col-xl-3 col-lg-4 col-md-6">
-
-                <label class="form-label">
-
-                    Middle Name
-
-                </label>
-
-                <input asp-for="MiddleName"
-                       class="form-control" />
-
+            <!-- Middle Name -->
+            <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+                <label class="form-label">@Localizer.Get("Middle Name")</label>
+                <input asp-for="MiddleName" class="form-control" />
             </div>
 
-            <!-- Last -->
-
-            <div class="col-xl-3 col-lg-4 col-md-6">
-
-                <label class="form-label">
-
-                    Last Name
-                    
-
-                </label>
-
-                <input asp-for="LastName"
-                       class="form-control text-only required" />
-
+            <!-- Last Name -->
+            <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+                <label class="form-label">@Localizer.Get("Last Name") <span class="text-danger">*</span></label>
+                <input asp-for="LastName" class="form-control text-only required" />
             </div>
 
             <!-- Gender -->
-
-            <div class="col-xl-3 col-lg-4 col-md-6">
-
-                <label>Gender</label>
+            <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+                <label class="form-label">@Localizer.Get("Gender")</label>
                 <select asp-for="GenderId" class="form-control select2 required">
-
-                    <option value="">Select</option>
-
+                    <option value="">@Localizer.Get("Select")</option>
                     @foreach (var item in ViewBag.Gender)
                     {
-                        <option value="@item.DataListItemId">
-                            @item.DataListItemText
-                        </option>
+                        <option value="@item.DataListItemId">@item.DataListItemText</option>
                     }
-
                 </select>
-                @* <select asp-for="GenderId"
-                        asp-items="ViewBag.Gender"
-                        class="form-select select2">
-
-                    <option value="">Select</option>
-
-                </select> *@
-
             </div>
 
             <!-- DOB -->
-
-            <div class="col-xl-6 col-lg-4 col-md-6">
-
-                <label>DOB</label>
-
-               @*  <input asp-for="DOB" type="date" class="form-control required" /> *@
+            <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+                <label class="form-label">@Localizer.Get("DOB")</label>
                 <div class="input-group fp-date">
-
-                    <input asp-for="DOB"
-                           type="text"
-                           class="form-control"
-                           data-input />
-
+                    <input asp-for="DOB" type="text" class="form-control" data-input />
                     <span class="input-group-text" data-toggle>
                         <i class="ti ti-calendar"></i>
                     </span>
-
                 </div>
-
             </div>
 
-            <!-- Blood -->
-
-            <div class="col-xl-3 col-lg-4 col-md-6">
-
-                <label>Blood Group</label>
+            <!-- Blood Group -->
+            <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+                <label class="form-label">@Localizer.Get("Blood Group")</label>
                 <select asp-for="BloodGroupId" class="form-control select2 required">
-
-                    <option value="">Select</option>
-
+                    <option value="">@Localizer.Get("Select")</option>
                     @foreach (var item in ViewBag.BloodGroup)
                     {
-                        <option value="@item.DataListItemId">
-                            @item.DataListItemText
-                        </option>
+                        <option value="@item.DataListItemId">@item.DataListItemText</option>
                     }
-
                 </select>
-            
-
             </div>
 
             <!-- Religion -->
-
-            <div class="col-xl-3 col-lg-4 col-md-6">
-
-                <label>Religion</label>
-
-               @*  <select asp-for="ReligionId"
-                        asp-items="ViewBag.Religion"
-                        class="form-select select2">
-
-                    <option>Select</option>
-
-                </select> *@
+            <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+                <label class="form-label">@Localizer.Get("Religion")</label>
                 <select asp-for="ReligionId" class="form-control select2 required">
-
-                    <option value="">Select</option>
-
+                    <option value="">@Localizer.Get("Select")</option>
                     @foreach (var item in ViewBag.Religion)
                     {
-                        <option value="@item.DataListItemId">
-                            @item.DataListItemText
-                        </option>
+                        <option value="@item.DataListItemId">@item.DataListItemText</option>
                     }
-
                 </select>
-
             </div>
 
             <!-- Category -->
-
-            <div class="col-xl-3 col-lg-4 col-md-6">
-
-                <label>Category</label>
-
-               
+            <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+                <label class="form-label">@Localizer.Get("Category")</label>
                 <select asp-for="CategoryId" class="form-control select2 required">
-
-                    <option value="">Select</option>
-
+                    <option value="">@Localizer.Get("Select")</option>
                     @foreach (var item in ViewBag.Category)
                     {
-                        <option value="@item.DataListItemId">
-                            @item.DataListItemText
-                        </option>
+                        <option value="@item.DataListItemId">@item.DataListItemText</option>
                     }
-
                 </select>
-
             </div>
 
             <!-- Nationality -->
-
-            <div class="col-xl-3 col-lg-4 col-md-6">
-
-                <label>Nationality</label>
-
+            <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+                <label class="form-label">@Localizer.Get("Nationality")</label>
                 <input asp-for="Nationality" class="form-control" />
-
             </div>
 
         </div>
-
     </div>
-
 </div>
 
 <hr />
 
-<h5 class="text-primary">
-
-    Address Information
-
-</h5>
-
-<div class="row g-3">
-
-    <div class="col-xl-6">
-
-        <label>Current Address</label>
-
+<!-- Address Information -->
+<h5 class="text-primary">@Localizer.Get("Address Information")</h5>
+<div class="row g-3 align-items-start">
+    <div class="col-12 col-lg-6">
+        <label class="form-label">@Localizer.Get("Current Address")</label>
         <textarea asp-for="Address" rows="3" class="form-control required"></textarea>
-
     </div>
-
-    <div class="col-xl-6">
-
-        <label>Permanent Address</label>
-
-        <textarea asp-for="PermanentAddress"
-                  rows="3"
-                  class="form-control required"></textarea>
-
+    <div class="col-12 col-lg-6">
+        <label class="form-label">@Localizer.Get("Permanent Address")</label>
+        <textarea asp-for="PermanentAddress" rows="3" class="form-control required"></textarea>
     </div>
-
-    <div class="col-xl-3">
-
-        <div class="form-check mt-4">
-
+    <div class="col-12">
+        <div class="form-check">
             <input asp-for="SameAsCurrentAddress" class="form-check-input" />
-
-            <label class="form-check-label">
-
-                Same As Current Address
-
-            </label>
-
+            <label class="form-check-label">@Localizer.Get("Same As Current Address")</label>
         </div>
-
     </div>
-
 </div>
 
 <hr />
 
-<h5 class="text-primary">
-
-    Contact Information
-
-</h5>
-
+<!-- Contact Information -->
+<h5 class="text-primary">@Localizer.Get("Contact Information")</h5>
 <div class="row g-3">
-
-    <div class="col-xl-3">
-
-        <label>Mobile</label>
-
-        <input asp-for="MobileNo"
-               maxlength="13"
-               class="form-control required" />
-
+    <div class="col-12 col-md-6 col-xl-3">
+        <label class="form-label">@Localizer.Get("Mobile")</label>
+        <input asp-for="MobileNo" maxlength="13" class="form-control required" />
     </div>
-
-    <div class="col-xl-3">
-
-        <label>Alternate Mobile</label>
-
-        <input asp-for="AlternateMobileNo"
-               maxlength="13"
-               class="form-control required" />
-
+    <div class="col-12 col-md-6 col-xl-3">
+        <label class="form-label">@Localizer.Get("Alternate Mobile")</label>
+        <input asp-for="AlternateMobileNo" maxlength="13" class="form-control required" />
     </div>
-
-    <div class="col-xl-3">
-
-        <label>Email</label>
-
-        <input asp-for="Email" class="form-control required"type="email" />
-
+    <div class="col-12 col-md-6 col-xl-3">
+        <label class="form-label">@Localizer.Get("Email")</label>
+        <input asp-for="Email" type="email" class="form-control required" />
     </div>
-
-    <div class="col-xl-3">
-
-        <label>Alternate Email</label>
-
-        <input asp-for="AlternateEmail"
-               class="form-control required" type="email" />
-
+    <div class="col-12 col-md-6 col-xl-3">
+        <label class="form-label">@Localizer.Get("Alternate Email")</label>
+        <input asp-for="AlternateEmail" type="email" class="form-control required" />
     </div>
-
 </div>
 
 <hr />
 
-<h5 class="text-primary">
-
-    Family Details
-
-</h5>
-
+<!-- Family Details -->
+<h5 class="text-primary">@Localizer.Get("Family Details")</h5>
 <div class="row g-3">
-
-    <div class="col-xl-6">
-
-        <label>Father Name</label>
-
-        <div class="input-group">
-
-            <input asp-for="FatherFirstName" class="form-control text-only required" placeholder="First" />
-
-            <input asp-for="FatherMiddleName" class="form-control text-only" placeholder="Middle" />
-
-            <input asp-for="FatherLastName" class="form-control text-only required" placeholder="Last" />
-
+    <!-- Father Name -->
+    <div class="col-12 col-xl-6">
+        <label class="form-label">@Localizer.Get("Father Name")</label>
+        <div class="row g-2">
+            <div class="col-4">
+                <input asp-for="FatherFirstName" class="form-control text-only required" placeholder="@Localizer.Get("First")" />
+            </div>
+            <div class="col-4">
+                <input asp-for="FatherMiddleName" class="form-control text-only" placeholder="@Localizer.Get("Middle")" />
+            </div>
+            <div class="col-4">
+                <input asp-for="FatherLastName" class="form-control text-only required" placeholder="@Localizer.Get("Last")" />
+            </div>
         </div>
-
     </div>
 
-    <div class="col-xl-6">
-
-        <label>Mother Name</label>
-
-        <div class="input-group">
-
-            <input asp-for="MotherFirstName" class="form-control text-only required" placeholder="First" />
-
-            <input asp-for="MotherMiddleName" class="form-control text-only" placeholder="Middle" />
-
-            <input asp-for="MotherLastName" class="form-control text-only required" placeholder="Last" />
-
+    <!-- Mother Name -->
+    <div class="col-12 col-xl-6">
+        <label class="form-label">@Localizer.Get("Mother Name")</label>
+        <div class="row g-2">
+            <div class="col-4">
+                <input asp-for="MotherFirstName" class="form-control text-only required" placeholder="@Localizer.Get("First")" />
+            </div>
+            <div class="col-4">
+                <input asp-for="MotherMiddleName" class="form-control text-only" placeholder="@Localizer.Get("Middle")" />
+            </div>
+            <div class="col-4">
+                <input asp-for="MotherLastName" class="form-control text-only required" placeholder="@Localizer.Get("Last")" />
+            </div>
         </div>
-
     </div>
 
-    <div class="col-xl-4">
-
-        <label>Spouse Name</label>
-
+    <!-- Spouse Name -->
+    <div class="col-12 col-xl-4">
+        <label class="form-label">@Localizer.Get("Spouse Name")</label>
         <input asp-for="SpouseName" class="form-control" />
-
     </div>
-
 </div>
 
 <hr />
 
-<h5 class="text-primary">
-
-    Identity Details
-
-</h5>
-
+<!-- Identity Details -->
+<h5 class="text-primary">@Localizer.Get("Identity Details")</h5>
 <div class="row g-3">
-
-    <div class="col-xl-3">
-        <label>Aadhaar No.</label>
-        <input asp-for="AadhaarNumber" maxlength="12" class="form-control " />
+    <div class="col-12 col-md-6 col-lg-3">
+        <label class="form-label">@Localizer.Get("Aadhaar No.")</label>
+        <input asp-for="AadhaarNumber" maxlength="12" class="form-control" />
     </div>
-
-    <div class="col-xl-3">
-        <label>PAN</label>
+    <div class="col-12 col-md-6 col-lg-3">
+        <label class="form-label">@Localizer.Get("PAN")</label>
         <input asp-for="PANNumber" class="form-control" />
     </div>
-
-    <div class="col-xl-3">
-        <label>Passport</label>
+    <div class="col-12 col-md-6 col-lg-3">
+        <label class="form-label">@Localizer.Get("Passport")</label>
         <input asp-for="PassportNumber" class="form-control" />
     </div>
-
-    <div class="col-xl-3">
-        <label>Driving License</label>
+    <div class="col-12 col-md-6 col-lg-3">
+        <label class="form-label">@Localizer.Get("Driving License")</label>
         <input asp-for="DrivingLicenseNumber" class="form-control" />
     </div>
-
-    <div class="col-xl-3">
-        <label>UIN</label>
+    <div class="col-12 col-md-6 col-lg-3">
+        <label class="form-label">@Localizer.Get("UIN")</label>
         <input asp-for="UINNumber" class="form-control" />
     </div>
-
-    <div class="col-xl-3">
-
-        <label>Aadhaar File</label>
-
+    <div class="col-12 col-md-6 col-lg-3">
+        <label class="form-label">@Localizer.Get("Aadhaar File")</label>
         <input asp-for="AadhaarFile" type="file" class="form-control" />
-
     </div>
-
 </div>
 
 <hr />
 
-<h5 class="text-primary">
-
-    Employment Details
-
-</h5>
-
+<!-- Employment Details -->
+<h5 class="text-primary">@Localizer.Get("Employment Details")</h5>
 <div class="row g-3">
-
-    <div class="col-xl-3">
-
-        <label>Department</label>
-
-      @*   <select asp-for="DepartmentId"
-                asp-items="ViewBag.Department"
-                class="form-select select2">
-
-            <option>Select</option>
-
-        </select> *@
-        <select asp-for="DepartmentId"
-                class="form-control select2">
-
-            <option value="">Select</option>
-
+    <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+        <label class="form-label">@Localizer.Get("Department")</label>
+        <select asp-for="DepartmentId" class="form-control select2">
+            <option value="">@Localizer.Get("Select")</option>
             @foreach (var item in ViewBag.Department)
             {
-                <option value="@item.DataListItemId">
-                    @item.DataListItemText
-                </option>
+                <option value="@item.DataListItemId">@item.DataListItemText</option>
             }
-
         </select>
-
     </div>
-
-    <div class="col-xl-3">
-
-        <label>Designation</label>
-
-       @*  <select asp-for="DesignationId"
-                asp-items="ViewBag.Designation"
-                class="form-select select2">
-
-            <option>Select</option>
-
-        </select> *@
-        <select asp-for="DesignationId"
-                class="form-control select2 required">
-
-            <option value="">Select</option>
-
+    <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+        <label class="form-label">@Localizer.Get("Designation")</label>
+        <select asp-for="DesignationId" class="form-control select2 required">
+            <option value="">@Localizer.Get("Select")</option>
             @foreach (var item in ViewBag.Designation)
             {
-                <option value="@item.DataListItemId">
-                    @item.DataListItemText
-                </option>
+                <option value="@item.DataListItemId">@item.DataListItemText</option>
             }
-
         </select>
-
     </div>
-
-    <div class="col-xl-3">
-
-        <label>Staff Type</label>
-
-       @*  <select asp-for="StaffTypeId"
-                asp-items="ViewBag.StaffType"
-                class="form-select select2"></select> *@
-        <select asp-for="StaffTypeId"
-                class="form-control select2">
-
-            <option value="">Select</option>
-
+    <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+        <label class="form-label">@Localizer.Get("Staff Type")</label>
+        <select asp-for="StaffTypeId" class="form-control select2">
+            <option value="">@Localizer.Get("Select")</option>
             @foreach (var item in ViewBag.StaffType)
             {
-                <option value="@item.DataListItemId">
-                    @item.DataListItemText
-                </option>
+                <option value="@item.DataListItemId">@item.DataListItemText</option>
             }
-
         </select>
-
     </div>
-
-    <div class="col-xl-3">
-
-        <label>Employment Type</label>
-
-        @* <select asp-for="EmploymentTypeId"
-                asp-items="ViewBag.EmploymentType"
-                class="form-select select2"></select> *@
-        <select asp-for="EmploymentTypeId"
-                class="form-control select2">
-
-            <option value="">Select</option>
-
+    <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+        <label class="form-label">@Localizer.Get("Employment Type")</label>
+        <select asp-for="EmploymentTypeId" class="form-control select2">
+            <option value="">@Localizer.Get("Select")</option>
             @foreach (var item in ViewBag.EmploymentType)
             {
-                <option value="@item.DataListItemId">
-                    @item.DataListItemText
-                </option>
+                <option value="@item.DataListItemId">@item.DataListItemText</option>
             }
-
         </select>
-
     </div>
-
-    <div class="col-xl-3">
-
-        <label>Shift</label>
-
-       @*  <select asp-for="ShiftId"
-                asp-items="ViewBag.Shifts"
-                class="form-select select2"></select> *@
-        <select asp-for="ShiftId"
-                class="form-control select2">
-
-            <option value="">Select</option>
-
+    <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+        <label class="form-label">@Localizer.Get("Shift")</label>
+        <select asp-for="ShiftId" class="form-control select2">
+            <option value="">@Localizer.Get("Select")</option>
             @foreach (var item in ViewBag.Shifts)
             {
-                <option value="@item.DataListItemId">
-                    @item.DataListItemText
-                </option>
+                <option value="@item.DataListItemId">@item.DataListItemText</option>
             }
-
         </select>
-
     </div>
-
-    <div class="col-xl-3">
-
-        <label>Joining Date</label>
-
-        <input asp-for="JoiningDate"
-               type="date"
-               class="form-control required" />
-
+    <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+        <label class="form-label">@Localizer.Get("Joining Date")</label>
+        <input asp-for="JoiningDate" type="date" class="form-control required" />
     </div>
-
-    <div class="col-xl-3">
-
-        <label>Confirmation Date</label>
-
-        <input asp-for="ConfirmationDate"
-               type="date"
-               class="form-control required" />
-
+    <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+        <label class="form-label">@Localizer.Get("Confirmation Date")</label>
+        <input asp-for="ConfirmationDate" type="date" class="form-control" />
     </div>
-
-    <div class="col-xl-3">
-
-        <label>Probation (Months)</label>
-
-        <input asp-for="ProbationMonths"
-               class="form-control" />
-
+    <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+        <label class="form-label">@Localizer.Get("Probation (Months)")</label>
+        <input asp-for="ProbationMonths" class="form-control" />
     </div>
-
-    <div class="col-xl-3">
-
-        <label>Leaving Date</label>
-
-        <input asp-for="LeavingDate"
-               type="date"
-               class="form-control" />
-
+    <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+        <label class="form-label">@Localizer.Get("Leaving Date")</label>
+        <input asp-for="LeavingDate" type="date" class="form-control" />
     </div>
-
-    <div class="col-xl-6">
-
-        <label>Leaving Reason</label>
-
-        <textarea asp-for="LeavingReason"
-                  class="form-control"></textarea>
-
+    <div class="col-12 col-md-6 col-lg-8 col-xl-6">
+        <label class="form-label">@Localizer.Get("Leaving Reason")</label>
+        <textarea asp-for="LeavingReason" class="form-control" rows="2"></textarea>
     </div>
-
-    <div class="col-xl-3">
-
-        <label>Status</label>
-@* 
-        <select asp-for="EmployeeStatusId"
-                asp-items="ViewBag.EmployeeStatus"
-                class="form-select select2"></select> *@
-        <select asp-for="EmployeeStatusId"
-                class="form-control select2">
-
-            <option value="">Select</option>
-
+    <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+        <label class="form-label">@Localizer.Get("Status")</label>
+        <select asp-for="EmployeeStatusId" class="form-control select2">
+            <option value="">@Localizer.Get("Select")</option>
             @foreach (var item in ViewBag.EmployeeStatus)
             {
-                <option value="@item.DataListItemId">
-                    @item.DataListItemText
-                </option>
+                <option value="@item.DataListItemId">@item.DataListItemText</option>
             }
-
         </select>
     </div>
-
 </div>
 
 <hr />
 
-<h5 class="text-primary">
-
-    Signature
-
-</h5>
-
-<div class="row">
-
-    <div class="col-xl-4">
-
-        <input asp-for="SignatureFile"
-               type="file"
-               class="form-control" />
+<!-- Signature -->
+<h5 class="text-primary">@Localizer.Get("Signature")</h5>
+<div class="row g-3 align-items-end">
+    <div class="col-12 col-md-6 col-lg-4">
+        <input asp-for="SignatureFile" type="file" class="form-control" />
         <img id="imgSignaturePreview"
              src="@(string.IsNullOrEmpty(Model.SignaturePath) ? "/images/no-sign.png" : Model.SignaturePath)"
-             class="img-thumbnail"
-             style="height:80px;width:250px;" />
+             class="img-thumbnail mt-2"
+             style="height:80px;width:250px;object-fit:contain;" />
         <input asp-for="SignaturePath" type="hidden" />
-
     </div>
-
 </div>
-<div class="modal fade" id="cropModal">
+
+<!-- Crop Modal (unchanged) -->
+<div class="modal fade" id="cropModal" tabindex="-1">
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content">
-
             <div class="modal-header">
-                <h5>Crop Image</h5>
+                <h5 class="modal-title">@Localizer.Get("Crop Image")</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-
             <div class="modal-body">
-
                 <img id="cropImage" style="max-width:100%;" />
-
             </div>
-
             <div class="modal-footer">
-
-                <button type="button"
-                        class="btn btn-success"
-                        id="btnCrop">
-                    Crop
-                </button>
-
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Localizer.Get("Close")</button>
+                <button type="button" class="btn btn-success" id="btnCrop">@Localizer.Get("Crop")</button>
             </div>
-
         </div>
     </div>
 </div>

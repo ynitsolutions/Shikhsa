@@ -250,7 +250,7 @@ namespace Shikhsa.Controllers
 
             TempData[result.Status == 1 ? "Success" : "Error"] = result.Message;
 
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(PlaceHolder));
         }
         public async Task<IActionResult> SavePlaceHolder(long id)
         {
@@ -262,7 +262,7 @@ namespace Shikhsa.Controllers
 
             vm.Placeholders = await _repository.GetPaceHolderAllAsync();
 
-            return View("Index", vm);
+            return View("PlaceHolder", vm);
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -272,7 +272,7 @@ namespace Shikhsa.Controllers
 
             TempData[result.Status == 1 ? "Success" : "Error"] = result.Message;
 
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(PlaceHolder));
         }
         #endregion
     }

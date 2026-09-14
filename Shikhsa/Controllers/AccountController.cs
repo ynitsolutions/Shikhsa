@@ -102,7 +102,7 @@ namespace Shikhsa.Controllers
                 return View(model);
             }
             var roles = await _userManager.GetRolesAsync(user);
-
+             var primaryRole = roles.FirstOrDefault() ?? "";
             var sessionUser = new UserSessionVM
             {
                 Id = user.Id,
@@ -112,6 +112,30 @@ namespace Shikhsa.Controllers
                 PhoneNumber = user.PhoneNumber ?? "",
                 RoleName = roles.FirstOrDefault() ?? ""
             };
+            bool isYnItSolutions = User.IsInRole("YN IT Solutions");
+            if (!isYnItSolutions)
+            {
+                if (string.Equals(primaryRole, "Students", StringComparison.OrdinalIgnoreCase) && string.Equals(primaryRole, "Student", StringComparison.OrdinalIgnoreCase))
+                {
+                    // Students table se record nikalein jahan UserId match karti ho
+                    var student = await _context.Tbl_Students.FirstOrDefaultAsync(s => s.UserId == user.Id);
+                    if (student != null)
+                    {
+                        // Agar StudentID string hai to SetString, agar int hai to .ToString() lagayein
+                        HttpContext.Session.SetString("StudentID", student.StudentId.ToString());
+                    }
+                }
+                else if (!string.Equals(primaryRole, "Student", StringComparison.OrdinalIgnoreCase) && !string.Equals(primaryRole, "Students", StringComparison.OrdinalIgnoreCase))
+                {
+                    // Staff table se record nikalein jahan UserId match karti ho
+                    var staff = await _context.StaffMasters.FirstOrDefaultAsync(s => s.UserId == user.Id);
+                    if (staff != null)
+                    {
+                        // Agar StaffID string hai to SetString, agar int hai to .ToString() lagayein
+                        HttpContext.Session.SetString("StaffID", staff.StaffId.ToString());
+                    }
+                }
+            }
             HttpContext.Session.SetString( "CurrentUser",JsonSerializer.Serialize(sessionUser));
             var school = await GetSchoolInfo();
             HttpContext.Session.SetString("SchoolName", school.SchoolName);

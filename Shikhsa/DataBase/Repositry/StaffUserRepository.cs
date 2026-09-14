@@ -18,12 +18,16 @@ namespace Shikhsa.DataBase.Repositry
 
         private readonly RoleManager<ApplicationRole> _roleManager;
         public readonly NotificationService _notificationService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly LookupService _lookup;
         public StaffUserRepository
         (
             ApplicationDbContext context,
             UserManager<ApplicationUser> userManager,
             RoleManager<ApplicationRole> roleManager,
-            NotificationService notificationService
+            NotificationService notificationService,
+            IHttpContextAccessor httpContextAccessor,
+            LookupService lookup
         )
         {
             _context = context;
@@ -32,6 +36,8 @@ namespace Shikhsa.DataBase.Repositry
 
             _roleManager = roleManager;
             _notificationService = notificationService;
+            _httpContextAccessor = httpContextAccessor;
+            _lookup = lookup;
         }
         public async Task<StaffUserVM> GetPageData()
         {
@@ -277,6 +283,8 @@ namespace Shikhsa.DataBase.Repositry
 
                 response.Status = 1;
                 response.Message = "User Created Successfully.";
+                await 
+                    _lookup.PopulateAsync(staff.Staff);
                 await _notificationService.SendAsync(
                      "Staff_Login_Credentials",
                      staff.Staff.Email,
@@ -336,12 +344,60 @@ namespace Shikhsa.DataBase.Repositry
 
             return response;
         }
-        public async Task<ResponseModel> ChangePassword(ChangePasswordVM model, bool isAdmin)
+        //public async Task<ResponseModel> ChangePassword(ChangePasswordVM model, bool isAdmin)
+        //{
+        //    ResponseModel response = new();
+
+        //    var user = await _userManager.FindByIdAsync(model.UserId);
+
+        //    if (user == null)
+        //    {
+        //        response.Status = 0;
+        //        response.Message = "User not found.";
+        //        return response;
+        //    }
+
+        //    IdentityResult result;
+
+        //    if (isAdmin)
+        //    {
+        //        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+        //        result = await _userManager.ResetPasswordAsync(
+        //                        user,
+        //                        token,
+        //                        model.NewPassword);
+        //    }
+        //    else
+        //    {
+        //        result = await _userManager.ChangePasswordAsync(
+        //                        user,
+        //                        model.OldPassword,
+        //                        model.NewPassword);
+        //    }
+
+        //    if (!result.Succeeded)
+        //    {
+        //        response.Status = 0;
+        //        response.Message = string.Join(",", result.Errors.Select(x => x.Description));
+        //        return response;
+        //    }
+
+        //    user.NormalPassword = model.NewPassword;
+
+        //    await _userManager.UpdateAsync(user);
+
+        //    response.Status = 1;
+        //    response.Message = "Password changed successfully.";
+
+        //    return response;
+        //}
+        public async Task<ResponseModel> ChangePassword(ChangePasswordVM model)
         {
             ResponseModel response = new();
 
+            // 1. Basic User Verification
             var user = await _userManager.FindByIdAsync(model.UserId);
-
             if (user == null)
             {
                 response.Status = 0;
@@ -349,34 +405,56 @@ namespace Shikhsa.DataBase.Repositry
                 return response;
             }
 
+            // 2. Fetch the Current Logged-in Requestor from HttpContext
+            // This removes the security flaw by verifying credentials server-side.
+            var currentUserId = _userManager.GetUserId(_httpContextAccessor.HttpContext.User);
+            bool isTargetingSelf = (currentUserId == model.UserId);
+            bool isRequestorAdmin = _httpContextAccessor.HttpContext.User.IsInRole("Admin");
+
             IdentityResult result;
 
-            if (isAdmin)
+            // Case A: A user is updating their own password (Regardless of their specific role)
+            if (isTargetingSelf)
             {
-                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+                if (string.IsNullOrWhiteSpace(model.OldPassword))
+                {
+                    response.Status = 0;
+                    response.Message = "Current password is required to update your own account.";
+                    return response;
+                }
 
-                result = await _userManager.ResetPasswordAsync(
-                                user,
-                                token,
-                                model.NewPassword);
-            }
-            else
-            {
                 result = await _userManager.ChangePasswordAsync(
                                 user,
                                 model.OldPassword,
                                 model.NewPassword);
             }
-
-            if (!result.Succeeded)
+            // Case B: An Admin is resetting a student/teacher/staff account password
+            else if (isRequestorAdmin)
+            {
+                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+                result = await _userManager.ResetPasswordAsync(
+                                user,
+                                token,
+                                model.NewPassword);
+            }
+            // Case C: Unauthorized attempt (e.g., a teacher trying to change a student's password directly)
+            else
             {
                 response.Status = 0;
-                response.Message = string.Join(",", result.Errors.Select(x => x.Description));
+                response.Message = "Access denied. You do not have permission to modify this account.";
                 return response;
             }
 
-            user.NormalPassword = model.NewPassword;
+            // 3. Handle Identity Pipeline Errors
+            if (!result.Succeeded)
+            {
+                response.Status = 0;
+                response.Message = string.Join(" ", result.Errors.Select(x => x.Description));
+                return response;
+            }
 
+            // 4. Mirror values (Optional tracking column setup)
+            user.NormalPassword = model.NewPassword;
             await _userManager.UpdateAsync(user);
 
             response.Status = 1;
@@ -384,6 +462,7 @@ namespace Shikhsa.DataBase.Repositry
 
             return response;
         }
+
         public async Task<StaffUserVM?> GetUserForEdit(string userId)
         {
             var data = await (

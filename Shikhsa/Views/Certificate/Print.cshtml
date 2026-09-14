@@ -1,0 +1,131 @@
+﻿@model Shikhsa.Models.Certificates
+@{
+    ViewData["Title"] = "Print Certificate";
+    string type = ViewBag.Type as string ?? "tc";
+    ViewData["Preview"] = false;
+}
+
+<div class="print-toolbar no-print">
+    <a asp-action="Create" asp-route-type="@type">&larr; Back to Builder</a>
+    <button onclick="window.print()">🖨️ Print Certificate</button>
+</div>
+
+<div class="certificate-sheet" id="printSheet">
+    @if (type == "tc")
+    {
+        @await Html.PartialAsync("_TcTemplate", Model)
+    }
+    else
+    {
+        @await Html.PartialAsync("_CcTemplate", Model)
+    }
+</div>
+
+<style>
+    .print-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        max-width: 800px;
+        margin: 16px auto;
+    }
+
+        .print-toolbar a {
+            color: #2563eb;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .print-toolbar button {
+            background: #16a34a;
+            color: #fff;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+            .print-toolbar button:hover {
+                background: #15803d;
+            }
+
+    .certificate-sheet {
+        border: 2px solid #333;
+        padding: 28px 34px;
+        font-family: 'Times New Roman', serif;
+        background: #fffdf6;
+        max-width: 800px;
+        margin: 0 auto 40px;
+    }
+
+        .certificate-sheet h1 {
+            text-align: center;
+            margin: 0;
+            font-size: 22px;
+        }
+
+        .certificate-sheet .school-sub {
+            text-align: center;
+            font-size: 12px;
+            margin: 2px 0;
+        }
+
+        .certificate-sheet .cert-title {
+            text-align: center;
+            text-decoration: underline;
+            margin: 14px 0;
+            font-size: 16px;
+        }
+
+        .certificate-sheet .reg-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            margin-bottom: 12px;
+        }
+
+        .certificate-sheet .cert-line {
+            display: flex;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+            .certificate-sheet .cert-line .num {
+                width: 26px;
+            }
+
+            .certificate-sheet .cert-line .label {
+                flex: 0 0 300px;
+            }
+
+            .certificate-sheet .cert-line .value {
+                flex: 1;
+                border-bottom: 1px dotted #333;
+                min-height: 16px;
+            }
+
+        .certificate-sheet .sign-row {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 40px;
+            font-size: 12px;
+            text-align: center;
+        }
+
+    @@media print {
+        .no-print {
+            display: none !important;
+        }
+
+        body {
+            background: #fff;
+        }
+
+        .certificate-sheet {
+            border: 2px solid #000;
+            box-shadow: none;
+            margin: 0;
+        }
+    }
+</style>

@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Shikhsa.Helpers;
 using Shikhsa.Models;
+using Shikhsa.Models.Certificate;
 using Shikhsa.Models.Common;
 using Shikhsa.Models.Notification;
 using Shikhsa.Models.Payment;
@@ -91,6 +92,11 @@ namespace Shikhsa.Data
         public DbSet<StudentFeeCreditAdjustment> StudentFeeCreditAdjustment { get; set; }
         public DbSet<StudentUnpaidFeeSPResult> StudentUnpaidFeeSPResults{ get; set; }
         public DbSet<PaymentGatewaySetting> PaymentGatewaySettings { get; set; }
+        public DbSet<Certificates> Certificates { get; set; }
+        public DbSet<CertificateTemplate> CertificateTemplates { get; set; } = null!;
+        public DbSet<CertificateTemplateCategory> CertificateTemplateCategories { get; set; } = null!;
+        public DbSet<GeneratedCertificate> GeneratedCertificates { get; set; } = null!;
+        public DbSet<CertificateTypeMaster> CertificateTypes { get; set; } = null!;
         #endregion Fee
         protected override void OnModelCreating(ModelBuilder builder)
         {

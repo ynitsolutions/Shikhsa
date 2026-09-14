@@ -1,0 +1,64 @@
+﻿@model Shikhsa.Models.Certificates
+@{
+    bool preview = ViewData["Preview"] as bool? ?? false;
+
+    string Slot(string key, string? value, string format = "")
+    {
+        if (preview)
+        {
+            return $"<span data-slot=\"{key}\">________________</span>";
+        }
+
+        if (format == "date" && !string.IsNullOrEmpty(value) && DateTime.TryParse(value, out var d))
+        {
+            value = d.ToString("dd MMM yyyy");
+        }
+
+        return System.Net.WebUtility.HtmlEncode(string.IsNullOrWhiteSpace(value) ? "________________" : value);
+    }
+
+    string DateVal(DateTime? d) => d.HasValue ? d.Value.ToString("dd MMM yyyy") : "";
+}
+
+<h1>Good Samaritan School</h1>
+<p class="school-sub">Near Sector-8, Jasola, New Delhi-25</p>
+<p class="school-sub">(Recognized by Directorate of Education) School ID No. 1925346</p>
+<p class="school-sub">(Affiliated to C.B.S.E. New Delhi) Affiliation No. 2730569</p>
+
+<div class="cert-title">TRANSFER CERTIFICATE</div>
+
+<div class="reg-row">
+    <span>Book No. @Html.Raw(Slot("book_no", Model?.BookNo))</span>
+    <span>Sl. No. @Html.Raw(Slot("serial_no", Model?.SerialNo))</span>
+    <span>Admission No. @Html.Raw(Slot("admission_no", Model?.AdmissionNo))</span>
+</div>
+
+<div class="cert-line"><span class="num">1.</span><span class="label">Name of Pupil</span><span class="value">@Html.Raw(Slot("student_name", Model?.StudentName))</span></div>
+<div class="cert-line"><span class="num">2.</span><span class="label">Father's/Guardian's Name</span><span class="value">@Html.Raw(Slot("father_name", Model?.FatherName))</span></div>
+<div class="cert-line"><span class="num">3.</span><span class="label">Mother's Name</span><span class="value">@Html.Raw(Slot("mother_name", Model?.MotherName))</span></div>
+<div class="cert-line"><span class="num">4.</span><span class="label">Nationality</span><span class="value">@Html.Raw(Slot("nationality", Model?.Nationality))</span></div>
+<div class="cert-line"><span class="num">5.</span><span class="label">Category (SC/ST/OBC/General)</span><span class="value">@Html.Raw(Slot("category", Model?.Category))</span></div>
+<div class="cert-line"><span class="num">6.</span><span class="label">Date of first admission with class</span><span class="value">@Html.Raw(Slot("first_admission_date", DateVal(Model?.FirstAdmissionDate))) &nbsp;(@Html.Raw(Slot("first_admission_class", Model?.FirstAdmissionClass)))</span></div>
+<div class="cert-line"><span class="num">7.</span><span class="label">Date of Birth (figures / words)</span><span class="value">@Html.Raw(Slot("dob", DateVal(Model?.Dob))) &nbsp;@Html.Raw(Slot("dob_in_words", Model?.DobInWords))</span></div>
+<div class="cert-line"><span class="num">8.</span><span class="label">Class last studied (figures / words)</span><span class="value">@Html.Raw(Slot("last_class_figures", Model?.LastClassFigures)) &nbsp;@Html.Raw(Slot("last_class_words", Model?.LastClassWords))</span></div>
+<div class="cert-line"><span class="num">9.</span><span class="label">School/Board Exam last taken with result</span><span class="value">@Html.Raw(Slot("last_exam_result", Model?.LastExamResult))</span></div>
+<div class="cert-line"><span class="num">10.</span><span class="label">Whether failed, if so once/twice</span><span class="value">@Html.Raw(Slot("failed_details", Model?.FailedDetails))</span></div>
+<div class="cert-line"><span class="num">11.</span><span class="label">Subjects Studied</span><span class="value">@Html.Raw(Slot("subjects_studied", Model?.SubjectsStudied))</span></div>
+<div class="cert-line"><span class="num">12.</span><span class="label">Qualified for promotion? To which class</span><span class="value">@Html.Raw(Slot("qualified_for_promotion", Model?.QualifiedForPromotion)) &nbsp;@Html.Raw(Slot("promoted_class", Model?.PromotedClass))</span></div>
+<div class="cert-line"><span class="num">13.</span><span class="label">Month upto which dues paid</span><span class="value">@Html.Raw(Slot("fee_paid_upto", Model?.FeePaidUpto))</span></div>
+<div class="cert-line"><span class="num">14.</span><span class="label">Fee concession availed, if any</span><span class="value">@Html.Raw(Slot("fee_concession", Model?.FeeConcession))</span></div>
+<div class="cert-line"><span class="num">15.</span><span class="label">Total No. of working days</span><span class="value">@Html.Raw(Slot("total_working_days", Model?.TotalWorkingDays?.ToString()))</span></div>
+<div class="cert-line"><span class="num">16.</span><span class="label">Total No. of working days present</span><span class="value">@Html.Raw(Slot("total_present_days", Model?.TotalPresentDays?.ToString()))</span></div>
+<div class="cert-line"><span class="num">17.</span><span class="label">NCC Cadet / Boy Scout / Girl Guide</span><span class="value">@Html.Raw(Slot("ncc_scout_guide", Model?.NccScoutGuide))</span></div>
+<div class="cert-line"><span class="num">18.</span><span class="label">Games / extra-curricular activities</span><span class="value">@Html.Raw(Slot("extra_curricular", Model?.ExtraCurricular))</span></div>
+<div class="cert-line"><span class="num">19.</span><span class="label">General Conduct</span><span class="value">@Html.Raw(Slot("general_conduct", Model?.GeneralConduct))</span></div>
+<div class="cert-line"><span class="num">20.</span><span class="label">Date of application for certificate</span><span class="value">@Html.Raw(Slot("application_date", DateVal(Model?.ApplicationDate)))</span></div>
+<div class="cert-line"><span class="num">21.</span><span class="label">Date of issue of certificate</span><span class="value">@Html.Raw(Slot("issue_date", DateVal(Model?.IssueDate)))</span></div>
+<div class="cert-line"><span class="num">22.</span><span class="label">Reason for leaving the school</span><span class="value">@Html.Raw(Slot("reason_for_leaving", Model?.ReasonForLeaving))</span></div>
+<div class="cert-line"><span class="num">23.</span><span class="label">Any other remarks</span><span class="value">@Html.Raw(Slot("remarks", Model?.Remarks))</span></div>
+
+<div class="sign-row">
+    <div>Signature of<br />Class Teacher</div>
+    <div>Checked by<br />(Name &amp; Designation)</div>
+    <div>Principal<br />SEAL</div>
+</div>

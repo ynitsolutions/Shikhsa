@@ -133,7 +133,7 @@ namespace Shikhsa.Controllers
         private async Task TaskBindFeePlansDropdown()
         {
             ViewBag.Classes = GetDataListItems("Class");
-            ViewBag.Hostels = GetDataListItems("Hostel List");
+            ViewBag.Hostels = GetDataListItems("Hostel");
             ViewBag.Transports = GetDataListItems("Transport");
             ViewBag.RoomType = GetDataListItems("Room Type");
             ViewBag.MealType = GetDataListItems("Meal Type");

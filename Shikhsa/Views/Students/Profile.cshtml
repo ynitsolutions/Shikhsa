@@ -6,275 +6,306 @@
     var photoUrl = Model.PhotoDocument?.FilePath ?? "/images/no-photo.png";
 }
 
-<div class="profile-header d-flex align-items-center justify-content-between border rounded p-3 mb-3">
-    <div class="d-flex align-items-center">
-        <img src="@photoUrl" alt="photo" class="rounded-circle me-3"
-             style="width:90px;height:90px;object-fit:cover;" />
+<div class="container-fluid">
+
+    <!-- Profile Header (responsive flex) -->
+    <div class="profile-header d-flex flex-wrap align-items-center justify-content-between border rounded p-3 mb-3 gap-3">
+        <div class="d-flex flex-wrap align-items-center gap-3">
+            <img src="@photoUrl" alt="photo" class="rounded-circle"
+                 style="width:90px;height:90px;object-fit:cover;" />
+            <div>
+                <h4 class="mb-0">@s.FirstName @s.MiddleName @s.LastName</h4>
+                <div class="text-muted small">
+                    <span class="d-inline-block me-2"> @Localizer.Get("Application No"): @s.ApplicationNo</span>
+                    <span class="d-inline-block me-2"> @Localizer.Get("Scholar"): @s.ScholarNumber</span>
+                    <span class="d-inline-block me-2"> @Localizer.Get("Class"): @s.ClassName - @s.SectionName</span>
+                    <span class="badge bg-success">@(s.Status == 1 ?  @Localizer.Get("Active") :  @Localizer.Get("Inactive"))</span>
+                </div>
+            </div>
+        </div>
         <div>
-            <h4 class="mb-0">@s.FirstName @s.MiddleName @s.LastName</h4>
-            <div class="text-muted">
-                App No: @s.ApplicationNo &nbsp;|&nbsp;
-                Scholar No: @s.ScholarNumber &nbsp;|&nbsp;
-                Class: @s.ClassName - @s.SectionName &nbsp;|&nbsp;
-                <span class="badge bg-success">@(s.Status == 1 ? "Active" : "Inactive")</span>
-            </div>
+            <a class="btn btn-primary btn-sm" href="@Url.Action("DownloadIdCard", "Students", new { studentId = s.StudentId })">
+                <i class="bi bi-download"></i>  @Localizer.Get("Download ID Card")
+            </a>
         </div>
     </div>
-    <div>
-        <a class="btn btn-primary"
-           href="@Url.Action("DownloadIdCard", "Students", new { studentId = s.StudentId })">
-            <i class="bi bi-download"></i> Download ID Card
-        </a>
-    </div>
-</div>
 
-<ul class="nav nav-tabs" id="profileTabs" role="tablist">
-    <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#personal">Personal Details</button></li>
-    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#family">Family Details</button></li>
-    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#address">Address</button></li>
-    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#previousschool">Previous School</button></li>
-    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#documents">Documents</button></li>
-    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#fee">Fee Summary</button></li>
-    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#exam">Exam Summary</button></li>
-    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#attendance">Attendance</button></li>
-    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#oldbatch">Old Batches</button></li>
-</ul>
+    <!-- Tabs (responsive: overflow auto on small screens) -->
+    <ul class="nav nav-tabs flex-nowrap overflow-auto" id="profileTabs" role="tablist" style="gap:0; -webkit-overflow-scrolling:touch;">
+        <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#personal"> @Localizer.Get("Personal")</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#family"> @Localizer.Get("Family")</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#address"> @Localizer.Get("Address")</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#previousschool"> @Localizer.Get("Prev School")</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#documents"> @Localizer.Get("Documents")</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#fee"> @Localizer.Get("Fee")</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#exam"> @Localizer.Get("Exam")</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#attendance"> @Localizer.Get("Attendance")</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#oldbatch"> @Localizer.Get("Old Batches")</button></li>
+    </ul>
 
-<div class="tab-content border border-top-0 p-3">
+    <div class="tab-content border border-top-0 p-3">
 
-    <!-- PERSONAL -->
-    <div class="tab-pane fade show active" id="personal">
-        <table class="table table-sm">
-            <tr><th>DOB</th><td>@s.DOB.ToString("dd-MMM-yyyy")</td></tr>
-            <tr><th>Gender</th><td>@s.GenderName</td></tr>
-            <tr><th>Category</th><td>@s.
-CategoryName</td></tr>
-            <tr><th>Religion</th><td>@s.ReligionName</td></tr>
-            <tr><th>Aadhaar No</th><td>@s.AadhaarNumber</td></tr>
-            <tr><th>APAAR ID</th><td>@s.APAARId</td></tr>
-            <tr><th>PEN Number</th><td>@s.PENNumber</td></tr>
-            <tr><th>Contact No</th><td>@s.ContactNo</td></tr>
-            <tr><th>Email</th><td>@s.Email</td></tr>
-            <tr><th>Handicap</th><td>@(s.IsHandicap ? s.HandicapDetails : "No")</td></tr>
-            <tr><th>Identification Mark</th><td>@s.IdentificationMark</td></tr>
-            <tr><th>Transport</th><td>@(s.IsTranspot ? "Yes" : "No")</td></tr>
-            <tr><th>Hostel</th><td>@(s.IsHostel ? "Yes" : "No")</td></tr>
-            <tr><th>Current Batch</th><td>@s.CurrentBatchName</td></tr>
-        </table>
-    </div>
-    <!-- FAMILY -->
-    <div class="tab-pane fade" id="family">
-        @if (p != null)
-        {
-            <div class="row">
-                <div class="col-md-4">
-                    <h6>Father</h6>
-                    <p>
-                        @p.FatherFirstName @p.FatherMiddleName @p.FatherLastName<br />
-                        @p.FatherContactNo<br />@p.FatherEmail
-                    </p>
-                </div>
-                <div class="col-md-4">
-                    <h6>Mother</h6>
-                    <p>
-                        @p.MotherFirstName @p.MotherMiddleName @p.MotherLastName<br />
-                        @p.MotherContactNo<br />@p.MotherEmail
-                    </p>
-                </div>
-                @if (!string.IsNullOrEmpty(p.GuardianFirstName))
-                {
-                    <div class="col-md-4">
-                        <h6>Guardian</h6>
-                        <p>
-                            @p.GuardianFirstName @p.GuardianMiddleName @p.GuardianLastName<br />
-                            @p.GuardianContactNo<br />@p.GuardianEmail
-                        </p>
-                    </div>
-                }
-            </div>
-        }
-        else
-        {
-            <p class="text-muted">Parent details उपलब्ध नहीं हैं।</p>
-        }
-    </div>
-    <!-- ADDRESS -->
-    <div class="tab-pane fade" id="address">
-        <div class="row">
-            <div class="col-md-6">
-                <h6>Local Address</h6>
-                <p>@s.LocalAddress</p>
-            </div>
-            <div class="col-md-6">
-                <h6>Permanent Address</h6>
-                <p>@s.PermanentAddress</p>
+        <!-- PERSONAL (responsive table) -->
+        <div class="tab-pane fade show active" id="personal">
+            <div class="table-responsive">
+                <table class="table table-sm table-striped">
+                    <tbody>
+                        <tr><th style="width:30%;">DOB</th><td>@s.DOB.ToString("dd-MMM-yyyy")</td></tr>
+                        <tr><th> @Localizer.Get("Gender")</th><td>@s.GenderName</td></tr>
+                        <tr><th> @Localizer.Get("Category")</th><td>@s.CategoryName</td></tr>
+                        <tr><th> @Localizer.Get("Religion")</th><td>@s.ReligionName</td></tr>
+                        <tr><th> @Localizer.Get("Aadhaar No")</th><td>@s.AadhaarNumber</td></tr>
+                        <tr><th> @Localizer.Get("APAAR ID")</th><td>@s.APAARId</td></tr>
+                        <tr><th> @Localizer.Get("PEN Number")</th><td>@s.PENNumber</td></tr>
+                        <tr><th> @Localizer.Get("Contact No")</th><td>@s.ContactNo</td></tr>
+                        <tr><th> @Localizer.Get("Email")</th><td>@s.Email</td></tr>
+                        <tr><th> @Localizer.Get("Handicap")</th><td>@(s.IsHandicap ? s.HandicapDetails :  @Localizer.Get("No"))</td></tr>
+                        <tr><th> @Localizer.Get("Identification Mark")</th><td>@s.IdentificationMark</td></tr>
+                        <tr><th> @Localizer.Get("Transport")</th><td>@(s.IsTranspot ?  @Localizer.Get("Yes") :  @Localizer.Get("No"))</td></tr>
+                        <tr><th> @Localizer.Get("Hostel")</th><td>@(s.IsHostel ?  @Localizer.Get("Yes") :  @Localizer.Get("No"))</td></tr>
+                        <tr><th> @Localizer.Get("Current Batch")</th><td>@s.CurrentBatchName</td></tr>
+                    </tbody>
+                </table>
             </div>
         </div>
-    </div>
-    <!-- PREVIOUS SCHOOL -->
-    <div class="tab-pane fade" id="previousschool">
-        @if (Model.PreviousSchool != null)
-        {
-            var ps = Model.PreviousSchool;
-            <table class="table table-sm">
-                <tr><th>Last Class</th><td>@ps.LastSchoolClass</td></tr>
-                <tr><th>School Name</th><td>@ps.LastSchoolName</td></tr>
-                <tr><th>School Address</th><td>@ps.LastSchoolAddress</td></tr>
-                <tr><th>School Code</th><td>@ps.LastSchoolCode</td></tr>
-                <tr><th>Board</th><td>@ps.LastSchoolBoard</td></tr>
-                <tr><th>UDISE Code</th><td>@ps.LastSchoolUDISECode</td></tr>
-                <tr><th>Reason for Change</th><td>@ps.ReasonForChange</td></tr>
-            </table>
-        }
-        else
-        {
-            <p class="text-muted">Previous school record उपलब्ध नहीं है (naya admission ho sakta hai)।</p>
-        }
-    </div>
-    <!-- DOCUMENTS -->
-    <div class="tab-pane fade" id="documents">
-        <table class="table table-sm">
-            <thead><tr><th>Document Type</th><th>File Name</th><th>Uploaded On</th><th></th></tr></thead>
-            <tbody>
-                @foreach (var doc in Model.Documents)
-                {
-                    <tr>
-                        <td>@doc.DocumentType</td>
-                        <td>@doc.FileName</td>
-                        <td>@doc.UploadDate?.ToString("dd-MMM-yyyy")</td>
-                        <td><a href="@doc.FilePath" target="_blank" class="btn btn-sm btn-outline-secondary">View / Download</a></td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-    <!-- FEE (current batch) -->
-    <div class="tab-pane fade" id="fee">
-        <table class="table table-sm">
-            <thead><tr><th>Fee Type</th><th>Month/Year</th><th>Fee Amount</th><th>Paid</th><th>Balance</th><th>Status</th></tr></thead>
-            <tbody>
-                @foreach (var f in Model.CurrentFees)
-                {
-                    <tr>
-                        <td>@f.FeeType</td>
-                       @*  <td>@f.Month/@f.Year</td> *@
-                        <td>@f.FeeHeadingName</td>
-                        <td>@f.FeeAmount.ToString("N2")</td>
-                        <td>@f.PaidAmount.ToString("N2")</td>
-                        <td>@f.BalanceAmount.ToString("N2")</td>
-                        <td>@(f.IsFullyPaid ? "Paid" : "Pending")</td>
-                    </tr>
-                }
-            </tbody>
-            <tfoot>
-                <tr class="fw-bold">
-                    <td colspan="2">Total</td>
-                    <td>@Model.TotalFeeAmount.ToString("N2")</td>
-                    <td>@Model.TotalPaidAmount.ToString("N2")</td>
-                    <td colspan="2">Balance: @Model.TotalBalanceAmount.ToString("N2")</td>
-                </tr>
-            </tfoot>
-        </table>
 
-        <h6 class="mt-4">Recent Receipts</h6>
-        <table class="table table-sm">
-            <thead><tr><th>Receipt No</th><th>Date</th><th>Amount</th><th>Mode</th></tr></thead>
-            <tbody>
-                @foreach (var r in Model.RecentReceipts)
-                {
-                    <tr>
-                        <td>@r.ReceiptNumber</td>
-                        <td>@r.ReceiptDate.ToString("dd-MMM-yyyy")</td>
-                        <td>@r.ReceiptAmount.ToString("N2")</td>
-                        <td>@r.BankName</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-    <!-- EXAM (Scholastic marks + Exam category summary/rank + Co-Scholastic grades) -->
-    <div class="tab-pane fade" id="exam">
-
-        <h6>Scholastic — Subject wise Marks</h6>
-        <table class="table table-sm">
-            <thead><tr><th>Exam</th><th>Subject</th><th>Marks</th><th>Status</th><th>Remarks</th></tr></thead>
-            <tbody>
-                @foreach (var m in Model.ScholasticMarks)
-                {
-                    <tr>
-                        <td>@m.ExamName</td>
-                        <td>@m.SubjectName</td>
-                        <td>@(m.IsAbsent ? "-" : m.ObtainedMarks?.ToString("N2"))</td>
-                        <td>@(m.IsAbsent ? "Absent" : "Present")</td>
-                        <td>@m.Remarks</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-
-        <h6 class="mt-4">Exam Summary (Term wise Rank)</h6>
-        <table class="table table-sm">
-            <thead><tr><th>Exam Category</th><th>Rank in Class</th><th>Remarks</th></tr></thead>
-            <tbody>
-                @foreach (var es in Model.ExamSummaries)
-                {
-                    <tr>
-                        <td>@es.ExamCategoryName</td>
-                        <td>@es.RankInClass</td>
-                        <td>@es.Remarks</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-
-        <h6 class="mt-4">Co-Scholastic</h6>
-        <table class="table table-sm">
-            <thead><tr><th>Exam Category</th><th>Activity</th><th>Grade</th></tr></thead>
-            <tbody>
-                @foreach (var cg in Model.
-                CoScholasticGrades)
-                {
-                    <tr>
-                        <td>@cg.ExamCategoryName</td>
-                        <td>@cg.ActivityTitle</td>
-                        <td>@cg.Grade</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-
-    </div>
-    <!-- ATTENDANCE -->
-    <div class="tab-pane fade" id="attendance">
-        <table class="table table-sm">
-            <thead><tr><th>Month</th><th>Present</th><th>Absent</th><th>Leave</th><th>Total</th><th>%</th></tr></thead>
-            <tbody>
-                @foreach (var a in Model.CurrentAttendance)
-                {
-                    <tr>
-                        <td>@a.Month</td>
-                        <td>@a.PresentDays</td>
-                        <td>@a.AbsentDays</td>
-                        <td>@a.LeaveDays</td>
-                        <td>@a.TotalDays</td>
-                        <td>@a.AttendancePercent%</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-    <!-- OLD BATCHES -->
-    <div class="tab-pane fade" id="oldbatch">
-        <label class="form-label">Select Batch / Session </label>
-        <select id="batchSelect" class="form-select w-auto d-inline-block">
-            <option value="">Select Batch</option>
-            @foreach (var b in Model.BatchHistory)
+        <!-- FAMILY (responsive grid) -->
+        <div class="tab-pane fade" id="family">
+            @if (p != null)
             {
-                <option value="@b.BatchId">@b.AcademicYear</option>
+                <div class="row g-3">
+                    <div class="col-12 col-md-4">
+                        <h6> @Localizer.Get("Father")</h6>
+                        <p class="mb-0">@p.FatherFirstName @p.FatherMiddleName @p.FatherLastName</p>
+                        <p class="mb-0">@p.FatherContactNo</p>
+                        <p>@p.FatherEmail</p>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <h6> @Localizer.Get("Mother")</h6>
+                        <p class="mb-0">@p.MotherFirstName @p.MotherMiddleName @p.MotherLastName</p>
+                        <p class="mb-0">@p.MotherContactNo</p>
+                        <p>@p.MotherEmail</p>
+                    </div>
+                    @if (!string.IsNullOrEmpty(p.GuardianFirstName))
+                    {
+                        <div class="col-12 col-md-4">
+                            <h6> @Localizer.Get("Guardian")</h6>
+                            <p class="mb-0">@p.GuardianFirstName @p.GuardianMiddleName @p.GuardianLastName</p>
+                            <p class="mb-0">@p.GuardianContactNo</p>
+                            <p>@p.GuardianEmail</p>
+                        </div>
+                    }
+                </div>
             }
-        </select>
+            else
+            {
+                <p class="text-muted"> @Localizer.Get("Parent details is not available")</p>
+            }
+        </div>
 
-        <div id="oldBatchResult" class="mt-3"></div>
+        <!-- ADDRESS (responsive grid) -->
+        <div class="tab-pane fade" id="address">
+            <div class="row g-3">
+                <div class="col-12 col-md-6">
+                    <h6> @Localizer.Get("Local Address")</h6>
+                    <p class="mb-0">@s.LocalAddress</p>
+                </div>
+                <div class="col-12 col-md-6">
+                    <h6> @Localizer.Get("Permanent Address")</h6>
+                    <p class="mb-0">@s.PermanentAddress</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- PREVIOUS SCHOOL (responsive table) -->
+        <div class="tab-pane fade" id="previousschool">
+            @if (Model.PreviousSchool != null)
+            {
+                var ps = Model.PreviousSchool;
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped">
+                        <tbody>
+                            <tr><th style="width:30%;"> @Localizer.Get("Last Class")</th><td>@ps.LastSchoolClass</td></tr>
+                            <tr><th> @Localizer.Get("School Name")</th><td>@ps.LastSchoolName</td></tr>
+                            <tr><th> @Localizer.Get("School Address")</th><td>@ps.LastSchoolAddress</td></tr>
+                            <tr><th> @Localizer.Get("School Code")</th><td>@ps.LastSchoolCode</td></tr>
+                            <tr><th> @Localizer.Get("Board")</th><td>@ps.LastSchoolBoard</td></tr>
+                            <tr><th> @Localizer.Get("UDISE Code")</th><td>@ps.LastSchoolUDISECode</td></tr>
+                            <tr><th> @Localizer.Get("Reason for Change")</th><td>@ps.ReasonForChange</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <p class="text-muted"> @Localizer.Get("Previous school records are not available.")</p>
+            }
+        </div>
+
+        <!-- DOCUMENTS (responsive table) -->
+        <div class="tab-pane fade" id="documents">
+            <div class="table-responsive">
+                <table class="table table-sm table-striped datatable">
+                    <thead><tr><th> @Localizer.Get("Document Type")</th><th> @Localizer.Get("File Name")</th><th> @Localizer.Get("Uploaded On")</th><th></th></tr></thead>
+                    <tbody>
+                        @foreach (var doc in Model.Documents)
+                        {
+                            <tr>
+                                <td>@doc.DocumentType</td>
+                                <td>@doc.FileName</td>
+                                <td>@doc.UploadDate?.ToString("dd-MMM-yyyy")</td>
+                                <td><a href="@doc.FilePath" target="_blank" class="btn btn-sm btn-outline-secondary">View</a></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- FEE (responsive tables) -->
+        <div class="tab-pane fade" id="fee">
+            <div class="table-responsive">
+                <table class="table table-sm table-striped datatable">
+                    <thead><tr><th> @Localizer.Get("Fee Type")</th><th> @Localizer.Get("Heading")</th><th> @Localizer.Get("Fee")</th><th> @Localizer.Get("Paid")</th><th> @Localizer.Get("Balance")</th><th> @Localizer.Get("Status")</th></tr></thead>
+                    <tbody>
+                        @foreach (var f in Model.CurrentFees)
+                        {
+                            <tr>
+                                <td>@f.FeeType</td>
+                                <td>@f.FeeHeadingName</td>
+                                <td>@f.FeeAmount.ToString("N2")</td>
+                                <td>@f.PaidAmount.ToString("N2")</td>
+                                <td>@f.BalanceAmount.ToString("N2")</td>
+                                <td>@(f.IsFullyPaid ? "Paid" : "Pending")</td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr class="fw-bold">
+                            <td colspan="2">Total</td>
+                            <td>@Model.TotalFeeAmount.ToString("N2")</td>
+                            <td>@Model.TotalPaidAmount.ToString("N2")</td>
+                            <td colspan="2">Balance: @Model.TotalBalanceAmount.ToString("N2")</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <h6 class="mt-4"> @Localizer.Get("Recent Receipts")</h6>
+            <div class="table-responsive">
+                <table class="table table-sm table-striped datatable">
+                    <thead><tr><th> @Localizer.Get("Receipt No")</th><th> @Localizer.Get("Date")</th><th> @Localizer.Get("Amount")</th><th> @Localizer.Get("Mode")</th></tr></thead>
+                    <tbody>
+                        @foreach (var r in Model.RecentReceipts)
+                        {
+                            <tr>
+                                <td>@r.ReceiptNumber</td>
+                                <td>@r.ReceiptDate.ToString("dd-MMM-yyyy")</td>
+                                <td>@r.ReceiptAmount.ToString("N2")</td>
+                                <td>@r.BankName</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- EXAM (Scholastic + Summary + Co-Scholastic) -->
+        <div class="tab-pane fade" id="exam">
+            <h6> @Localizer.Get("Scholastic — Subject wise Marks")</h6>
+            <div class="table-responsive">
+                <table class="table table-sm table-striped datatable">
+                    <thead><tr><th> @Localizer.Get("Exam")</th><th> @Localizer.Get("Subject")</th><th> @Localizer.Get("Marks")</th><th> @Localizer.Get("Status")</th><th> @Localizer.Get("Remarks")</th></tr></thead>
+                    <tbody>
+                        @foreach (var m in Model.ScholasticMarks)
+                        {
+                            <tr>
+                                <td>@m.ExamName</td>
+                                <td>@m.SubjectName</td>
+                                <td>@(m.IsAbsent ? "-" : m.ObtainedMarks?.ToString("N2"))</td>
+                                <td>@(m.IsAbsent ? "Absent" : "Present")</td>
+                                <td>@m.Remarks</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <h6 class="mt-4"> @Localizer.Get("Exam Summary") (@Localizer.Get("Term wise Rank)")</h6>
+            <div class="table-responsive">
+                <table class="table table-sm table-striped datatable">
+                    <thead><tr><th> @Localizer.Get("Exam Category")</th><th> @Localizer.Get("Rank in Class")</th><th> @Localizer.Get("Remarks")</th></tr></thead>
+                    <tbody>
+                        @foreach (var es in Model.ExamSummaries)
+                        {
+                            <tr>
+                                <td>@es.ExamCategoryName</td>
+                                <td>@es.RankInClass</td>
+                                <td>@es.Remarks</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <h6 class="mt-4"> @Localizer.Get("Co-Scholastic")</h6>
+            <div class="table-responsive">
+                <table class="table table-sm table-striped datatable">
+                    <thead><tr><th> @Localizer.Get("Exam Category")</th><th> @Localizer.Get("Activity")</th><th> @Localizer.Get("Grade")</th></tr></thead>
+                    <tbody>
+                        @foreach (var cg in Model.CoScholasticGrades)
+                        {
+                            <tr>
+                                <td>@cg.ExamCategoryName</td>
+                                <td>@cg.ActivityTitle</td>
+                                <td>@cg.Grade</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ATTENDANCE -->
+        <div class="tab-pane fade" id="attendance">
+            <div class="table-responsive">
+                <table class="table table-sm table-striped datatable">
+                    <thead><tr><th> @Localizer.Get("Month")</th><th> @Localizer.Get("Present")</th><th> @Localizer.Get("Absent")</th><th> @Localizer.Get("Leave")</th><th> @Localizer.Get("Total")</th><th>%</th></tr></thead>
+                    <tbody>
+                        @foreach (var a in Model.CurrentAttendance)
+                        {
+                            <tr>
+                                <td>@a.Month</td>
+                                <td>@a.PresentDays</td>
+                                <td>@a.AbsentDays</td>
+                                <td>@a.LeaveDays</td>
+                                <td>@a.TotalDays</td>
+                                <td>@a.AttendancePercent%</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- OLD BATCHES (responsive select + result) -->
+        <div class="tab-pane fade" id="oldbatch">
+            <div class="row g-3 align-items-center">
+                <div class="col-12 col-md-auto">
+                    <label class="form-label mb-0">@Localizer.Get("Select Batch / Session")</label>
+                </div>
+                <div class="col-12 col-md-auto">
+                    <select id="batchSelect" class="form-select">
+                        <option value="">@Localizer.Get("Select Batch")</option>
+                        @foreach (var b in Model.BatchHistory)
+                        {
+                            <option value="@b.BatchId">@b.AcademicYear</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div id="oldBatchResult" class="mt-3"></div>
+        </div>
     </div>
 </div>
 
@@ -305,32 +336,42 @@ CategoryName</td></tr>
                 `<tr><td>${cg.examCategoryName ?? ''}</td><td>${cg.activityTitle ?? ''}</td><td>${cg.grade ?? ''}</td></tr>`
             ).join('');
 
+            // Wrap tables in responsive containers inside the result
             document.getElementById('oldBatchResult').innerHTML = `
-                <h6>${data.batchName} (${data.startDate} to ${data.endDate})</h6>
-                <p>Fee: Total ${data.totalFee} | Paid ${data.totalPaid} | Balance ${data.totalBalance}</p>
-                <table class="table table-sm">
-                    <thead><tr><th>Month</th><th>Present</th><th>Absent</th><th>Leave</th><th>Total</th></tr></thead>
-                    <tbody>${attRows}</tbody>
-                </table>
+                        <h6>${data.batchName} (${data.startDate} to ${data.endDate})</h6>
+                        <p>Fee: Total ${data.totalFee} | Paid ${data.totalPaid} | Balance ${data.totalBalance}</p>
 
-                <h6 class="mt-3">Scholastic Marks</h6>
-                <table class="table table-sm">
-                    <thead><tr><th>Exam</th><th>Subject</th><th>Marks</th><th>Status</th></tr></thead>
-                    <tbody>${markRows}</tbody>
-                </table>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped">
+                                <thead><tr><th>Month</th><th>Present</th><th>Absent</th><th>Leave</th><th>Total</th></tr></thead>
+                                <tbody>${attRows}</tbody>
+                            </table>
+                        </div>
 
-                <h6 class="mt-3">Exam Summary</h6>
-                <table class="table table-sm">
-                    <thead><tr><th>Exam Category</th><th>Rank</th><th>Remarks</th></tr></thead>
-                    <tbody>${summaryRows}</tbody>
-                </table>
+                        <h6 class="mt-3">Scholastic Marks</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped">
+                                <thead><tr><th>Exam</th><th>Subject</th><th>Marks</th><th>Status</th></tr></thead>
+                                <tbody>${markRows}</tbody>
+                            </table>
+                        </div>
 
-                <h6 class="mt-3">Co-Scholastic</h6>
-                <table class="table table-sm">
-                    <thead><tr><th>Exam Category</th><th>Activity</th><th>Grade</th></tr></thead>
-                    <tbody>${coScholasticRows}</tbody>
-                </table>
-            `;
+                        <h6 class="mt-3">Exam Summary</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped">
+                                <thead><tr><th>Exam Category</th><th>Rank</th><th>Remarks</th></tr></thead>
+                                <tbody>${summaryRows}</tbody>
+                            </table>
+                        </div>
+
+                        <h6 class="mt-3">Co-Scholastic</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped">
+                                <thead><tr><th>Exam Category</th><th>Activity</th><th>Grade</th></tr></thead>
+                                <tbody>${coScholasticRows}</tbody>
+                            </table>
+                        </div>
+                    `;
         });
     </script>
 }

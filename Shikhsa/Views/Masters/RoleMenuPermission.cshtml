@@ -4,657 +4,300 @@
     ViewData["Title"] = "Role Permission Management";
 }
 
-<div class="card shadow-sm border-0 mb-4">
+<div class="container-fluid">
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white">
+            <h5 class="mb-0">@Localizer.Get("Assign") @Localizer.Get("Permissions")</h5>
+        </div>
+        <div class="card-body">
+            <form asp-action="SaveRoleMenuPermission" method="post">
 
-    <div class="card-header bg-white">
-        <h5 class="mb-0">@Localizer.Get("Assign") @Localizer.Get("Permissions")</h5>
-    </div>
+                <!-- FILTERS (responsive row) -->
+                <div class="row g-3">
+                    <!-- ROLE -->
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <label class="form-label fw-semibold">@Localizer.Get("Select Role")</label>
+                        <select asp-for="RoleId" class="form-select select2" id="RoleId">
+                            <option value="">@Localizer.Get("Select Role")</option>
+                            @foreach (var role in Model.Roles)
+                            {
+                                <option value="@role.Value" data-name="@role.Text">@role.Text</option>
+                            }
+                        </select>
+                    </div>
 
-    <div class="card-body">
+                    <!-- STAFF (dynamic - shown only for non-excluded roles) -->
+                    <div class="col-12 col-md-6 col-lg-4" id="staffWrapper" style="display:none;">
+                        <label class="form-label fw-semibold">@Localizer.Get("Select Staff") (@Localizer.Get("optional"))</label>
+                        <select asp-for="UserId" class="form-select select2" id="UserId">
+                            <option value="">@Localizer.Get("Role Level All Staff")</option>
+                        </select>
+                        <small class="text-muted d-block">@Localizer.Get("If left blank, this will apply to all staff in the role.")</small>
+                    </div>
 
-        <form asp-action="SaveRoleMenuPermission" method="post">
+                    <!-- MENU -->
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <label class="form-label fw-semibold">@Localizer.Get("Select Menu")</label>
+                        <select asp-for="MenuId" asp-items="Model.Menus" class="form-select select2" id="MenuId">
+                            <option value="">@Localizer.Get("Select Menu")</option>
+                        </select>
+                    </div>
 
-            <!-- FILTERS -->
-            <div class="row">
+                    <!-- SUB MENU -->
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <label class="form-label fw-semibold">@Localizer.Get("Select Sub Menu")</label>
+                        <select id="SubMenuId" asp-for="SubMenuId" class="form-select select2">
+                            <option value="">@Localizer.Get("Select Sub Menu")</option>
+                        </select>
+                    </div>
 
-                <!-- ROLE -->
-                <div class="col-12 col-md-6 col-lg-4 mb-3">
-                    <label class="form-label fw-semibold">@Localizer.Get("Select Role")</label>
-                    <select asp-for="RoleId" class="form-select select2" id="RoleId">
-                        <option value="">@Localizer.Get("Select Role")</option>
-                        @foreach (var role in Model.Roles)
-                        {
-                            <option value="@role.Value" data-name="@role.Text">@role.Text</option>
-                        }
-                    </select>
+                    <!-- TAB -->
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <label class="form-label fw-semibold">@Localizer.Get("Select Tab")</label>
+                        <select id="TabId" asp-for="TabId" class="form-select select2">
+                            <option value="">@Localizer.Get("Select Tab")</option>
+                        </select>
+                    </div>
+
+                    <!-- ADD CHILD BUTTON -->
+                    <div class="col-12 col-md-6 col-lg-4 d-flex align-items-end">
+                        <button type="button" class="btn btn-outline-primary w-100" data-bs-toggle="modal" data-bs-target="#menuModal">
+                            <i class="ti ti-plus"></i> @Localizer.Get("Add Child")
+                        </button>
+                    </div>
                 </div>
 
-                <!-- STAFF (dynamic - sirf non-excluded roles ke liye dikhega) -->
-                <div class="col-12 col-md-6 col-lg-4 mb-3" id="staffWrapper" style="display:none;">
-                    <label class="form-label fw-semibold">@Localizer.Get("Select Staff") (@Localizer.Get("optional"))</label>
-                    <select asp-for="UserId" class="form-select select2" id="UserId">
-                        <option value="">-- @Localizer.Get("Role") @Localizer.Get("Level") (@Localizer.Get("All Staff")) --</option>
-                    </select>
-                    <small class="text-muted">@Localizer.Get("If left blank, this will apply to all staff in the role.")</small>
+                <!-- PERMISSION TABLE (responsive wrapper) -->
+                <div class="table-responsive mt-4">
+                    <table class="table table-bordered table-hover align-middle datatable">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="min-width:150px;">@Localizer.Get("Name")</th>
+                                <th class="text-center">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <span>@Localizer.Get("View")</span>
+                                        <input type="checkbox" class="form-check-input mt-1 permission-select-all" data-permission="CanView" title="@Localizer.Get("Select All View")" />
+                                    </div>
+                                </th>
+                                <th class="text-center">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <span>@Localizer.Get("Create")</span>
+                                        <input type="checkbox" class="form-check-input mt-1 permission-select-all" data-permission="CanCreate" title="@Localizer.Get("Select All Create")" />
+                                    </div>
+                                </th>
+                                <th class="text-center">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <span>@Localizer.Get("Update")</span>
+                                        <input type="checkbox" class="form-check-input mt-1 permission-select-all" data-permission="CanUpdate" title="@Localizer.Get("Select All Update")" />
+                                    </div>
+                                </th>
+                                <th class="text-center">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <span>@Localizer.Get("Delete")</span>
+                                        <input type="checkbox" class="form-check-input mt-1 permission-select-all" data-permission="CanDelete" title="@Localizer.Get("Select All Delete")" />
+                                    </div>
+                                </th>
+                                <th style="min-width:100px;">@Localizer.Get("Action")</th>
+                            </tr>
+                        </thead>
+                        <tbody id="permissionBody"></tbody>
+                    </table>
                 </div>
 
-                <!-- MENU -->
-                <div class="col-12 col-md-6 col-lg-4 mb-3">
-                    <label class="form-label fw-semibold">@Localizer.Get("Select") @Localizer.Get("Menu")</label>
-                    <select asp-for="MenuId" asp-items="Model.Menus" class="form-select select2" id="MenuId">
-                        <option value="">@Localizer.Get("Select") @Localizer.Get("Menu")</option>
-                    </select>
-                </div>
-                <!-- SUB MENU -->
-               @*  <div class="col-12 col-md-6 col-lg-4 mb-3">
-                    <label class="form-label fw-semibold">Select Sub Menu</label>
-
-                    <select asp-for="SubMenuId"
-                            class="form-select select2"
-                            id="SubMenuId">
-                        <option value="">Select Sub Menu</option>
-                    </select>
-                </div> *@
-                <div class="col-12 col-md-6 col-lg-4 mb-3">
-
-                    <label class="form-label fw-semibold">
-
-                        @Localizer.Get("Select") @Localizer.Get("Sub") @Localizer.Get("Menu")
-
-                    </label>
-
-                    <select id="SubMenuId"
-                            asp-for="SubMenuId"
-                            class="form-select">
-
-                        <option value="">@Localizer.Get("Select") @Localizer.Get("Sub") @Localizer.Get("Menu")</option>
-
-                    </select>
-
-                </div>
-                <div class="col-12 col-md-6 col-lg-4 mb-3">
-
-                    <label class="form-label fw-semibold">
-
-                        @Localizer.Get("Select") @Localizer.Get("Tab")
-
-                    </label>
-
-                    <select id="TabId"
-                            asp-for="TabId"
-                            class="form-select">
-
-                        <option value="">@Localizer.Get("Select") @Localizer.Get("Tab")</option>
-
-                    </select>
-
-                </div>
-                <!-- ADD NEW PERMISSION ITEM -->
-                @* <div class="col-12 col-md-6 col-lg-4 mb-3 d-flex align-items-end">
-                    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addSubMenuModal">
-                        <i class="ti ti-plus"></i> Add Permission Item
+                <!-- BUTTONS (responsive) -->
+                <div class="mt-3 d-flex flex-wrap gap-2">
+                    <permission controller="Masters" action="RoleMenuPermission" type="create">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="ti ti-device-floppy"></i> @Localizer.Get("Save Permissions")
+                        </button>
+                    </permission>
+                    <button type="reset" class="btn btn-secondary">
+                        <i class="ti ti-refresh"></i> @Localizer.Get("Reset")
                     </button>
-                </div> *@
-                <div class="col-12 col-md-6 col-lg-4 mb-3 d-flex align-items-end">
-
-                    <button type="button"
-                            class="btn btn-outline-primary"
-                            data-bs-toggle="modal"
-                            data-bs-target="#menuModal">
-
-                        <i class="ti ti-plus"></i>
-
-                        @Localizer.Get("Add") @Localizer.Get("Child")
-
-                    </button>
-
                 </div>
 
-            </div>
-
-            <!-- SUBMENU PERMISSION TABLE -->
-            <div class="table-responsive">
-                <table class="table table-bordered table-hover align-middle">
-                    @* <thead class="table-light">
-                        <tr>
-                            <th width="35%">SubMenu</th>
-                            <th class="text-center">View</th>
-                            <th class="text-center">Create</th>
-                            <th class="text-center">Update</th>
-                            <th class="text-center">Delete</th>
-                        </tr>
-                    </thead> *@
-                    <thead class="table-light">
-
-                        <tr>
-
-                            <th width="40%">
-                                @Localizer.Get("Name")
-                            </th>
-
-                            <th class="text-center">
-                                <div class="d-flex flex-column align-items-center">
-                                    <span>@Localizer.Get("View")</span>
-                                    <input type="checkbox"
-                                           class="form-check-input mt-1 permission-select-all"
-                                           data-permission="CanView"
-                                           title="Select All View" />
-                                </div>
-                            </th>
-
-                            <th class="text-center">
-                                <div class="d-flex flex-column align-items-center">
-                                    <span>@Localizer.Get("Create")</span>
-                                    <input type="checkbox" class="form-check-input mt-1 permission-select-all"
-                                           data-permission="CanCreate" title="Select All Create" />
-                                </div>
-                            </th>
-
-                            <th class="text-center">
-                                <div class="d-flex flex-column align-items-center">
-                                    <span>@Localizer.Get("Update")</span>
-                                    <input type="checkbox" class="form-check-input mt-1 permission-select-all"
-                                           data-permission="CanUpdate" title="Select All Update" />
-                                </div>
-                            </th>
-
-                            <th class="text-center">
-                                 <div class="d-flex flex-column align-items-center">
-                                    <span>@Localizer.Get("Delete")</span>
-                                    <input type="checkbox" class="form-check-input mt-1 permission-select-all"
-                                           data-permission="CanDelete" title="Select All Delete" />
-                                </div>
-                            </th>
-
-                            <th width="120">
-                                @Localizer.Get("Action")"
-                            </th>
-
-                        </tr>
-
-                    </thead>
-                    <tbody id="permissionBody"></tbody>
-                </table>
-            </div>
-
-            <!-- BUTTONS -->
-            <div class="mt-3 d-flex gap-2 flex-wrap">
-                <permission controller="Masters" action="RoleMenuPermission" type="create">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="ti ti-device-floppy"></i> @Localizer.Get("Save") @Localizer.Get("Permissions")
-                    </button>
-                 </permission>
-                <button type="reset" class="btn btn-secondary">
-                    <i class="ti ti-refresh"></i> @Localizer.Get("Reset")
-                </button>
-            </div>
-
-        </form>
-
+            </form>
+        </div>
     </div>
 </div>
 
-<!-- ADD SUBMENU MODAL -->
-@* <div class="modal fade" id="addSubMenuModal" tabindex="-1">
-    <div class="modal-dialog">
+<!-- ADD CHILD MODAL (responsive) -->
+<div class="modal fade" id="menuModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Add New Permission Item</h5>
+                <h5 class="modal-title">@Localizer.Get("Add Child")</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
+                <input type="hidden" id="ParentId" />
                 <div class="mb-3">
-                    <label class="form-label">
-                        Sub Menu
-                    </label>
-
-                    <select id="PermissionSubMenuId"
-                            class="form-select">
-
-                        <option value="">
-                            Select Sub Menu
-                        </option>
-
-                    </select>
-
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Display Name</label>
-                    <input type="text" id="newSubMenuName" class="form-control" placeholder="e.g. Tuition Fee Plan" />
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Controller Name</label>
-                    <input type="text" id="newSubMenuController" class="form-control" placeholder="e.g. FeeHeading" />
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Action Name</label>
-                    <input type="text" id="newSubMenuAction" class="form-control" placeholder="e.g. TuitionFeePlan" />
-                </div>
-                <small class="text-muted">Ye currently selected "Menu" ke andar sub-permission ki tarah add hoga.</small>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="btnSaveSubMenu">Save</button>
-            </div>
-        </div>
-    </div>
-</div> *@
-<div class="modal fade"
-     id="menuModal"
-     tabindex="-1">
-
-    <div class="modal-dialog">
-
-        <div class="modal-content">
-
-            <div class="modal-header">
-
-                <h5 class="modal-title">
-
-                    @Localizer.Get("Add") @Localizer.Get("Child")
-
-                </h5>
-
-                <button type="button"
-                        class="btn-close"
-                        data-bs-dismiss="modal">
-                </button>
-
-            </div>
-
-            <div class="modal-body">
-
-                <input type="hidden"
-                       id="ParentId" />
-
-                <div class="mb-3">
-
-                    <label>@Localizer.Get("Name")</label>
-
+                    <label class="form-label">@Localizer.Get("Name")</label>
                     <input id="ChildName" class="form-control" />
-
                 </div>
-
                 <div class="mb-3">
-
-                    <label>@Localizer.Get("Controller")</label>
-
+                    <label class="form-label">@Localizer.Get("Controller")</label>
                     <input id="ControllerName" class="form-control" />
-
                 </div>
-
                 <div class="mb-3">
-
-                    <label>@Localizer.Get("Action")</label>
-
+                    <label class="form-label">@Localizer.Get("Action")</label>
                     <input id="ActionName" class="form-control" />
-
                 </div>
-
             </div>
-
             <div class="modal-footer">
-
-                <button class="btn btn-secondary"
-                        data-bs-dismiss="modal">
-
-                    @Localizer.Get("Close")
-
-                </button>
+                <button class="btn btn-secondary" data-bs-dismiss="modal">@Localizer.Get("Close")</button>
                 <permission controller="Masters" action="RoleMenuPermission" type="create">
-                <button id="btnSaveChild" type="button" class="btn btn-primary">
-
-                    @Localizer.Get("Save")"
-
-                </button>
+                    <button id="btnSaveChild" type="button" class="btn btn-primary">@Localizer.Get("Save")</button>
                 </permission>
             </div>
-
         </div>
-
     </div>
-
 </div>
-@section Scripts
-{
-    <script>
 
+@section Scripts {
+    <script>
+        // (All existing JavaScript remains unchanged)
         const excludedRoles = ["Admin", "Developer", "YN IT Solutions"];
 
-        //========================================
-        // ROLE CHANGE
-        //========================================
-
-        $("#RoleId").change(function () {
-
+        $("#RoleId").change(function() {
             let roleId = $(this).val();
             let roleName = $("#RoleId option:selected").data("name");
-
             resetAll();
-
-            if (!roleId)
-                return;
-
+            if (!roleId) return;
             if (excludedRoles.includes(roleName)) {
-
                 $("#staffWrapper").hide();
-
-            }
-            else {
-
+            } else {
                 $("#staffWrapper").show();
-
-                $.get('@Url.Action("GetStaffByRole")',
-                    { roleId: roleId },
-                    function (data) {
-
-                        let html = '<option value="">-- Role Level (All Staff) --</option>';
-
-                        $.each(data, function (i, item) {
-
-                            html += `<option value="${item.value}">${item.text}</option>`;
-
-                        });
-
-                        $("#UserId").html(html);
-
+                $.get('@Url.Action("GetStaffByRole")', { roleId: roleId }, function(data) {
+                    let html = '<option value=""> @Localizer.Get("Role Level") (@Localizer.Get("All Staff"))</option>';
+                    $.each(data, function(i, item) {
+                        html += `<option value="${item.value}">${item.text}</option>`;
                     });
-
-            }
-
-        });
-
-
-        //========================================
-        // MENU CHANGE
-        //========================================
-
-        $("#MenuId").change(function () {
-
-            let menuId = $(this).val();
-
-            $("#SubMenuId").html('<option value="">Select Sub Menu</option>');
-            $("#TabId").html('<option value="">Select Tab</option>');
-            $("#permissionBody").html("");
-
-            if (!menuId)
-                return;
-
-            loadChildren(menuId, "#SubMenuId", "Select Sub Menu");
-
-        });
-
-
-        //========================================
-        // SUBMENU CHANGE
-        //========================================
-
-        $("#SubMenuId").change(function () {
-            debugger
-            let subMenuId = $(this).val();
-
-            $("#TabId").html('<option value="">Select Tab</option>');
-
-            if (!subMenuId) {
-
-                $("#permissionBody").html("");
-
-                return;
-
-            }
-
-            $.get('@Url.Action("GetChildMenus")',
-                { parentId: subMenuId },
-                function (data) {
-
-                    if (data.length == 0) {
-
-                        loadPermission(subMenuId);
-
-                        return;
-
-                    }
-
-                    let html = '<option value="">Select Tab</option>';
-
-                    $.each(data, function (i, item) {
-
-                        html += `<option value="${item.id}">${item.name}</option>`;
-
-                    });
-
-                    $("#TabId").html(html);
-
+                    $("#UserId").html(html);
                 });
-                 loadPermission(subMenuId)
-
+            }
         });
 
+        $("#MenuId").change(function() {
+            let menuId = $(this).val();
+            $("#SubMenuId").html('<option value="">@Localizer.Get("Select Sub Menu")</option>');
+            $("#TabId").html('<option value="">@Localizer.Get("Select Tab")</option>');
+            $("#permissionBody").html("");
+            if (!menuId) return;
+            loadChildren(menuId, "#SubMenuId", "Select Sub Menu");
+        });
 
-        //========================================
-        // TAB CHANGE
-        //========================================
-
-        $("#TabId").change(function () {
-
-            let tabId = $(this).val();
-
-            if (tabId)
-                loadPermission(tabId);
-            else
+        $("#SubMenuId").change(function() {
+            let subMenuId = $(this).val();
+            $("#TabId").html('<option value="">@Localizer.Get("Select Tab")</option>');
+            if (!subMenuId) {
                 $("#permissionBody").html("");
-
+                return;
+            }
+            $.get('@Url.Action("GetChildMenus")', { parentId: subMenuId }, function(data) {
+                if (data.length == 0) {
+                    loadPermission(subMenuId);
+                    return;
+                }
+                let html = '<option value="">@Localizer.Get("Select Tab")</option>';
+                $.each(data, function(i, item) {
+                    html += `<option value="${item.id}">${item.name}</option>`;
+                });
+                $("#TabId").html(html);
+            });
+            loadPermission(subMenuId);
         });
 
-
-        //========================================
-        // STAFF CHANGE
-        //========================================
-
-        $("#UserId").change(function () {
-
-            if ($("#TabId").val())
-                loadPermission($("#TabId").val());
-
-            else if ($("#SubMenuId").val())
-                loadPermission($("#SubMenuId").val());
-
+        $("#TabId").change(function() {
+            let tabId = $(this).val();
+            if (tabId) loadPermission(tabId);
+            else $("#permissionBody").html("");
         });
 
-
-        //========================================
-        // LOAD CHILD
-        //========================================
+        $("#UserId").change(function() {
+            if ($("#TabId").val()) loadPermission($("#TabId").val());
+            else if ($("#SubMenuId").val()) loadPermission($("#SubMenuId").val());
+        });
 
         function loadChildren(parentId, ddl, text) {
-
-            $.get('@Url.Action("GetChildMenus")',
-                { parentId: parentId },
-                function (data) {
-
-                    let html = `<option value="">${text}</option>`;
-
-                    $.each(data, function (i, item) {
-
-                        html += `<option value="${item.id}">${item.name}</option>`;
-
-                    });
-
-                    $(ddl).html(html);
-
+            $.get('@Url.Action("GetChildMenus")', { parentId: parentId }, function(data) {
+                let html = `<option value="">${text}</option>`;
+                $.each(data, function(i, item) {
+                    html += `<option value="${item.id}">${item.name}</option>`;
                 });
-
-        loadPermission(parentId)
+                $(ddl).html(html);
+            });
+            loadPermission(parentId);
         }
-
-
-        //========================================
-        // LOAD PERMISSION
-        //========================================
 
         function loadPermission(menuId) {
-            debugger
-
             let roleId = $("#RoleId").val();
-
             let userId = $("#UserId").val() || "";
-
             if (!roleId || !menuId) {
-
                 $("#permissionBody").html("");
-
                 return;
-
             }
-
-            $("#permissionBody").load(
-
-                '@Url.Action("GetSubMenus")'
-
-                + "?roleId=" + roleId
-
-                + "&menuId=" + menuId
-
-                + "&userId=" + userId
-
-            );
-
+            $("#permissionBody").load('@Url.Action("GetSubMenus")' + "?roleId=" + roleId + "&menuId=" + menuId + "&userId=" + userId);
         }
 
-
-        //========================================
-        // ADD CHILD
-        //========================================
-
-        $("#btnSaveChild").click(function () {
-
-            let parentId = $("#TabId").val()
-                || $("#SubMenuId").val()
-                || $("#MenuId").val();
-
+        $("#btnSaveChild").click(function() {
+            let parentId = $("#TabId").val() || $("#SubMenuId").val() || $("#MenuId").val();
             if (!parentId) {
-
-                alert("Please select Parent.");
-
+                alert("@Localizer.Get("Please select Parent.")");
                 return;
-
             }
-
-            $.post('@Url.Action("AddChildMenu")',
-                {
-
-                    parentId: parentId,
-
-                    name: $("#ChildName").val(),
-
-                    controllerName: $("#ControllerName").val(),
-
-                    actionName: $("#ActionName").val()
-
-                },
-                function (res) {
-
-                    if (!res.success) {
-
-                        alert(res.message);
-
-                        return;
-
-                    }
-
-                    $("#menuModal").modal("hide");
-
-                    $("#ChildName").val("");
-                    $("#ControllerName").val("");
-                    $("#ActionName").val("");
-
-                    if ($("#TabId").val()) {
-
-                        loadChildren($("#SubMenuId").val(),
-                            "#TabId",
-                            "Select Tab");
-
-                    }
-                    else {
-
-                        loadChildren($("#MenuId").val(),
-                            "#SubMenuId",
-                            "Select Sub Menu");
-
-                    }
-
-                });
-
+            $.post('@Url.Action("AddChildMenu")', {
+                parentId: parentId,
+                name: $("#ChildName").val(),
+                controllerName: $("#ControllerName").val(),
+                actionName: $("#ActionName").val()
+            }, function(res) {
+                if (!res.success) {
+                    alert(res.message);
+                    return;
+                }
+                $("#menuModal").modal("hide");
+                $("#ChildName").val("");
+                $("#ControllerName").val("");
+                $("#ActionName").val("");
+                if ($("#TabId").val()) {
+                    loadChildren($("#SubMenuId").val(), "#TabId", "Select Tab");
+                } else {
+                    loadChildren($("#MenuId").val(), "#SubMenuId", "Select Sub Menu");
+                }
+            });
         });
 
-
-        //========================================
-        // DELETE
-        //========================================
-
         function deleteChild(id) {
-
-            if (!confirm("Delete ?"))
-                return;
-
-            $.post('@Url.Action("DeleteChildMenu")',
-                { id: id },
-                function (res) {
-
-                    if (!res.success) {
-
-                        alert(res.message);
-
-                        return;
-
-                    }
-
-                    if ($("#TabId").val())
-                        loadPermission($("#TabId").val());
-
-                    else if ($("#SubMenuId").val())
-                        loadPermission($("#SubMenuId").val());
-
-                });
-
+            if (!confirm("Delete ?")) return;
+            $.post('@Url.Action("DeleteChildMenu")', { id: id }, function(res) {
+                if (!res.success) {
+                    alert(res.message);
+                    return;
+                }
+                if ($("#TabId").val()) loadPermission($("#TabId").val());
+                else if ($("#SubMenuId").val()) loadPermission($("#SubMenuId").val());
+            });
         }
-
-
-        //========================================
-        // RESET
-        //========================================
 
         function resetAll() {
-
             $("#permissionBody").html("");
-
-            $("#UserId").html('<option value="">-- Role Level (All Staff) --</option>');
-
-            $("#SubMenuId").html('<option value="">Select Sub Menu</option>');
-
-            $("#TabId").html('<option value="">Select Tab</option>');
-
+            $("#UserId").html('<option value="">@Localizer.Get("Role Level") (@Localizer.Get("All Staff"))</option>');
+            $("#SubMenuId").html('<option value="">@Localizer.Get("Select Sub Menu")</option>');
+            $("#TabId").html('<option value="">@Localizer.Get("Select Tab")</option>');
         }
-        $(document).on('change', '.permission-select-all', function() {
 
+        $(document).on('change', '.permission-select-all', function() {
             const permission = $(this).data('permission');
             const isChecked = $(this).is(':checked');
-
             $('.' + permission).prop('checked', isChecked);
         });
 
-        // Agar manually kisi permission ko uncheck/check karein,
-        // to header checkbox ki state bhi automatically update hogi.
         $(document).on('change', '.permission-checkbox', function() {
-
-            const permission = $(this).attr('class').split(' ').find(x =>
-                    x === 'CanView' ||x === 'CanCreate' || x === 'CanUpdate' ||x === 'CanDelete');
-
+            const permission = $(this).attr('class').split(' ').find(x => x === 'CanView' || x === 'CanCreate' || x === 'CanUpdate' || x === 'CanDelete');
             if (!permission) return;
-
             const total = $('.' + permission).length;
             const checked = $('.' + permission + ':checked').length;
-
             $('.permission-select-all[data-permission="' + permission + '"]')
                 .prop('checked', total > 0 && total === checked);
         });

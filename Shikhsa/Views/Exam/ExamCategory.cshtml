@@ -174,7 +174,7 @@
 
             <div class="table-responsive">
 
-                <table class="table table-bordered table-hover align-middle"
+                <table class="table table-bordered table-hover align-middle datatable"
                        id="tblExamCategory">
 
                     <thead class="table-light">
@@ -355,22 +355,5 @@
 
     <partial name="_ValidationScriptsPartial" />
 
-    <script>
-
-        $(function () {
-
-            $('#tblExamCategory').DataTable({
-
-                responsive: true,
-
-                pageLength: 10,
-
-                lengthMenu: [[10,25,50,100],[10,25,50,100]]
-
-            });
-
-        });
-
-    </script>
 
 }

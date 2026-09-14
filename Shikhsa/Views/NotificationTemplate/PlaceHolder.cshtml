@@ -3,289 +3,146 @@
 @{
     ViewData["Title"] = "Notification Placeholders";
 }
-<form method="get" asp-action="Index">
 
-    <div class="row mb-3">
+<div class="container-fluid">
 
-        <div class="col-md-10">
-
-            <input type="text"
-                   name="search"
-                   value="@ViewBag.Search"
-                   class="form-control"
-                   placeholder="Search Placeholder..." />
-
-        </div>
-
-        <div class="col-md-2 d-grid">
-
-            <button class="btn btn-primary">
-
-                Search
-
-            </button>
-
-        </div>
-
-    </div>
-
-</form>
-<div class="row">
-
-    <div class="col-lg-4 mb-3">
-
-        <div class="card">
-
-            <div class="card-header bg-primary text-white">
-
-                Notification Placeholder
-
+    <!-- SEARCH BAR -->
+    <form method="get" asp-action="PlaceHolder" class="mb-3">
+        <div class="row g-2">
+            <div class="col-12 col-md-10">
+                <input type="text"
+                       name="search"
+                       value="@ViewBag.Search"
+                       class="form-control"
+                       placeholder="@Localizer.Get("Search Placeholder..")" />
             </div>
+            <div class="col-12 col-md-2 d-grid">
+                <button class="btn btn-primary">@Localizer.Get("Search")</button>
+            </div>
+        </div>
+    </form>
 
-            <div class="card-body">
+    <!-- FORM (TOP) -->
+    <div class="card shadow-sm mb-3">
+        <div class="card-header bg-primary text-white">
+            <strong>@Localizer.Get("Notification Placeholder")</strong>
+        </div>
 
-                <form asp-action="SavePlaceHolder" method="post">
+        <div class="card-body">
+            <form asp-action="SavePlaceHolder" method="post">
+                @Html.AntiForgeryToken()
 
-                    @Html.AntiForgeryToken()
+                <input asp-for="Placeholder.NotificationPlaceholderId" type="hidden" />
 
-                    <input asp-for="Placeholder.NotificationPlaceholderId"
-                           type="hidden" />
+                <div class="row g-3">
 
-                    <div class="mb-3">
-
-                        <label class="form-label">
-
-                            Category
-
-                        </label>
-
-                        <select asp-for="Placeholder.NotificationCategoryId"
-                                class="form-select">
-
-                            <option value="">Select</option>
-
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <label class="form-label">@Localizer.Get("Category")</label>
+                        <select asp-for="Placeholder.NotificationCategoryId" class="form-select">
+                            <option value="">@Localizer.Get("Select")</option>
                             @foreach (var item in Model.Categories)
                             {
-                                <option value="@item.NotificationCategoryId">
-
-                                    @item.CategoryName
-
-                                </option>
+                                <option value="@item.NotificationCategoryId">@item.CategoryName</option>
                             }
-
                         </select>
-
                     </div>
 
-                    <div class="mb-3">
-
-                        <label>
-
-                            Placeholder Code
-
-                        </label>
-
-                        <input asp-for="Placeholder.PlaceholderCode"
-                               class="form-control" />
-
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <label class="form-label">@Localizer.Get("Placeholder Code")</label>
+                        <input asp-for="Placeholder.PlaceholderCode" class="form-control" />
                     </div>
 
-                    <div class="mb-3">
-
-                        <label>
-
-                            Display Name
-
-                        </label>
-
-                        <input asp-for="Placeholder.DisplayName"
-                               class="form-control" />
-
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <label class="form-label">@Localizer.Get("Display Name")</label>
+                        <input asp-for="Placeholder.DisplayName" class="form-control" />
                     </div>
 
-                    <div class="mb-3">
-
-                        <label>
-
-                            Description
-
-                        </label>
-
-                        <textarea asp-for="Placeholder.Description"
-                                  class="form-control"></textarea>
-
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <label class="form-label">@Localizer.Get("Sample Value")</label>
+                        <input asp-for="Placeholder.SampleValue" class="form-control" />
                     </div>
 
-                    <div class="mb-3">
-
-                        <label>
-
-                            Sample Value
-
-                        </label>
-
-                        <input asp-for="Placeholder.SampleValue"
-                               class="form-control" />
-
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <label class="form-label">@Localizer.Get("Display Order")</label>
+                        <input asp-for="Placeholder.DisplayOrder" class="form-control" />
                     </div>
 
-                    <div class="mb-3">
-
-                        <label>
-
-                            Display Order
-
-                        </label>
-
-                        <input asp-for="Placeholder.DisplayOrder"
-                               class="form-control" />
-
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <label class="form-label">@Localizer.Get("Description")</label>
+                        <textarea asp-for="Placeholder.Description" class="form-control" rows="1"></textarea>
                     </div>
 
-                    <div class="form-check mb-3">
-
-                        <input asp-for="Placeholder.IsActive"
-                               class="form-check-input" />
-
-                        <label class="form-check-label">
-
-                            Active
-
-                        </label>
-
+                    <div class="col-12">
+                        <div class="form-check">
+                            <input asp-for="Placeholder.IsActive" class="form-check-input" />
+                            <label class="form-check-label" asp-for="Placeholder.IsActive">@Localizer.Get("Active")</label>
+                        </div>
                     </div>
 
-                    <button class="btn btn-success">
+                </div>
 
-                        Save
-
-                    </button>
-
-                    <a asp-action="Index"
-                       class="btn btn-secondary">
-
-                        Reset
-
-                    </a>
-
-                </form>
-
-            </div>
-
+                <div class="mt-3 d-flex flex-column flex-sm-row gap-2">
+                    <button class="btn btn-success px-4">@Localizer.Get("Save")</button>
+                    <a asp-action="PlaceHolder" class="btn btn-secondary px-4">@Localizer.Get("Reset")</a>
+                </div>
+            </form>
         </div>
-
     </div>
 
-    <div class="col-lg-8">
-        <div class="card">
+    <!-- LIST (BOTTOM) -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-dark text-white">
+            <strong>Placeholder List</strong>
+        </div>
 
-            <div class="card-header bg-dark text-white">
-
-                Placeholder List
-
-            </div>
-
+        <div class="card-body p-0">
             <div class="table-responsive">
-
-                <table class="table table-bordered table-hover">
-
-                    <thead>
-
+                <table class="table table-bordered table-hover table-sm align-middle mb-0 datatable">
+                    <thead class="table-light">
                         <tr>
-
-                            <th>Category</th>
-
-                            <th>Code</th>
-
-                            <th>Display</th>
-
-                            <th>Sample</th>
-
-                            <th>Status</th>
-
-                            <th width="150">Action</th>
-
+                            <th>@Localizer.Get("Category")</th>
+                            <th>@Localizer.Get("Code")</th>
+                            <th>@Localizer.Get("Display")</th>
+                            <th>@Localizer.Get("Sample")</th>
+                            <th>@Localizer.Get("Status")</th>
+                            <th class="text-nowrap" style="width:150px;">@Localizer.Get("Action")</th>
                         </tr>
-
                     </thead>
-
                     <tbody>
-
                         @foreach (var item in Model.Placeholders)
                         {
                             <tr>
-
+                                <td>@item.NotificationCategory?.CategoryName</td>
+                                <td>@item.PlaceholderCode</td>
+                                <td>@item.DisplayName</td>
+                                <td>@item.SampleValue</td>
                                 <td>
-
-                                    @item.NotificationCategory?.CategoryName
-
+                                    @if (item.IsActive)
+                                    {
+                                        <span class="badge bg-success">@Localizer.Get("Active")</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">@Localizer.Get("Inactive")</span>
+                                    }
                                 </td>
-
-                                <td>
-
-                                    @item.PlaceholderCode
-
-                                </td>
-
-                                <td>
-
-                                    @item.DisplayName
-
-                                </td>
-
-                                <td>
-
-                                    @item.SampleValue
-
-                                </td>
-
-                                <td>
-
-                                    @(item.IsActive ? "Active" : "Inactive")
-
-                                </td>
-
-                                <td>
-
+                                <td class="text-nowrap">
                                     <a asp-action="Edit"
                                        asp-route-id="@item.NotificationPlaceholderId"
-                                       class="btn btn-warning btn-sm">
+                                       class="btn btn-warning btn-sm">@Localizer.Get("Edit")</a>
 
-                                        Edit
-
-                                    </a>
-
-                                    <form asp-action="Delete"
-                                          method="post"
-                                          class="d-inline">
-
+                                    <form asp-action="Delete" method="post" class="d-inline">
                                         @Html.AntiForgeryToken()
-
-                                        <input type="hidden"
-                                               name="id"
-                                               value="@item.NotificationPlaceholderId" />
-
-                                        <button class="btn btn-danger btn-sm">
-
-                                            Delete
-
-                                        </button>
-
+                                        <input type="hidden" name="id" value="@item.NotificationPlaceholderId" />
+                                        <button class="btn btn-danger btn-sm">@Localizer.Get("Delete")</button>
                                     </form>
-
                                 </td>
-
                             </tr>
                         }
-
                     </tbody>
-
                 </table>
-
             </div>
-
         </div>
-
     </div>
 
 </div>

@@ -8,7 +8,7 @@
 
         foreach (var obj in objects)
         {
-            if (obj == null)
+            if (obj == null)                                
                 continue;
 
             string prefix = GetPrefix(obj);

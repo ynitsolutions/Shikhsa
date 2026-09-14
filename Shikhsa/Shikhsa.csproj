@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>aspnet-Shikhsa-a96ef62f-ff74-43ba-b274-9215e4b54014</UserSecretsId>
@@ -9,12 +9,6 @@
 
   <ItemGroup>
     <Compile Remove="Middlewares\PermissionMiddleware.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="..\..\..\..\Downloads\Controllers\PaymentController.cs" Link="Controllers\PaymentController.cs" />
-    <Compile Include="..\..\..\..\Downloads\Models\Payment\Payverify.cs" Link="Models\Payment\Payverify.cs" />
-    <Compile Include="..\..\..\..\Downloads\Services\AtomPaymentService.cs" Link="Sevices\AtomPaymentService.cs" />
   </ItemGroup>
 
 

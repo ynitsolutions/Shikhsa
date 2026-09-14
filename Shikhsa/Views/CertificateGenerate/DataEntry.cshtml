@@ -1,0 +1,175 @@
+﻿@{
+    var template = ViewBag.Template as Shikhsa.Models.Certificate.CertificateTemplate;
+    var manualFields = ViewBag.ManualFields as List<Shikhsa.Models.Notification.NotificationPlaceholder> ?? new();
+    ViewData["Title"] = "Generate Certificate";
+}
+
+<div class="de-page">
+    <div class="de-header">
+        Generate: @template?.TemplateName
+        <span class="de-badge">@template?.CertificateType?.TypeName</span>
+    </div>
+
+    <form method="post" asp-action="DataEntry" id="dataEntryForm">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="templateId" value="@template?.CertificateTemplateId" />
+
+        <div class="de-field">
+            <label>Student</label>
+            @* TODO: replace this number input with a real Student picker/dropdown
+               (e.g. searchable select bound to your Students table) once wired up. *@
+            <input type="number" name="subjectId" placeholder="Student ID" value="@ViewBag.StudentId" />
+        </div>
+
+        <h4 class="de-section-title">Fill in the details for this certificate</h4>
+
+        @if (!manualFields.Any())
+        {
+            <p style="color:#6b7280;font-size:13px;">
+                Is template me koi manual-entry field nahi mila. "Certificate" category ke
+                placeholders (Total Working Days, Total Present Days, Reason for Leaving, etc.)
+                template body me use karo taaki wo yaha input ban kar aaye.
+            </p>
+        }
+
+        <div class="de-grid">
+            @foreach (var field in manualFields)
+            {
+                string token = $"{field.NotificationCategory.CategoryName}.{field.PlaceholderCode}";
+                <div class="de-field">
+                    <label>@field.DisplayName</label>
+
+                    @if (field.PlaceholderCode.Contains("Day", StringComparison.OrdinalIgnoreCase))
+                    {
+                        <input type="number" min="0" name="manualValues[@token]" />
+                    }
+                    else if (field.PlaceholderCode.Contains("Reason", StringComparison.OrdinalIgnoreCase)
+                             && field.PlaceholderCode.Contains("Leav", StringComparison.OrdinalIgnoreCase))
+                    {
+                        <select name="manualValues[@token]">
+                            <option value="">--Select Reason--</option>
+                            <option value="Transfer of Parent/Guardian">Transfer of Parent/Guardian</option>
+                            <option value="Completion of Course">Completion of Course</option>
+                            <option value="Shifting to another City">Shifting to another City</option>
+                            <option value="Ward's / Parent's Request">Ward's / Parent's Request</option>
+                            <option value="Discontinuation of Studies">Discontinuation of Studies</option>
+                            <option value="Admission to Another School">Admission to Another School</option>
+                            <option value="Personal Reason">Personal Reason</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    }
+                    else if (field.PlaceholderCode.Contains("Conduct", StringComparison.OrdinalIgnoreCase))
+                    {
+                        <select name="manualValues[@token]">
+                            <option value="">--Select--</option>
+                            <option value="Excellent">Excellent</option>
+                            <option value="Very Good">Very Good</option>
+                            <option value="Good">Good</option>
+                            <option value="Satisfactory">Satisfactory</option>
+                        </select>
+                    }
+                    else if (field.PlaceholderCode.Contains("Remark", StringComparison.OrdinalIgnoreCase))
+                    {
+                        <textarea name="manualValues[@token]" rows="2"></textarea>
+                    }
+                    else
+                    {
+                        <input type="text" name="manualValues[@token]" />
+                    }
+                </div>
+            }
+        </div>
+
+        <div class="de-actions">
+            <button type="submit" class="btn btn--primary">Generate &amp; Print</button>
+        </div>
+    </form>
+</div>
+
+<style>
+    .de-page {
+        max-width: 700px;
+        margin: 24px auto;
+        font-family: 'Segoe UI', Arial, sans-serif;
+    }
+
+    .de-header {
+        background: #2563eb;
+        color: #fff;
+        font-weight: 600;
+        padding: 14px 18px;
+        border-radius: 8px 8px 0 0;
+        font-size: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .de-badge {
+        background: rgba(255,255,255,.2);
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 400;
+    }
+
+    #dataEntryForm {
+        border: 1px solid #e5e7eb;
+        border-top: none;
+        border-radius: 0 0 8px 8px;
+        padding: 24px;
+        background: #fff;
+    }
+
+    .de-section-title {
+        font-size: 13px;
+        text-transform: uppercase;
+        color: #6b7280;
+        letter-spacing: .03em;
+        margin: 18px 0 12px;
+    }
+
+    .de-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+    }
+
+    .de-field {
+        margin-bottom: 4px;
+    }
+
+        .de-field label {
+            display: block;
+            font-size: 12px;
+            color: #374151;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .de-field input, .de-field select, .de-field textarea {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+
+    .de-actions {
+        margin-top: 22px;
+    }
+
+    .btn--primary {
+        padding: 10px 22px;
+        background: #2563eb;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        cursor: pointer;
+    }
+
+        .btn--primary:hover {
+            background: #1d4ed8;
+        }
+</style>

@@ -1,5 +1,7 @@
-﻿@using Shikhsa
+﻿@using Microsoft.AspNetCore.Identity
+@using Shikhsa
 @using Shikhsa.Models
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @addTagHelper *, Shikhsa
 @inject Shikhsa.Services.LocalizationService Localizer
+@inject UserManager<ApplicationUser> UserManager

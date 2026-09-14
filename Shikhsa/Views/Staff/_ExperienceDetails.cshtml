@@ -3,331 +3,153 @@
 <div class="card shadow-sm">
 
     <div class="card-header bg-light">
-
-        <div class="d-flex justify-content-between align-items-center">
-
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
             <h5 class="mb-0">
-
                 <i class="ti ti-briefcase"></i>
-
-                Experience Details
-
+                @Localizer.Get("Experience Details")
             </h5>
-
-            <button type="button"
-                    class="btn btn-primary"
-                    id="btnAddExperience">
-
+            <button type="button" class="btn btn-primary btn-sm" id="btnAddExperience">
                 <i class="ti ti-plus"></i>
-
-                Add Experience
-
+                @Localizer.Get("Add Experience")
             </button>
-
         </div>
-
     </div>
 
     <div class="card-body p-0">
-
         <div class="table-responsive">
-
-            <table class="table table-bordered table-hover mb-0"
-                   id="tblExperience">
-
+            <table class="table table-bordered table-hover align-middle mb-0 datatable" id="tblExperience">
                 <thead class="table-primary">
-
                     <tr>
-
-                        <th>#</th>
-
-                        <th>Designation</th>
-
-                        <th>Department</th>
-
-                        <th>Organisation</th>
-
-                        <th>Subject</th>
-
-                        <th>From</th>
-
-                        <th>To</th>
-
-                        <th>Experience</th>
-
-                        <th>Salary</th>
-
-                        <th>Letter</th>
-
-                        <th width="120">Action</th>
+                        <th style="width:50px;">#</th>
+                        <th>@Localizer.Get("Designation")</th>
+                        <th>@Localizer.Get("Department")</th>
+                        <th>@Localizer.Get("Organisation")</th>
+                        <th>@Localizer.Get("Subject")</th>
+                        <th>@Localizer.Get("From")</th>
+                        <th>@Localizer.Get("To")</th>
+                        <th>@Localizer.Get("Experience")</th>
+                        <th>@Localizer.Get("Salary")</th>
+                        <th>@Localizer.Get("Letter")</th>
+                        <th style="min-width:120px;">@Localizer.Get("Action")</th>
+                        <!-- Hidden columns for data storage -->
                         <th style="display:none"></th>
                         <th style="display:none"></th>
                     </tr>
-
                 </thead>
-
                 <tbody>
-
-               
+                    <!-- Rows will be added dynamically -->
                 </tbody>
-
             </table>
-
         </div>
-
     </div>
-
 </div>
 
-
-<div class="modal fade"
-     id="ExperienceModal">
-
-    <div class="modal-dialog modal-xl">
-
+<!-- Modal (fully responsive) -->
+<div class="modal fade" id="ExperienceModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content">
-
             <div class="modal-header bg-primary text-white">
-
-                <h5>
-
-                    Experience Details
-
-                </h5>
-
-                <button type="button"
-                        class="btn-close btn-close-white"
-                        data-bs-dismiss="modal"
-                        aria-label="Close">
-                </button>
-
+                <h5 class="modal-title">@Localizer.Get("Experience Details")</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
 
             <div class="modal-body">
-
                 <div class="row g-3">
+                    <input type="hidden" id="ExperienceIndex" />
 
-                    <input type="hidden"
-                           id="ExperienceIndex" />
-
-                    <div class="col-lg-4">
-
-                        <label>
-
-                            Department
-
-                        </label>
-
-                        <select id="ExperienceDepartmentId"
-                                class="form-select select2 required">
-
-                            <option value="">Select</option>
-
+                    <!-- Department -->
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <label class="form-label">@Localizer.Get("Department")</label>
+                        <select id="ExperienceDepartmentId" class="form-select select2 required">
+                            <option value="">@Localizer.Get("Select")</option>
                             @foreach (var item in ViewBag.Department)
                             {
-                                <option value="@item.DataListItemId">
-
-                                    @item.DataListItemText
-
-                                </option>
+                                <option value="@item.DataListItemId">@item.DataListItemText</option>
                             }
-
                         </select>
-
                     </div>
 
-                    <div class="col-lg-4">
-
-                        <label>
-
-                            Designation
-
-                        </label>
-
-                        <select id="ExperienceDesignationId"
-                                class="form-select select2 required">
-
-                            <option value="">Select</option>
-
+                    <!-- Designation -->
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <label class="form-label">@Localizer.Get("Designation")</label>
+                        <select id="ExperienceDesignationId" class="form-select select2 required">
+                            <option value="">@Localizer.Get("Select")</option>
                             @foreach (var item in ViewBag.Designation)
                             {
-                                <option value="@item.DataListItemId">
-
-                                    @item.DataListItemText
-
-                                </option>
+                                <option value="@item.DataListItemId">@item.DataListItemText</option>
                             }
-
                         </select>
-
                     </div>
 
-                    <div class="col-lg-4">
-
-                        <label>
-
-                            Subject
-
-                        </label>
-
-                        <input type="text" id="ExperienceSubject" class="form-control required" />
-
+                    <!-- Subject -->
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <label class="form-label">@Localizer.Get("Subject")</label>
+                        <input type="text" id="ExperienceSubject" class="form-control required" placeholder="@Localizer.Get("Enter subject")" />
                     </div>
 
-                    <div class="col-lg-6">
-
-                        <label>
-
-                            Organisation Name
-
-                        </label>
-
-                        <input type="text" id="OrganisationName" class="form-control required" />
-
+                    <!-- Organisation Name -->
+                    <div class="col-12 col-md-6">
+                        <label class="form-label">@Localizer.Get("Organisation Name")</label>
+                        <input type="text" id="OrganisationName" class="form-control required" placeholder="@Localizer.Get("Enter organisation name")" />
                     </div>
 
-                    <div class="col-lg-3">
-
-                        <label>
-
-                            From Date
-
-                        </label>
-
+                    <!-- From Date -->
+                    <div class="col-12 col-md-3">
+                        <label class="form-label">@Localizer.Get("From Date")</label>
                         <input type="date" id="FromDate" class="form-control required" />
-
                     </div>
 
-                    <div class="col-lg-3">
-
-                        <label>
-
-                            To Date
-
-                        </label>
-
+                    <!-- To Date -->
+                    <div class="col-12 col-md-3">
+                        <label class="form-label">@Localizer.Get("To Date")</label>
                         <input type="date" id="ToDate" class="form-control required" />
-
                     </div>
 
-                    <div class="col-lg-4">
-
-                        <label>
-
-                            Years
-
-                        </label>
-
-                        <input type="text"
-                               id="ExperienceYears"
-                               readonly
-                               class="form-control" />
-
+                    <!-- Experience (Years, Months, Days) -->
+                    <div class="col-12 col-md-4">
+                        <label class="form-label">@Localizer.Get("Years")</label>
+                        <input type="text" id="ExperienceYears" readonly class="form-control" />
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <label class="form-label">@Localizer.Get("Months")</label>
+                        <input type="text" id="ExperienceMonths" readonly class="form-control" />
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <label class="form-label">@Localizer.Get("Days")</label>
+                        <input type="text" id="ExperienceDays" readonly class="form-control" />
                     </div>
 
-                    <div class="col-lg-4">
-
-                        <label>
-
-                            Months
-
-                        </label>
-
-                        <input type="text"
-                               id="ExperienceMonths"
-                               readonly
-                               class="form-control" />
-
+                    <!-- Last Drawn Salary -->
+                    <div class="col-12 col-md-4">
+                        <label class="form-label">@Localizer.Get("Last Drawn Salary")</label>
+                        <input type="number" id="LastSalary" class="form-control required" placeholder="@Localizer.Get("Enter salary")" />
                     </div>
 
-                    <div class="col-lg-4">
-
-                        <label>
-
-                            Days
-
-                        </label>
-
-                        <input type="text"
-                               id="ExperienceDays"
-                               readonly
-                               class="form-control" />
-
-                    </div>
-
-                    <div class="col-lg-4">
-
-                        <label>
-
-                            Last Drawn Salary
-
-                        </label>
-
-                        <input type="number" id="LastSalary" class="form-control required" />
-
-                    </div>
-
-                    <div class="col-lg-4">
-
-                        <label>
-
-                            Experience Letter
-
-                        </label>
-
-                        <input type="file"
-                               id="ExperienceLetterFile"
-                               class="form-control" />
-                        <a id="ExperienceLetterPreview"
-                           href="#"
-                           target="_blank"
-                           style="display:none">
-                            View Existing Letter
+                    <!-- Experience Letter -->
+                    <div class="col-12 col-md-8">
+                        <label class="form-label">@Localizer.Get("Experience Letter")</label>
+                        <input type="file" id="ExperienceLetterFile" class="form-control" />
+                        <a id="ExperienceLetterPreview" href="#" target="_blank" style="display:none" class="mt-1 d-inline-block">
+                            @Localizer.Get("View Existing Letter")
                         </a>
                     </div>
 
-                    <div class="col-lg-12">
-
-                        <label>
-
-                            Remarks
-
-                        </label>
-
-<textarea id="ExperienceRemarks"
-          rows="2"
-          class="form-control">
-
-</textarea>
-
+                    <!-- Remarks -->
+                    <div class="col-12">
+                        <label class="form-label">@Localizer.Get("Remarks")</label>
+                        <textarea id="ExperienceRemarks" rows="2" class="form-control" placeholder="@Localizer.Get("Enter remarks")"></textarea>
                     </div>
-
                 </div>
-
             </div>
 
-            <div class="modal-footer">
-
-                <button type="button" class="btn btn-success"
-                        id="btnExperienceSave">
-
-                    <i class="ti ti-device-floppy"></i>
-
-                    Save
-
+            <div class="modal-footer d-flex flex-wrap gap-2">
+                <button type="button" class="btn btn-success" id="btnExperienceSave">
+                    <i class="ti ti-device-floppy"></i> @Localizer.Get("Save")
                 </button>
-
-                <button type="button" class="btn btn-secondary"
-                        data-bs-dismiss="modal">
-
-                    Close
-
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    @Localizer.Get("Close")
                 </button>
-
             </div>
-
         </div>
-
     </div>
-
 </div>

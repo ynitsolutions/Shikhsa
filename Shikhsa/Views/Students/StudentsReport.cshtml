@@ -1,610 +1,531 @@
 ﻿@using Shikhsa.ViewModels.DataFilter
 
-
 @model StudentReportPageVM
 
 @{
     ViewData["Title"] = "Students Report";
-    var cols = Model.Filter.SelectedColumns ??
-                 new List<string>();
+    var cols = Model.Filter.SelectedColumns ?? new List<string>();
 }
 
 <div class="card">
-
 
     <div class="card-body">
 
         <form method="post" asp-action="StudentsReport">
 
-            <div class="row">
+            <!-- Filter Row - Responsive Grid (buttons removed) -->
+            <div class="row g-2 g-md-3">
 
-                <div class="col-md-2">
+                <div class="col-6 col-md-4 col-lg-3 col-xl-2">
                     <label>@Localizer.Get("Application No")</label>
-                    <input asp-for="Filter.ApplicationNo"
-                           class="form-control" />
+                    <input asp-for="Filter.ApplicationNo" class="form-control form-control-sm" />
                 </div>
 
-                <div class="col-md-2">
+                <div class="col-6 col-md-4 col-lg-3 col-xl-2">
                     <label>@Localizer.Get("Student") @Localizer.Get("Name")</label>
-                    <input asp-for="Filter.StudentName"
-                           class="form-control" />
+                    <input asp-for="Filter.StudentName" class="form-control form-control-sm" />
                 </div>
 
-                <div class="col-md-2">
+                <div class="col-6 col-md-4 col-lg-3 col-xl-2">
                     <label>@Localizer.Get("Father") @Localizer.Get("Name")</label>
-                    <input asp-for="Filter.FatherName"
-                           class="form-control" />
+                    <input asp-for="Filter.FatherName" class="form-control form-control-sm" />
                 </div>
-                <div class="col-md-2">
+
+                <div class="col-6 col-md-4 col-lg-3 col-xl-2">
                     <label>@Localizer.Get("Mother") @Localizer.Get("Name")</label>
-                    <input asp-for="Filter.MotherName"
-                           class="form-control" />
+                    <input asp-for="Filter.MotherName" class="form-control form-control-sm" />
                 </div>
-                <div class="col-md-2">
+
+                <div class="col-6 col-md-4 col-lg-3 col-xl-2">
                     <label>@Localizer.Get("Guardian") @Localizer.Get("Name")</label>
-                    <input asp-for="Filter.GuardianName"
-                           class="form-control" />
+                    <input asp-for="Filter.GuardianName" class="form-control form-control-sm" />
                 </div>
-                <div class="col-md-2">
+
+                <div class="col-6 col-md-4 col-lg-3 col-xl-2">
                     <label>@Localizer.Get("Mobile")</label>
-                    <input asp-for="Filter.MobileNo"
-                           class="form-control" />
+                    <input asp-for="Filter.MobileNo" class="form-control form-control-sm" />
                 </div>
-                <div class="col-md-2">
 
+                <div class="col-6 col-md-4 col-lg-3 col-xl-2">
                     <label>@Localizer.Get("Class")</label>
-
-                    <select asp-for="Filter.RegClassId"
-                            class="form-control select2">
-
+                    <select asp-for="Filter.RegClassId" class="form-control form-control-sm select2">
                         <option value="">@Localizer.Get("Select")</option>
-
                         @foreach (var item in ViewBag.ClassList)
                         {
-                            <option value="@item.DataListItemId">
-                                @item.DataListItemText
-                            </option>
+                            <option value="@item.DataListItemId">@item.DataListItemText</option>
                         }
-
                     </select>
-
                 </div>
-                <div class="col-md-2">
 
+                <div class="col-6 col-md-4 col-lg-3 col-xl-2">
                     <label>@Localizer.Get("Section")</label>
-
-                    <select asp-for="Filter.SectionId"
-                            class="form-control select2">
-
+                    <select asp-for="Filter.SectionId" class="form-control form-control-sm select2">
                         <option value="">@Localizer.Get("Select")</option>
-
                         @foreach (var item in ViewBag.SectionList)
                         {
-                            <option value="@item.DataListItemId">
-                                @item.DataListItemText
-                            </option>
+                            <option value="@item.DataListItemId">@item.DataListItemText</option>
                         }
-
                     </select>
-
                 </div>
-                <div class="col-md-2">
 
+                <div class="col-6 col-md-4 col-lg-3 col-xl-2">
                     <label>@Localizer.Get("Batch")</label>
-
-                    <select asp-for="Filter.AdmissionBatchId"
-                            class="form-control select2">
-
+                    <select asp-for="Filter.AdmissionBatchId" class="form-control form-control-sm select2">
                         <option value="">@Localizer.Get("Select")</option>
-
                         @foreach (var item in ViewBag.BatchList)
                         {
-                            <option value="@item.BatchId">
-                                @item.AcademicYear
-                            </option>
+                            <option value="@item.BatchId">@item.AcademicYear</option>
                         }
-
                     </select>
-
-
-
                 </div>
-                <div class="col-md-2">
 
+                <div class="col-6 col-md-4 col-lg-3 col-xl-2">
                     <label>@Localizer.Get("Status")</label>
-
-                    <select asp-for="Filter.StatusId"
-                            class="form-control select2">
-
+                    <select asp-for="Filter.StatusId" class="form-control form-control-sm select2">
                         <option value="">@Localizer.Get("Select")</option>
-
                         @foreach (var item in ViewBag.StatusList)
                         {
-                            <option value="@item.DataListItemId">
-                                @item.DataListItemText
-                            </option>
+                            <option value="@item.DataListItemId">@item.DataListItemText</option>
                         }
-
                     </select>
-
-                </div>
-            </div>
-
-            <div class="card-body">
-
-                <div class="row">
-
-                    <div class="col-md-2">
-                        <label>
-                            <input type="checkbox"
-                                   name="Filter.SelectedColumns"
-                                   value="ApplicationNo"
-                                   checked="@(Model.Filter.SelectedColumns?.Contains("ApplicationNo") == true)" />
-                            @Localizer.Get("Application No")
-                        </label>
-                    </div>
-
-                    <div class="col-md-2">
-                        <label>
-                            <input type="checkbox"
-                                   name="Filter.SelectedColumns"
-                                   value="StudentName"
-                                   checked="@(Model.Filter.SelectedColumns?.Contains("StudentName") == true)" />
-                            @Localizer.Get("Student") @Localizer.Get("Name")
-                        </label>
-                    </div>
-
-                    <div class="col-md-2">
-                        <label>
-                            <input type="checkbox"
-                                   name="Filter.SelectedColumns"
-                                   value="FatherName"
-                                   checked="@(Model.Filter.SelectedColumns?.Contains("FatherName") == true)" />
-                            @Localizer.Get("Father") @Localizer.Get("Name")
-                        </label>
-                    </div>
-                    <div class="col-md-2">
-                        <label>
-                            <input type="checkbox"
-                                   name="Filter.SelectedColumns"
-                                   value="MotherName"
-                                   checked="@(Model.Filter.SelectedColumns?.Contains("MotherName") == true)" />
-                              @Localizer.Get("Mother") @Localizer.Get("Name")
-                        </label>
-                    </div>
-                    <div class="col-md-2">
-                        <label>
-                            <input type="checkbox"
-                                   name="Filter.SelectedColumns"
-                                   value="GuardianName"
-                                   checked="@(Model.Filter.SelectedColumns?.Contains("GuardianName") == true)" />
-                            Guardian Name
-                        </label>
-                    </div>
-                    <div class="col-md-2">
-                        <label>
-                            <input type="checkbox"
-                                   name="Filter.SelectedColumns"
-                                   value="LocalAddress"
-                                   checked="@(Model.Filter.SelectedColumns?.Contains("LocalAddress") == true)" />
-                              @Localizer.Get("Local")   @Localizer.Get("Address")
-                        </label>
-                    </div>
-                    <div class="col-md-2">
-                        <label>
-                            <input type="checkbox"
-                                   name="Filter.SelectedColumns"
-                                   value="PermanentAddress"
-                                   checked="@(Model.Filter.SelectedColumns?.Contains("PermanentAddress") == true)" />
-                              @Localizer.Get("Permanent")   @Localizer.Get("Address")
-                        </label>
-                    </div>
-
-                        
-                    <div class="col-md-2">
-                        <label>
-                            <input type="checkbox"
-                                   name="Filter.SelectedColumns"
-                                   value="FatherMobile"
-                                   checked="@(Model.Filter.SelectedColumns?.Contains("FatherMobile") == true)" />
-                              @Localizer.Get("Mobile")
-                        </label>
-                    </div>
-
-                    <div class="col-md-2">
-                        <label>
-                            <input type="checkbox"
-                                   name="Filter.SelectedColumns"
-                                   value="DOB" checked="@(Model.Filter.SelectedColumns?.Contains("DOB") == true)" />
-                              @Localizer.Get("DOB")
-                        </label>
-                    </div>
-
-                    <div class="col-md-2">
-                        <label>
-                            <input type="checkbox"
-                                   name="Filter.SelectedColumns"
-                                   value="AadhaarNumber" checked="@(Model.Filter.SelectedColumns?.Contains("AadhaarNumer") == true)" />
-                              @Localizer.Get("Aadhaar")
-                        </label>
-                    </div>
-
-                       
-                       
                 </div>
 
+                <!-- Removed action buttons from here -->
             </div>
 
-         
-
-            <br />
-         
-
-            <button type="submit" class="border-0 bg-transparent p-0">
-                <i class="ti ti-search fs-5"></i>
-            </button>
-
-            <button type="submit" formaction="@Url.Action("ExportExcel")" class="border-0 bg-transparent p-0">
-                <i class="ti ti-download"></i>
-            </button>
            
-            <a href="javascript:void(0);" class="btnStatus" id="btnBulkStatus">
-                <spam class="ti ti-reload"></spam>
-            </a>
 
-        </form>
+            <!-- Column Selection - Responsive Checkbox Grid -->
+            <div class="card-body px-0 pb-0 mt-2">
+                <h6 class="fw-bold mb-2">@Localizer.Get("Select Columns to Display")</h6>
+                <div class="row g-2 g-md-3">
 
-        <hr />
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="Filter.SelectedColumns" value="ApplicationNo"
+                                   checked="@(Model.Filter.SelectedColumns?.Contains("ApplicationNo") == true)" id="colAppNo" />
+                            <label class="form-check-label small" for="colAppNo">@Localizer.Get("Application No")</label>
+                        </div>
+                    </div>
 
-        <div id="gridContainer">
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="Filter.SelectedColumns" value="StudentName"
+                                   checked="@(Model.Filter.SelectedColumns?.Contains("StudentName") == true)" id="colStudent" />
+                            <label class="form-check-label small" for="colStudent">@Localizer.Get("Student") @Localizer.Get("Name")</label>
+                        </div>
+                    </div>
 
-            <div class="table-responsive">
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="Filter.SelectedColumns" value="FatherName"
+                                   checked="@(Model.Filter.SelectedColumns?.Contains("FatherName") == true)" id="colFather" />
+                            <label class="form-check-label small" for="colFather">@Localizer.Get("Father") @Localizer.Get("Name")</label>
+                        </div>
+                    </div>
 
-                <table class="table table-bordered table-striped">
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="Filter.SelectedColumns" value="MotherName"
+                                   checked="@(Model.Filter.SelectedColumns?.Contains("MotherName") == true)" id="colMother" />
+                            <label class="form-check-label small" for="colMother">@Localizer.Get("Mother") @Localizer.Get("Name")</label>
+                        </div>
+                    </div>
 
-                    <thead>
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="Filter.SelectedColumns" value="GuardianName"
+                                   checked="@(Model.Filter.SelectedColumns?.Contains("GuardianName") == true)" id="colGuardian" />
+                            <label class="form-check-label small" for="colGuardian">@Localizer.Get("Guardian") @Localizer.Get("Name")</label>
+                        </div>
+                    </div>
 
-                        <tr>
-                            <th>
-                                <input type="checkbox" name="All" value="All" />
-                            </th>
-                            @if (cols.Contains("ApplicationNo"))
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="Filter.SelectedColumns" value="LocalAddress"
+                                   checked="@(Model.Filter.SelectedColumns?.Contains("LocalAddress") == true)" id="colLocal" />
+                            <label class="form-check-label small" for="colLocal">@Localizer.Get("Local") @Localizer.Get("Address")</label>
+                        </div>
+                    </div>
+
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="Filter.SelectedColumns" value="PermanentAddress"
+                                   checked="@(Model.Filter.SelectedColumns?.Contains("PermanentAddress") == true)" id="colPermanent" />
+                            <label class="form-check-label small" for="colPermanent">@Localizer.Get("Permanent") @Localizer.Get("Address")</label>
+                        </div>
+                    </div>
+
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="Filter.SelectedColumns" value="FatherMobile"
+                                   checked="@(Model.Filter.SelectedColumns?.Contains("FatherMobile") == true)" id="colMobile" />
+                            <label class="form-check-label small" for="colMobile">@Localizer.Get("Mobile")</label>
+                        </div>
+                    </div>
+
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="Filter.SelectedColumns" value="DOB"
+                                   checked="@(Model.Filter.SelectedColumns?.Contains("DOB") == true)" id="colDob" />
+                            <label class="form-check-label small" for="colDob">@Localizer.Get("DOB")</label>
+                        </div>
+                    </div>
+
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="Filter.SelectedColumns" value="AadhaarNumber"
+                                   checked="@(Model.Filter.SelectedColumns?.Contains("AadhaarNumber") == true)" id="colAadhaar" />
+                            <label class="form-check-label small" for="colAadhaar">@Localizer.Get("Aadhaar")</label>
+                        </div>
+                    </div>
+                     <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="Filter.SelectedColumns" value="Class"
+                                   checked="@(Model.Filter.SelectedColumns?.Contains("Class") == true)" id="colClass" />
+                            <label class="form-check-label small" for="colClass">@Localizer.Get("Class")</label>
+                        </div>
+                    </div>
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="Filter.SelectedColumns" value="Section"
+                                   checked="@(Model.Filter.SelectedColumns?.Contains("Section") == true)" id="colSection" />
+                            <label class="form-check-label small" for="colAadhaar">@Localizer.Get("Section")</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- NEW ROW: Action Buttons in one line -->
+            <div class="row mt-3">
+                <div class="col-12">
+                    <div class="d-flex flex-wrap gap-2 align-items-center">
+                        <button type="submit" class="btn btn-primary btn-sm d-flex align-items-center gap-1">
+                            <i class="ti ti-search"></i> @Localizer.Get("Search")
+                        </button>
+                        <button type="submit" formaction="@Url.Action("ExportExcel")" class="btn btn-success btn-sm d-flex align-items-center gap-1">
+                            <i class="ti ti-excel ti ti-download"></i> @Localizer.Get("Export")
+                        </button>
+                        <a href="javascript:void(0);" class="btn btn-warning btn-sm d-flex align-items-center gap-1" id="btnBulkStatus">
+                            <i class="ti ti-reload"></i> @Localizer.Get("Bulk Status Update")
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <hr />
+
+            <!-- Responsive Table Container -->
+            <div id="gridContainer">
+
+                <div class="table-responsive">
+
+                    <table class="table table-bordered table-striped table-hover datatable mb-0">
+
+                        <thead>
+                            <tr>
+                                <th style="min-width:40px;">
+                                    <input type="checkbox" name="All" value="All" id="selectAll" />
+                                </th>
+                                @if (cols.Contains("ApplicationNo"))
+                                {
+                                    <th style="min-width:100px;">@Localizer.Get("Application No")</th>
+                                }
+                                @if (cols.Contains("StudentName"))
+                                {
+                                    <th style="min-width:120px;">@Localizer.Get("Student Name")</th>
+                                }
+                                @if (cols.Contains("FatherName"))
+                                {
+                                    <th style="min-width:100px;">@Localizer.Get("Father Name")</th>
+                                }
+                                @if (cols.Contains("MotherName"))
+                                {
+                                    <th style="min-width:100px;">@Localizer.Get("Mother Name")</th>
+                                }
+                                @if (cols.Contains("GuardianName"))
+                                {
+                                    <th style="min-width:100px;">@Localizer.Get("Guardian Name")</th>
+                                }
+                                @if (cols.Contains("Class"))
+                                {
+                                    <th style="min-width:100px;">@Localizer.Get("Class")</th>
+                                }
+                                @if (cols.Contains("Section"))
+                                {
+                                    <th style="min-width:100px;">@Localizer.Get("Section")</th>
+                                }
+                                @if (cols.Contains("LocalAddress"))
+                                {
+                                    <th style="min-width:120px;">@Localizer.Get("Local Address")</th>
+                                }
+                                @if (cols.Contains("PermanentAddress"))
+                                {
+                                    <th style="min-width:120px;">@Localizer.Get("Permanent Address")</th>
+                                }
+                                @if (cols.Contains("FatherMobile"))
+                                {
+                                    <th style="min-width:100px;">@Localizer.Get("Mobile")</th>
+                                }
+                                @if (cols.Contains("DOB"))
+                                {
+                                    <th style="min-width:100px;">@Localizer.Get("DOB")</th>
+                                }
+                                @if (cols.Contains("AadhaarNumber"))
+                                {
+                                    <th style="min-width:100px;">@Localizer.Get("Aadhaar")</th>
+                                }
+                                
+                                <th style="min-width:180px;" width="180">@Localizer.Get("Action")</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @if (Model.Students != null && Model.Students.Any())
                             {
-                                <th>@Localizer.Get("Application No")</th>
+                                foreach (var item in Model.Students)
+                                {
+                                    <tr>
+                                        <td>
+                                            <input type="checkbox" name="selectedStudents" value="@item.StudentId" class="studentCheckbox" />
+                                        </td>
+                                        @if (cols.Contains("ApplicationNo"))
+                                        {
+                                            <td>@item.ApplicationNo</td>
+                                        }
+                                        @if (cols.Contains("StudentName"))
+                                        {
+                                            <td>@item.StudentName</td>
+                                        }
+                                        @if (cols.Contains("FatherName"))
+                                        {
+                                            <td>@item.FatherName</td>
+                                        }
+                                        @if (cols.Contains("MotherName"))
+                                        {
+                                            <td>@item.MotherName</td>
+                                        }
+                                        @if (cols.Contains("GuardianName"))
+                                        {
+                                            <td>@item.GuardianName</td>
+                                        }
+                                        @if (cols.Contains("Class"))
+                                        {
+                                            <td>@item.ClassName</td>
+                                        }
+                                        @if (cols.Contains("Section"))
+                                        {
+                                            <td>@item.SectionName</td>
+                                        }
+                                        @if (cols.Contains("LocalAddress"))
+                                        {
+                                            <td>@item.LocalAddress</td>
+                                        }
+                                        @if (cols.Contains("PermanentAddress"))
+                                        {
+                                            <td>@item.PermanentAddress</td>
+                                        }
+                                        @if (cols.Contains("FatherMobile"))
+                                        {
+                                            <td>@item.FatherMobile</td>
+                                        }
+                                        @if (cols.Contains("DOB"))
+                                        {
+                                            <td>@item.DOB.ToString("dd/MM/yyyy")</td>
+                                        }
+                                        @if (cols.Contains("AadhaarNumber"))
+                                        {
+                                            <td>@item.AadhaarNumber</td>
+                                        }
+                                        
+                                        <td>
+                                            <div class="d-flex flex-wrap gap-1">
+                                                <permission controller="Students" action="StudentRegistrations" type="edit">
+                                                    <a asp-action="SaveStudentRegistrations" asp-route-ApplicationNo="@item.ApplicationNo" class="btn btn-primary btn-sm">
+                                                        <i class="ti ti-edit"></i>
+                                                    </a>
+                                                </permission>
+                                                <permission controller="Students" action="StudentRegistrations" type="delete">
+                                                    <a asp-action="DeleteStudentRegistrations" asp-route-id="@item.ApplicationNo" class="btn btn-danger btn-sm">
+                                                        <i class="ti ti-trash"></i>
+                                                    </a>
+                                                </permission>
+                                                <permission controller="Students" action="Profile" type="View">
+                                                    <a asp-action="Profile" asp-route-id="@item.StudentId" class="btn btn-info btn-sm">
+                                                        <i class="ti ti-eye"></i>
+                                                    </a>
+                                                </permission>
+                                                <button class="btn btn-warning btn-sm btnStatus" data-studentid="@item.StudentId">
+                                                    <i class="ti ti-reload"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-secondary btn-sm btnIssuedDocs"
+                                                        data-subjectid="@item.StudentId"
+                                                        data-subjecttype="Student"
+                                                        title="@Localizer.Get("Issued Documents")"
+                                                        data-bs-toggle="modal" data-bs-target="#issuedDocsModal">
+                                                    <i class="ti ti-certificate"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
                             }
-
-                            @if (cols.Contains("StudentName"))
-                            {
-                                <th>@Localizer.Get("Student Name")</th>
-                            }
-
-                            @if (cols.Contains("FatherName"))
-                            {
-                                <th>@Localizer.Get("Father") @Localizer.Get("Name")</th>
-                            }
-                            @if (cols.Contains("MotherName"))
-                            {
-                                <th>@Localizer.Get("Mother") @Localizer.Get("Name")</th>
-                            }
-                            @if (cols.Contains("GuardianName"))
-                            {
-                                <th>@Localizer.Get("Guardian") @Localizer.Get("Name")</th>
-                            }
-                            @if (cols.Contains("LocalAddress"))
-                            {
-                                <th>@Localizer.Get("Local") @Localizer.Get("Address")</th>
-                            }
-                            @if (cols.Contains("PermanentAddress"))
-                            {
-                                <th>@Localizer.Get("Permanent") @Localizer.Get("Address")</th>
-                            }
-
-                            @*  @if (cols.Contains("LocalAddress"))
-                {
-                    <th>Local Address</th>
-                } *@
-                            @if (cols.Contains("FatherMobile"))
-                            {
-                                <th>@Localizer.Get("Mobile")</th>
-                            }
-
-                            @if (cols.Contains("DOB"))
-                            {
-                                <th>@Localizer.Get("DOB")</th>
-                            }
-
-                            @if (cols.Contains("AadhaarNumber"))
-                            {
-                                <th>@Localizer.Get("Aadhaar")</th>
-                            }
-
-                            <th width="120">
-                                @Localizer.Get("Action")
-                            </th>
-
-                        </tr>
-
-                    </thead>
-
-                    <tbody>
-
-                        @if (Model.Students != null &&
-                                    Model.Students.Any())
-                        {
-                            foreach (var item in Model.Students)
+                            else
                             {
                                 <tr>
-                                    <td>
-                                        <input type="checkbox" name="selectedStudents" value="@item.StudentId" />
-                                    </td>
-                                    @if (cols.Contains("ApplicationNo"))
-                                    {
-                                        <td>@item.ApplicationNo</td>
-                                    }
-
-                                    @if (cols.Contains("StudentName"))
-                                    {
-                                        <td>@item.StudentName</td>
-                                    }
-                                    @if (cols.Contains("FatherName"))
-                                    {
-                                        <td>@item.FatherName</td>
-                                    }
-                                    @if (cols.Contains("MotherName"))
-                                    {
-                                        <td>@item.MotherName</td>
-                                    }
-                                    @if (cols.Contains("GuardianName"))
-                                    {
-                                        <td>@item.GuardianName</td>
-                                    }
-                                    @if (cols.Contains("LocalAddress"))
-                                    {
-                                        <td>@item.LocalAddress</td>
-                                    }
-                                    @if (cols.Contains("PermanentAddress"))
-                                    {
-                                        <td>@item.PermanentAddress</td>
-                                    }
-                                    @if (cols.Contains("FatherMobile"))
-                                    {
-                                        <td>@item.FatherMobile</td>
-                                    }
-
-                                    @if (cols.Contains("DOB"))
-                                    {
-                                        <td>
-                                            @item.DOB.ToString("dd/MM/yyyy")
-                                        </td>
-                                    }
-
-                                    @if (cols.Contains("AadhaarNumber"))
-                                    {
-                                        <td>@item.AadhaarNumber</td>
-                                    }
-
-                                    <td>
-
-                                        <permission controller="Students" action="StudentRegistrations" type="edit">
-                                            <a asp-action="SaveStudentRegistrations" asp-route-ApplicationNo="@item.ApplicationNo">
-                                                <spam class="ti ti-pencil"></spam>
-                                            </a>
-                                        </permission>
-                                        <permission controller="Students" action="Registrations" type="delete">
-                                            <a asp-action="DeleteStudentRegistrations" asp-route-id="@item.ApplicationNo">
-                                                <spam class="ti ti-trash"></spam>
-                                            </a>
-                                        </permission>
-                                        <permission controller="Students" action="Profile" type="View">
-                                            <a asp-action="Profile" asp-route-id="@item.StudentId">
-                                                <spam class="ti ti-eye"></spam>
-                                            </a>
-                                        </permission>
-                                        <a href="javascript:void(0);" class="btnStatus" data-studentid="@item.StudentId">
-                                            <spam class="ti ti-reload"></spam>
-                                        </a>
-                                        @*    <button type="button" class="btn btn-primary btnStatus" data-studentid="@item.StudentId">
-                                Change Status
-                            </button> *@
-                                    </td>
-
+                                    <td colspan="20" class="text-center py-3">@Localizer.Get("No Records Found")</td>
                                 </tr>
                             }
-                        }
-                        else
-                        {
-                            <tr>
+                        </tbody>
 
-                                <td colspan="20"
-                                    class="text-center">
-
-                                    @Localizer.Get("No Records Found")
-
-                                </td>
-
-                            </tr>
-                        }
-
-                    </tbody>
-
-                </table>
-
-            </div>
-            <!--Model PopUP-->
-            <div class="modal fade"
-                 id="statusModal"
-                 tabindex="-1">
-
-                <div class="modal-dialog">
-
-                    <div class="modal-content">
-
-                        <div class="modal-header">
-
-                            <h5 class="modal-title">
-                               @Localizer.Get("Update Student Status")
-                            </h5>
-
-                            <button type="button"
-                                    class="btn-close"
-                                    data-bs-dismiss="modal">
-                            </button>
-
-                        </div>
-
-                        <div class="modal-body">
-
-                            <input type="hidden"
-                                   id="StudentIds" />
-
-                            <div class="mb-3">
-
-                                <label>  @Localizer.Get("Status")</label>
-
-                                <select id="StatusId" class="form-select ">
-
-                                    <option value="">  @Localizer.Get("Select")</option>
-                                    @foreach (var item in ViewBag.StatusList)
-                                    {
-                                        <option value="@item.DataListItemId">
-                                            @item.DataListItemText
-                                        </option>
-                                    }
-                                </select>
-
-                            </div>
-
-                            <div id="admissionArea"
-                                 style="display:none;">
-
-                                <div class="mb-3">
-
-                                    <label>  @Localizer.Get("Class")</label>
-
-                                    <select id="ClassId" class="form-select ">
-                                        <option value="">  @Localizer.Get("Select")</option>
-                                        @foreach (var item in ViewBag.ClassList)
-                                        {
-                                            <option value="@item.DataListItemId">
-                                                @item.DataListItemText
-                                            </option>
-                                        }
-                                    </select>
-
-                                </div>
-
-                                <div class="mb-3">
-
-                                    <label>  @Localizer.Get("Section")</label>
-
-                                    <select id="SectionId" class="form-select">
-                                        <option value="">  @Localizer.Get("Select")</option>
-                                        @foreach (var item in ViewBag.SectionList)
-                                        {
-                                            <option value="@item.DataListItemId">
-                                                @item.DataListItemText
-                                            </option>
-                                        }
-                                    </select>
-
-                                </div>
-
-                                <div class="mb-3">
-
-                                    <label>  @Localizer.Get("Batch")</label>
-
-                                    <select id="BatchId" class="form-select ">
-                                        <option value="">@Localizer.Get("Select")</option>
-
-                                        @foreach (var item in ViewBag.BatchList)
-                                        {
-                                            <option value="@item.BatchId">
-                                                @item.AcademicYear
-                                            </option>
-                                        }
-                                    </select>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                        <div class="modal-footer">
-
-                            <button type="button"
-                                    class="btn btn-success"
-                                    id="btnSaveStatus">
-                                  @Localizer.Get("Save")
-                            </button>
-
-                        </div>
-
-                    </div>
+                    </table>
 
                 </div>
 
             </div>
 
+        </form>
+        <!-- Issued Documents Modal -->
+        <div class="modal fade" id="issuedDocsModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">@Localizer.Get("Issued Documents")</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body" id="issuedDocsModalBody">
+                        <div class="text-center py-4">
+                            <div class="spinner-border" role="status"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-
     </div>
 
 </div>
+
+<!-- Status Modal - Responsive -->
+<div class="modal fade" id="statusModal" tabindex="-1" aria-labelledby="statusModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title" id="statusModalLabel">@Localizer.Get("Update Student Status")</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <input type="hidden" id="StudentIds" />
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">@Localizer.Get("Status")</label>
+                    <select id="StatusId" class="form-select">
+                        <option value="">@Localizer.Get("Select")</option>
+                        @foreach (var item in ViewBag.StatusList)
+                        {
+                            <option value="@item.DataListItemId">@item.DataListItemText</option>
+                        }
+                    </select>
+                </div>
+
+                <div id="admissionArea" style="display:none;">
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">@Localizer.Get("Class")</label>
+                        <select id="ClassId" class="form-select">
+                            <option value="">@Localizer.Get("Select")</option>
+                            @foreach (var item in ViewBag.ClassList)
+                            {
+                                <option value="@item.DataListItemId">@item.DataListItemText</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">@Localizer.Get("Section")</label>
+                        <select id="SectionId" class="form-select">
+                            <option value="">@Localizer.Get("Select")</option>
+                            @foreach (var item in ViewBag.SectionList)
+                            {
+                                <option value="@item.DataListItemId">@item.DataListItemText</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">@Localizer.Get("Batch")</label>
+                        <select id="BatchId" class="form-select">
+                            <option value="">@Localizer.Get("Select")</option>
+                            @foreach (var item in ViewBag.BatchList)
+                            {
+                                <option value="@item.BatchId">@item.AcademicYear</option>
+                            }
+                        </select>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Localizer.Get("Cancel")</button>
+                <button type="button" class="btn btn-success" id="btnSaveStatus">@Localizer.Get("Save")</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
 @section Scripts
 {
     <script>
+        // Select All toggle
+        document.getElementById('selectAll')?.addEventListener('change', function() {
+            document.querySelectorAll('.studentCheckbox').forEach(cb => cb.checked = this.checked);
+        });
+
+        // Status dropdown toggle admission fields
         $("#StatusId").change(function() {
-            debugger
             var statusId = $(this).val();
-            var modal = new bootstrap.Modal(document.getElementById('admissionArea')
-            );
-            if (statusId == "27") // Admitted
-            {
-                // $("#admissionArea").show();
-                modal.show();
-            }
-            else {
-                modal.hide();
-                // $("#admissionArea").hide();
+            if (statusId == "27") { // Admitted
+                $("#admissionArea").slideDown(200);
+            } else {
+                $("#admissionArea").slideUp(200);
             }
         });
 
+        // Single student status update
         $(".btnStatus").click(function() {
-
             var studentId = $(this).data("studentid");
-
             $("#StudentIds").val(studentId);
-            var modal = new bootstrap.Modal(document.getElementById('statusModal')
-            );
-            //$("#statusModal").modal("show");
+            var modal = new bootstrap.Modal(document.getElementById('statusModal'));
             modal.show();
         });
+
+        // Bulk status update
         $("#btnBulkStatus").click(function() {
-
             var ids = [];
-
-            $("input[name='selectedStudents']:checked")
-                .each(function() {
-
-                    ids.push($(this).val());
-
+            $("input[name='selectedStudents']:checked").each(function() {
+                ids.push($(this).val());
+            });
+            if (ids.length === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: '@Localizer.Get("Select student first")',
+                    text: '@Localizer.Get("Please select at least one student to update status.")',
+                    confirmButtonText: 'OK'
                 });
-
-            if (ids.length == 0) {
-                alert("Select student first");
                 return;
             }
-
             $("#StudentIds").val(ids.join(','));
-            var modal =
-                new bootstrap.Modal(
-                    document.getElementById('statusModal')
-                );
+            var modal = new bootstrap.Modal(document.getElementById('statusModal'));
             modal.show();
-
         });
+
+        // Save status
         $("#btnSaveStatus").click(function() {
+            var btn = $(this);
+            btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> @Localizer.Get("Saving...")');
 
             $.ajax({
                 url: '/Students/UpdateStudentStatus',
@@ -617,29 +538,80 @@
                     BatchId: $("#BatchId").val()
                 },
                 success: function(res) {
-
+                    btn.prop('disabled', false).html('@Localizer.Get("Save")');
                     if (res.success) {
-                        alert("Saved Successfully!")
-                        // Swal.fire(
-                        //     'Success',
-                        //     res.message,
-                        //     'success'
-                        // ).then(() => {
-
-                        //     location.reload();
-
-                        // });
+                        Swal.fire({
+                            icon: 'success',
+                            title: '@Localizer.Get("Success")',
+                            text: res.message || '@Localizer.Get("Saved Successfully!")',
+                            timer: 2000,
+                            showConfirmButton: false
+                        }).then(() => {
+                            location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: '@Localizer.Get("Error")',
+                            text: res.message || '@Localizer.Get("Something went wrong.")',
+                            confirmButtonText: 'OK'
+                        });
                     }
-                    else {
-                        alert(res.message);
-                        // Swal.fire(
-                        //     'Error',
-                        //     res.message,
-                        //     'error');
-                    }
+                },
+                error: function() {
+                    btn.prop('disabled', false).html('@Localizer.Get("Save")');
+                    Swal.fire({
+                        icon: 'error',
+                        title: '@Localizer.Get("Error")',
+                        text: '@Localizer.Get("An error occurred while saving.")',
+                        confirmButtonText: 'OK'
+                    });
                 }
             });
+        });
 
+        // Reset modal fields on close
+        $('#statusModal').on('hidden.bs.modal', function() {
+            $('#StatusId').val('');
+            $('#ClassId').val('');
+            $('#SectionId').val('');
+            $('#BatchId').val('');
+            $('#admissionArea').hide();
+        });
+    </script>
+    <script>
+        $(document).on('click', '.btnIssuedDocs', function() {
+
+            var subjectId = $(this).attr('data-subjectid');
+            var subjectType = $(this).attr('data-subjecttype');
+
+            console.log("subjectId:", subjectId);
+            console.log("subjectType:", subjectType);
+
+            var $body = $('#issuedDocsModalBody');
+
+            $body.html(`
+                    <div class="text-center py-4">
+                        <div class="spinner-border" role="status"></div>
+                    </div>
+                `);
+
+            $.get('@Url.Action("GetIssuedDocuments", "CertificateGenerate")', {
+                subjectId: subjectId,
+                subjectType: subjectType
+            })
+                .done(function(data) {
+                    $body.html(data);
+                })
+                .fail(function(xhr) {
+                    console.error("GetIssuedDocuments failed:", xhr.status, xhr.responseText);
+
+                    $body.html(`
+                        <div class="alert alert-danger">
+                            @Localizer.Get("Unable to load documents")
+                        </div>
+                    `);
+                });
         });
     </script>
 }

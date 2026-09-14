@@ -1,0 +1,78 @@
+﻿@model List<Shikhsa.Models.Certificate.GeneratedCertificate>
+
+<div class="table-responsive">
+    <table class="table table-bordered table-hover dataTable">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>@Localizer.Get("Template Name")</th>
+                <th>@Localizer.Get("Issue Date")</th>
+                <th>@Localizer.Get("Print")</th>
+            </tr>
+        </thead>s
+        <tbody>
+            @if (Model != null && Model.Count > 0)
+            {
+                int i = 1;
+                foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@i</td>
+                        <td>@item.TemplateName</td>
+                        <td>@item.AddedDate.ToString("dd-MMM-yyyy")</td>
+                        <td>
+                            <a asp-controller="CertificateGenerate" asp-action="Print" asp-route-id="@item.GeneratedCertificateId" class="btn btn-primary btn-sm" title="@Localizer.Get("Print")">
+                                <i class="ti ti-printer"></i>
+                            </a>
+                           @*  <button type="button" class="btn btn-sm btn-primary"
+                                    onclick="printCertificate(@item.GeneratedCertificateId)">
+                                <i class="ti ti-printer"></i> @Localizer.Get("Print")
+                            </button> *@
+                        </td>
+                    </tr>
+                    i++;
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="4" class="text-center">@Localizer.Get("No documents issued yet.")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@* <script>
+    function printCertificate(id) {
+        var url = '/Certificate/PrintCertificate?id=' + id;
+
+        fetch(url)
+            .then(response => response.text())
+            .then(html => {
+                var printWindow = window.open('', '_blank', 'width=900,height=700');
+                printWindow.document.open();
+                printWindow.document.write(`
+                        <html>
+                            <head>
+                                <title>Print Document</title>
+                                <style>
+                                    body { font-family: Arial, sans-serif; }
+                                    @@media print {
+                                        button { display: none; }
+                                    }
+                                </style>
+                            </head>
+                            <body onload="window.print()">
+                                ${html}
+                            </body>
+                        </html>
+                    `);
+                printWindow.document.close();
+            })
+            .catch(err => {
+                alert('Print karte waqt error aaya.');
+                console.error(err);
+            });
+    }
+</script> *@

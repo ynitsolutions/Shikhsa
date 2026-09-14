@@ -3,218 +3,102 @@
 <div class="card shadow-sm">
 
     <div class="card-header bg-light">
-
-        <div class="d-flex justify-content-between">
-
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
             <h5 class="mb-0">
-
                 <i class="ti ti-files"></i>
-
-                Documents
-
+                @Localizer.Get("Documents")
             </h5>
-
-            <button type="button"
-                    class="btn btn-primary"
-                    id="btnAddDocument">
-
+            <button type="button" class="btn btn-primary btn-sm" id="btnAddDocument">
                 <i class="ti ti-plus"></i>
-
-                Add Document
-
+                @Localizer.Get("Add Document")
             </button>
-
         </div>
-
     </div>
 
     <div class="card-body p-0">
-
         <div class="table-responsive">
-
-            <table class="table table-bordered table-hover mb-0"
-                   id="tblDocument">
-
+            <table class="table table-bordered table-hover align-middle mb-0 datatable" id="tblDocument">
                 <thead class="table-primary">
-
                     <tr>
-
-                        <th>#</th>
-
-                        <th>Document Type</th>
-
-                        <th>Document No</th>
-
-                        <th>Expiry Date</th>
-
-                        <th>File</th>
-
-                        <th>Remarks</th>
-
-                        <th width="120">Action</th>
-
+                        <th style="width:50px;">#</th>
+                        <th>@Localizer.Get("Document Type")</th>
+                        <th>@Localizer.Get("Document No")</th>
+                        <th>@Localizer.Get("Expiry Date")</th>
+                        <th>@Localizer.Get("File")</th>
+                        <th>@Localizer.Get("Remarks")</th>
+                        <th style="min-width:120px;">@Localizer.Get("Action")</th>
                     </tr>
-
                 </thead>
-
                 <tbody>
-                   
+                    <!-- Rows will be added dynamically -->
                 </tbody>
-
             </table>
-
         </div>
-
     </div>
-
 </div>
 
-
-
-<div class="modal fade"
-     id="DocumentModal">
-
-    <div class="modal-dialog modal-lg">
-
+<!-- Modal (fully responsive) -->
+<div class="modal fade" id="DocumentModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
-
             <div class="modal-header bg-primary text-white">
-
-                <h5>
-
-                    Document
-
-                </h5>
-
-                <button type="button"
-                        class="btn-close btn-close-white"
-                        data-bs-dismiss="modal"
-                        aria-label="Close">
-                </button>
-
+                <h5 class="modal-title">@Localizer.Get("Document")</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
 
             <div class="modal-body">
-
                 <div class="row g-3">
+                    <input type="hidden" id="DocumentIndex" />
 
-                    <input type="hidden"
-                           id="DocumentIndex" />
-
-                    <div class="col-lg-6">
-
-                        <label>
-
-                            Document Type
-
-                        </label>
-
-                        <select id="DocumentTypeId"
-                                class="form-select select2">
-
-                            <option value="">Select</option>
-
+                    <!-- Document Type -->
+                    <div class="col-12 col-md-6">
+                        <label class="form-label">@Localizer.Get("Document Type")</label>
+                        <select id="DocumentTypeId" class="form-select select2">
+                            <option value="">@Localizer.Get("Select")</option>
                             @foreach (var item in ViewBag.DocumentType)
                             {
-                                <option value="@item.DataListItemId">
-
-                                    @item.DataListItemText
-
-                                </option>
+                                <option value="@item.DataListItemId">@item.DataListItemText</option>
                             }
-
                         </select>
-
                     </div>
 
-                    <div class="col-lg-6">
-
-                        <label>
-
-                            Document Number
-
-                        </label>
-
-                        <input type="text"
-                               id="DocumentNumber"
-                               class="form-control" />
-
+                    <!-- Document Number -->
+                    <div class="col-12 col-md-6">
+                        <label class="form-label">@Localizer.Get("Document Number")</label>
+                        <input type="text" id="DocumentNumber" class="form-control" placeholder="@Localizer.Get("Enter document number")" />
                     </div>
 
-                    <div class="col-lg-6">
-
-                        <label>
-
-                            Expiry Date
-
-                        </label>
-
-                        <input type="date"
-                               id="ExpiryDate"
-                               class="form-control" />
-
+                    <!-- Expiry Date -->
+                    <div class="col-12 col-md-6">
+                        <label class="form-label">@Localizer.Get("Expiry Date")</label>
+                        <input type="date" id="ExpiryDate" class="form-control" />
                     </div>
 
-                    <div class="col-lg-6">
-
-                        <label>
-
-                            Upload File
-
-                        </label>
-
-                        <input type="file"
-                               id="DocumentFile"
-                               class="form-control" />
-                        <a id="DocumentFilePreview"
-                           href="#"
-                           target="_blank"
-                           style="display:none">
-                            View Existing file
+                    <!-- Upload File -->
+                    <div class="col-12 col-md-6">
+                        <label class="form-label">@Localizer.Get("Upload File")</label>
+                        <input type="file" id="DocumentFile" class="form-control" />
+                        <a id="DocumentFilePreview" href="#" target="_blank" style="display:none" class="mt-1 d-inline-block">
+                            @Localizer.Get("View Existing File")
                         </a>
-
                     </div>
 
-                    <div class="col-lg-12">
-
-                        <label>
-
-                            Remarks
-
-                        </label>
-
-<textarea id="DocumentRemarks"
-          rows="2"
-          class="form-control">
-
-</textarea>
-
+                    <!-- Remarks -->
+                    <div class="col-12">
+                        <label class="form-label">@Localizer.Get("Remarks")</label>
+                        <textarea id="DocumentRemarks" rows="2" class="form-control" placeholder="@Localizer.Get("Enter remarks")"></textarea>
                     </div>
-
                 </div>
-
             </div>
 
-            <div class="modal-footer">
-
-                <button type="button" class="btn btn-success"
-                        id="btnDocumentSave">
-
-                    Save
-
+            <div class="modal-footer d-flex flex-wrap gap-2">
+                <button type="button" class="btn btn-success" id="btnDocumentSave">
+                    <i class="ti ti-device-floppy"></i> @Localizer.Get("Save")
                 </button>
-
-                <button type="button" class="btn btn-secondary"
-                        data-bs-dismiss="modal">
-
-                    Close
-
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    @Localizer.Get("Close")
                 </button>
-
             </div>
-
         </div>
-
     </div>
-
 </div>

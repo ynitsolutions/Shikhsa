@@ -1,0 +1,116 @@
+﻿@model List<Shikhsa.Models.Certificate.CertificateTypeMaster>
+@{
+    ViewData["Title"] = @Localizer.Get("Certificate Types");
+}
+
+<div class="container-fluid py-3">
+    <div class="card shadow-sm">
+
+        <div class="card-header bg-dark text-white d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2">
+            <h5 class="mb-0">@Localizer.Get("Certificate Types")</h5>
+
+            <a asp-action="SaveCertificateType" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-lg"></i> @Localizer.Get("New Certificate Type")
+            </a>
+        </div>
+
+        <div class="card-body">
+
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success py-2">@TempData["Success"]</div>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger py-2">@TempData["Error"]</div>
+            }
+
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>@Localizer.Get("Type Name")</th>
+                            <th>@Localizer.Get("Code")</th>
+                            <th>@Localizer.Get("Applies To")</th>
+                            <th>@Localizer.Get("Active")</th>
+                            <th class="text-nowrap" style="width:150px;">@Localizer.Get("Actions")</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @if (Model.Count == 0)
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">
+                                    @Localizer.Get("No certificate types available.")
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            foreach (var t in Model)
+                            {
+                                <tr>
+                                    <td>@t.TypeName</td>
+                                    <td><code>@t.TypeCode</code></td>
+                                    <td>@t.AppliesTo</td>
+                                    <td>
+                                        @if (t.IsActive)
+                                        {
+                                            <span class="badge bg-success">@Localizer.Get("Yes")</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">@Localizer.Get("No")</span>
+                                        }
+                                    </td>
+                                    <td class="text-nowrap">
+                                        <a asp-action="SaveCertificateType"
+                                           asp-route-id="@t.CertificateTypeId"
+                                           class="btn btn-warning btn-sm">
+                                            @Localizer.Get("Edit")
+                                        </a>
+
+                                        <button type="button"
+                                                class="btn btn-danger btn-sm delete-btn"
+                                                data-id="@t.CertificateTypeId">
+                                            @Localizer.Get("Delete")
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<form id="tokenForm" style="display:none;">@Html.AntiForgeryToken()</form>
+
+@section Scripts {
+     <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                if (!confirm('@Localizer.Get("Delete this certificate type?")')) return;
+
+                const res = await fetch('@Url.Action("Delete")/' + btn.dataset.id, {
+                    method: 'POST',
+                    headers: {
+                        'RequestVerificationToken':
+                            document.querySelector('#tokenForm input[name="__RequestVerificationToken"]')?.value || ''
+                    }
+                });
+
+                const result = await res.json();
+                if (result.status === 1) {
+                    window.location.reload();
+                } else {
+                    alert(result.message);
+                }
+            });
+        });
+    </script>
+}

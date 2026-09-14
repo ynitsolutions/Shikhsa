@@ -6,165 +6,169 @@
     var filter = ViewBag.Filter as StaffFilterVM ?? new StaffFilterVM();
 }
 
-<div class="card shadow-sm">
+<div class="container-fluid">
 
-    <div class="card-header bg-primary text-white d-flex flex-wrap align-items-center justify-content-between">
-        <h4 class="mb-0">
-            <i class="ti ti-users"></i> Staff List
-        </h4>
-        <permission controller="Staff" action="Staffs" type="View">
-        <a asp-action="SaveStaffs" class="btn btn-light mt-2 mt-sm-0">
-            <i class="ti ti-plus"></i> Add Staff
-        </a>
-        </permission>
-    </div>
+    <div class="card shadow-sm">
 
-    <div class="card-body">
-
-        <!-- ========== FILTER FORM ========== -->
-        <form method="get" id="filterForm">
-            <div class="row g-2">
-
-                <div class="col-12 col-sm-6 col-md-3">
-                    <input asp-for="@filter.StaffCode" name="StaffCode"
-                           class="form-control" placeholder="Staff Code" />
-                </div>
-
-                <div class="col-12 col-sm-6 col-md-3">
-                    <input asp-for="@filter.StaffName" name="StaffName"
-                           class="form-control" placeholder="Staff Name" />
-                </div>
-
-                <div class="col-12 col-sm-6 col-md-3">
-                    <input asp-for="@filter.MobileNo" name="MobileNo"
-                           class="form-control" placeholder="Mobile" />
-                </div>
-
-                <div class="col-12 col-sm-6 col-md-3">
-                    <input asp-for="@filter.Email" name="Email"
-                           class="form-control" placeholder="Email" />
-                </div>
-
-                <div class="col-12 col-sm-6 col-md-3">
-                    <select name="DepartmentId" class="form-select select2"
-                            asp-items="ViewBag.DepartmentList">
-                        <option value="">Department</option>
-                    </select>
-                </div>
-
-                <div class="col-12 col-sm-6 col-md-3">
-                    <select name="DesignationId" class="form-select select2"
-                            asp-items="ViewBag.DesignationList">
-                        <option value="">Designation</option>
-                    </select>
-                </div>
-
-                <div class="col-12 col-sm-6 col-md-3">
-                    <select name="StaffTypeId" class="form-select select2"
-                            asp-items="ViewBag.StaffTypeList">
-                        <option value="">Staff Type</option>
-                    </select>
-                </div>
-
-                <div class="col-12 col-sm-6 col-md-3">
-                    <select name="EmployeeStatusId" class="form-select select2"
-                            asp-items="ViewBag.EmployeeStatusList">
-                        <option value="">Status</option>
-                    </select>
-                </div>
-
-                <div class="col-12 col-md-2 offset-md-10">
-                    <button type="submit" class="btn btn-primary w-100">
-                        <i class="ti ti-search"></i> Search
-                    </button>
-                </div>
-
-            </div>
-        </form>
-
-        <hr />
-
-        <!-- ========== TABLE ========== -->
-        <div class="table-responsive">
-            <table class="table table-bordered table-hover align-middle datatable" id="staffTable">
-                <thead class="table-primary">
-                    <tr>
-                        <th>Staff Code</th>
-                        <th>Name</th>
-                        <th>Department</th>
-                        <th>Designation</th>
-                        <th>Mobile</th>
-                        <th>Email</th>
-                        <th>Joining</th>
-                        <th>Status</th>
-                        <th style="min-width:180px;">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (Model.Any())
-                    {
-                        foreach (var item in Model)
-                        {
-                            <tr>
-                                <td>@item.StaffCode</td>
-                                <td>@item.StaffName</td>
-                                <td>@item.Department</td>
-                                <td>@item.Designation</td>
-                                <td>@item.MobileNo</td>
-                                <td>@item.Email</td>
-                                <td>@item.JoiningDate.ToString("dd-MMM-yyyy")</td>
-                                <td>
-                                    @if (item.IsActive)
-                                    {
-                                        <span class="badge bg-success">Active</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-danger">Inactive</span>
-                                    }
-                                </td>
-                                <td>
-                                    <div class="btn-group btn-group-sm flex-wrap" role="group">
-                                        <permission controller="Students" action="Profile" type="View">
-                                        <a asp-action="SaveStaffs" asp-route-id="@item.StaffId"
-                                           class="btn btn-primary">
-                                            <i class="ti ti-edit"></i>
-                                        </a>
-                                        </permission>
-                                        <permission controller="Students" action="Profile" type="View">
-                                        <a asp-action="Profile" asp-route-id="@item.StaffId"
-                                           class="btn btn-info">
-                                            <i class="ti ti-eye"></i>
-                                        </a>
-                                        </permission>
-                                        <permission controller="Students" action="Profile" type="View">
-                                        <button class="btn btn-danger btnDelete" data-id="@item.StaffId">
-                                            <i class="ti ti-trash"></i>
-                                        </button>
-                                        </permission>
-                                        <permission controller="Students" action="Profile" type="View">
-                                        <button class="btn btn-warning btnReset" data-id="@item.StaffId">
-                                            <i class="ti ti-key"></i>
-                                        </button>
-                                        </permission>
-                                        
-                                    </div>
-                                </td>
-                            </tr>
-                        }
-                    }
-                    else
-                    {
-                        <tr>
-                            <td colspan="9" class="text-center">No Record Found</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+        <div class="card-header bg-primary text-white d-flex flex-wrap align-items-center justify-content-between">
+            <h4 class="mb-0">
+                <i class="ti ti-users"></i> @Localizer.Get("Staff List")
+            </h4>
+            <permission controller="Staff" action="Staffs" type="View">
+                <a asp-action="SaveStaffs" class="btn btn-light mt-2 mt-sm-0">
+                    <i class="ti ti-plus"></i> @Localizer.Get("Add Staff")
+                </a>
+            </permission>
         </div>
 
-    </div>
-</div>
+        <div class="card-body">
 
-<!-- If you have a _ChangePassword partial, include it here -->
-<partial name="_ChangePassword" />
+            <!-- ========== FILTER FORM (fully responsive) ========== -->
+            <form method="get" id="filterForm">
+                <div class="row g-3">
+
+                    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                        <input asp-for="@filter.StaffCode" name="StaffCode"
+                               class="form-control" placeholder="@Localizer.Get("Staff Code")" />
+                    </div>
+
+                    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                        <input asp-for="@filter.StaffName" name="StaffName"
+                               class="form-control" placeholder="@Localizer.Get("Staff Name")" />
+                    </div>
+
+                    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                        <input asp-for="@filter.MobileNo" name="MobileNo"
+                               class="form-control" placeholder="@Localizer.Get("Mobile")" />
+                    </div>
+
+                    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                        <input asp-for="@filter.Email" name="Email"
+                               class="form-control" placeholder="@Localizer.Get("Email")" />
+                    </div>
+
+                    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                        <select name="DepartmentId" class="form-select select2"
+                                asp-items="ViewBag.DepartmentList">
+                            <option value="">@Localizer.Get("Department")</option>
+                        </select>
+                    </div>
+
+                    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                        <select name="DesignationId" class="form-select select2"
+                                asp-items="ViewBag.DesignationList">
+                            <option value="">@Localizer.Get("Designation")</option>
+                        </select>
+                    </div>
+
+                    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                        <select name="StaffTypeId" class="form-select select2"
+                                asp-items="ViewBag.StaffTypeList">
+                            <option value="">@Localizer.Get("Staff Type")</option>
+                        </select>
+                    </div>
+
+                    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                        <select name="EmployeeStatusId" class="form-select select2"
+                                asp-items="ViewBag.EmployeeStatusList">
+                            <option value="">@Localizer.Get("Status")</option>
+                        </select>
+                    </div>
+
+                    <!-- Search button (full width on mobile, auto on larger) -->
+                    <div class="col-12 col-md-4 col-lg-3">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="ti ti-search"></i> @Localizer.Get("Search")
+                        </button>
+                    </div>
+
+                </div>
+            </form>
+
+            <hr />
+
+            <!-- ========== TABLE (responsive) ========== -->
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover align-middle datatable" id="staffTable">
+                    <thead class="table-primary">
+                        <tr>
+                            <th>@Localizer.Get("Staff Code")</th>
+                            <th>@Localizer.Get("Name")</th>
+                            <th>@Localizer.Get("Department")</th>
+                            <th>@Localizer.Get("Designation")</th>
+                            <th>@Localizer.Get("Mobile")</th>
+                            <th>@Localizer.Get("Email")</th>
+                            <th>@Localizer.Get("Joining")</th>
+                            <th>@Localizer.Get("Status")</th>
+                            <th style="min-width:180px;">@Localizer.Get("Action")</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Any())
+                        {
+                            foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>@item.StaffCode</td>
+                                    <td>@item.StaffName</td>
+                                    <td>@item.Department</td>
+                                    <td>@item.Designation</td>
+                                    <td>@item.MobileNo</td>
+                                    <td>@item.Email</td>
+                                    <td>@item.JoiningDate.ToString("dd-MMM-yyyy")</td>
+                                    <td>
+                                        @if (item.IsActive)
+                                        {
+                                            <span class="badge bg-success">@Localizer.Get("Active")</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">@Localizer.Get("Inactive")</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="d-flex flex-wrap gap-1">
+                                            <permission controller="Students" action="Profile" type="View">
+                                                <a asp-action="SaveStaffs" asp-route-id="@item.StaffId"
+                                                   class="btn btn-primary btn-sm" title="@Localizer.Get("Edit")">
+                                                    <i class="ti ti-edit"></i>
+                                                </a>
+                                            </permission>
+                                            <permission controller="Students" action="Profile" type="View">
+                                                <a asp-action="Profile" asp-route-id="@item.StaffId"
+                                                   class="btn btn-info btn-sm" title="@Localizer.Get("View")">
+                                                    <i class="ti ti-eye"></i>
+                                                </a>
+                                            </permission>
+                                            <permission controller="Students" action="Profile" type="View">
+                                                <button class="btn btn-danger btn-sm btnDelete" data-id="@item.StaffId" title="@Localizer.Get("Delete")">
+                                                    <i class="ti ti-trash"></i>
+                                                </button>
+                                            </permission>
+                                            <permission controller="Students" action="Profile" type="View">
+                                                <button class="btn btn-warning btn-sm btnReset" data-id="@item.StaffId" title="@Localizer.Get("Reset Password")">
+                                                    <i class="ti ti-key"></i>
+                                                </button>
+                                            </permission>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="9" class="text-center text-muted">@Localizer.Get("No Record Found")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Change Password Partial -->
+    <partial name="_ChangePassword" />
+
+</div>

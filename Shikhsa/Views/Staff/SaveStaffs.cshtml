@@ -1,7 +1,7 @@
 ﻿@model Shikhsa.Models.StaffMaster
 
 @{
-    ViewData["Title"] = Model.StaffId == 0 ? "Add Staff" : "Edit Staff";
+    ViewData["Title"] = Model.StaffId == 0 ? @Localizer.Get("Add Staff") : @Localizer.Get("Edit Staff");
 }
 
 <form asp-action="SaveStaffs"
@@ -13,222 +13,113 @@
     <div class="card shadow">
 
         <div class="card-header bg-primary text-white">
-
-            <div class="d-flex justify-content-between">
-
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
                 <h4 class="mb-0">
-
-                  @*   @(Model.StaffId == 0 ?
-                                        "New Staff Registration"
-                                        : "Edit Staff") *@
                     @(Model.StaffId == 0 ?
-                                        "New Staff Registration"
-                                        : $"Edit Staff ({string.Join(" ", new[] { Model.FirstName, Model.MiddleName, Model.LastName }.Where(s => !string.IsNullOrEmpty(s)))})")
-
-
+                        @Localizer.Get("New Staff Registration")
+                        : $"{@Localizer.Get("Edit Staff")} ({string.Join(" ", new[] { Model.FirstName, Model.MiddleName, Model.LastName }.Where(s => !string.IsNullOrEmpty(s)))})")
                 </h4>
-
-                <div>
-
-                    <button class="btn btn-success">
-
+                <div class="d-flex flex-wrap gap-2">
+                    <button class="btn btn-success btn-sm">
                         <i class="ti ti-device-floppy"></i>
-
-                        Save
-
+                        @Localizer.Get("Save")
                     </button>
-
-                    <a asp-action="Staffs"
-                       class="btn btn-danger">
-
-                        Cancel
-
+                    <a asp-action="Staffs" class="btn btn-danger btn-sm">
+                        @Localizer.Get("Cancel")
                     </a>
-
                 </div>
-
             </div>
-
         </div>
 
         <div class="card-body">
-
-            <ul class="nav nav-tabs" id="staffTab">
-
+            <!-- Tabs (responsive: scrollable on small screens) -->
+            <ul class="nav nav-tabs flex-nowrap overflow-auto" id="staffTab" role="tablist" style="gap:0; -webkit-overflow-scrolling:touch;">
                 <li class="nav-item">
-                    <a class="nav-link active"
-                       data-bs-toggle="tab"
-                       href="#personal">
-                        Personal
-                    </a>
+                    <a class="nav-link active" data-bs-toggle="tab" href="#personal">@Localizer.Get("Personal")</a>
                 </li>
-
-                 <li class="nav-item">
-                    <a class="nav-link"
-                       data-bs-toggle="tab"
-                       href="#academic">
-                        Academic
-                    </a>
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#academic">@Localizer.Get("Academic")</a>
                 </li>
-
-               <li class="nav-item">
-                    <a class="nav-link"
-                       data-bs-toggle="tab"
-                       href="#experience">
-                        Experience
-                    </a>
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#experience">@Localizer.Get("Experience")</a>
                 </li>
-
-                  <li class="nav-item">
-                    <a class="nav-link"
-                       data-bs-toggle="tab"
-                       href="#documents">
-                        Documents
-                    </a>
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#documents">@Localizer.Get("Documents")</a>
                 </li>
-
+                <!-- Hidden tabs (commented out but ready for future use) -->
                 @* <li class="nav-item">
-                    <a class="nav-link"
-                       data-bs-toggle="tab"
-                       href="#payment">
-                        Payment
-                    </a>
+                    <a class="nav-link" data-bs-toggle="tab" href="#payment">@Localizer.Get("Payment")</a>
                 </li>
-
                 <li class="nav-item">
-                    <a class="nav-link"
-                       data-bs-toggle="tab"
-                       href="#emergency">
-                        Emergency
-                    </a>
+                    <a class="nav-link" data-bs-toggle="tab" href="#emergency">@Localizer.Get("Emergency")</a>
                 </li>
-
                 <li class="nav-item">
-                    <a class="nav-link"
-                       data-bs-toggle="tab"
-                       href="#leave">
-                        Leave
-                    </a>
+                    <a class="nav-link" data-bs-toggle="tab" href="#leave">@Localizer.Get("Leave")</a>
                 </li>
-
                 <li class="nav-item">
-                    <a class="nav-link"
-                       data-bs-toggle="tab"
-                       href="#login">
-                        Login
-                    </a>
+                    <a class="nav-link" data-bs-toggle="tab" href="#login">@Localizer.Get("Login")</a>
                 </li>
-
                 <li class="nav-item">
-                    <a class="nav-link"
-                       data-bs-toggle="tab"
-                       href="#attendance">
-                        Attendance
-                    </a>
+                    <a class="nav-link" data-bs-toggle="tab" href="#attendance">@Localizer.Get("Attendance")</a>
                 </li>
-
                 <li class="nav-item">
-                    <a class="nav-link"
-                       data-bs-toggle="tab"
-                       href="#salary">
-                        Salary
-                    </a>
+                    <a class="nav-link" data-bs-toggle="tab" href="#salary">@Localizer.Get("Salary")</a>
                 </li>
-
                 <li class="nav-item">
-                    <a class="nav-link"
-                       data-bs-toggle="tab"
-                       href="#remarks">
-                        Remarks
-                    </a>
+                    <a class="nav-link" data-bs-toggle="tab" href="#remarks">@Localizer.Get("Remarks")</a>
                 </li> *@
-
             </ul>
 
             <div class="tab-content border border-top-0 p-3">
 
-                <div class="tab-pane fade show active"
-                     id="personal">
-
+                <!-- Personal Details Tab -->
+                <div class="tab-pane fade show active" id="personal">
                     <partial name="_PersonalDetails" />
-
                 </div>
 
-               <div class="tab-pane fade"
-                     id="academic">
-
+                <!-- Academic Details Tab -->
+                <div class="tab-pane fade" id="academic">
                     <partial name="_AcademicDetails" />
-
                 </div>
 
-                  <div class="tab-pane fade"
-                     id="experience">
-
+                <!-- Experience Details Tab -->
+                <div class="tab-pane fade" id="experience">
                     <partial name="_ExperienceDetails" />
-
                 </div>
 
-                  <div class="tab-pane fade"
-                     id="documents">
-
+                <!-- Documents Tab -->
+                <div class="tab-pane fade" id="documents">
                     <partial name="_DocumentDetails" />
-
                 </div>
 
-                @*  <div class="tab-pane fade"
-                     id="payment">
-
+                <!-- Hidden tabs (commented out for future use) -->
+                @* <div class="tab-pane fade" id="payment">
                     <partial name="_PaymentDetails" />
-
                 </div>
-
-                <div class="tab-pane fade"
-                     id="emergency">
-
+                <div class="tab-pane fade" id="emergency">
                     <partial name="_EmergencyContact" />
-
                 </div>
-
-                <div class="tab-pane fade"
-                     id="leave">
-
+                <div class="tab-pane fade" id="leave">
                     <partial name="_LeaveSettings" />
-
                 </div>
-
-                <div class="tab-pane fade"
-                     id="login">
-
+                <div class="tab-pane fade" id="login">
                     <partial name="_LoginDetails" />
-
                 </div>
-
-                <div class="tab-pane fade"
-                     id="attendance">
-
+                <div class="tab-pane fade" id="attendance">
                     <partial name="_AttendanceSettings" />
-
                 </div>
-
-                <div class="tab-pane fade"
-                     id="salary">
-
+                <div class="tab-pane fade" id="salary">
                     <partial name="_SalaryDetails" />
-
                 </div>
-
-                <div class="tab-pane fade"
-                     id="remarks">
-
+                <div class="tab-pane fade" id="remarks">
                     <partial name="_Remarks" />
-
                 </div> *@
 
             </div>
-
         </div>
-
     </div>
+
+    <!-- Hidden fields for JSON data -->
     <input type="hidden" id="AcademicJson" name="AcademicJson" />
     <input type="hidden" id="ExperienceJson" name="ExperienceJson" />
     <input type="hidden" id="DocumentJson" name="DocumentJson" />
@@ -237,32 +128,16 @@
 </form>
 
 @section Scripts {
-
     <script src="~/js/Staff.js"></script>
     <script>
+        var AcademicList = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Academics ?? new List<StaffAcademic>()));
+        var ExperienceList = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Experiences ?? new List<StaffExperience>()));
+        var DocumentList = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Documents ?? new List<StaffDocument>()));
 
-        var AcademicList = @Html.Raw(
-                    System.Text.Json.JsonSerializer.Serialize(
-                            Model.Academics ?? new List<StaffAcademic>()
-                    ));
-
-    var ExperienceList = @Html.Raw(
-                System.Text.Json.JsonSerializer.Serialize(
-                        Model.Experiences ?? new List<StaffExperience>()
-                ))
-
-    var DocumentList = @Html.Raw(
-                System.Text.Json.JsonSerializer.Serialize(
-                        Model.Documents ?? new List<StaffDocument>()
-                ));
-
-    $(document).ready(function () {
-
-                RenderAcademic();
+        $(document).ready(function() {
+            RenderAcademic();
             RenderExperience();
             RenderDocument();
-
         });
-
     </script>
 }

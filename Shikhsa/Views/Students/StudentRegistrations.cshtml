@@ -17,271 +17,209 @@
 
         <form method="post" asp-action="StudentRegistrations">
 
-            <div class="row">
+            <div class="row g-2 g-md-3">
 
-                <div class="col-md-2">
-                    <label>Application No</label>
-                    <input asp-for="Filter.ApplicationNo"
-                           class="form-control" />
+                <div class="col-6 col-md-4 col-lg-3 col-xl-2">
+                    <label>@Localizer.Get("Application No")</label>
+                    <input asp-for="Filter.ApplicationNo" class="form-control form-control-sm" />
                 </div>
 
-                <div class="col-md-2">
-                    <label>Student Name</label>
-                    <input asp-for="Filter.StudentName"
-                           class="form-control" />
+                <div class="col-6 col-md-4 col-lg-3 col-xl-2">
+                    <label>@Localizer.Get("Student") @Localizer.Get("Name")</label>
+                    <input asp-for="Filter.StudentName" class="form-control form-control-sm" />
                 </div>
 
-                <div class="col-md-2">
-                    <label>Father Name</label>
-                    <input asp-for="Filter.FatherName"
-                           class="form-control" />
-                </div>
-                <div class="col-md-2">
-                    <label>Mother Name</label>
-                    <input asp-for="Filter.MotherName"
-                           class="form-control" />
-                </div>
-                <div class="col-md-2">
-                    <label>Guardian Name</label>
-                    <input asp-for="Filter.GuardianName"
-                           class="form-control" />
+                <div class="col-6 col-md-4 col-lg-3 col-xl-2">
+                    <label>@Localizer.Get("Father") @Localizer.Get("Name")</label>
+                    <input asp-for="Filter.FatherName" class="form-control form-control-sm" />
                 </div>
 
-                <div class="col-md-2">
-                    <label>Mobile</label>
-                    <input asp-for="Filter.MobileNo"
-                           class="form-control" />
+                <div class="col-6 col-md-4 col-lg-3 col-xl-2">
+                    <label>@Localizer.Get("Mother") @Localizer.Get("Name")</label>
+                    <input asp-for="Filter.MotherName" class="form-control form-control-sm" />
                 </div>
-                <div class="col-md-2">
 
-                    <label>Gender</label>
-
-                    <select asp-for="Filter.GenderId"
-                            class="form-control select2">
-
-                        <option value="">Select</option>
-
-                        @foreach (var item in ViewBag.GenderList)
-                        {
-                            <option value="@item.DataListItemId">
-                                @item.DataListItemText
-                            </option>
-                        }
-
-                    </select>
-
+                <div class="col-6 col-md-4 col-lg-3 col-xl-2">
+                    <label>@Localizer.Get("Guardian") @Localizer.Get("Name")</label>
+                    <input asp-for="Filter.GuardianName" class="form-control form-control-sm" />
                 </div>
-                <div class="col-md-2">
 
-                    <label>Religion</label>
-
-                    <select asp-for="Filter.ReligionId"
-                            class="form-control select2">
-
-                        <option value="">Select</option>
-
-                        @foreach (var item in ViewBag.ReligionList)
-                        {
-                            <option value="@item.DataListItemId">
-                                @item.DataListItemText
-                            </option>
-                        }
-
-                    </select>
-
+                <div class="col-6 col-md-4 col-lg-3 col-xl-2">
+                    <label>@Localizer.Get("Mobile")</label>
+                    <input asp-for="Filter.MobileNo" class="form-control form-control-sm" />
                 </div>
-                <div class="col-md-2">
 
-                    <label>Class</label>
-
-                    <select asp-for="Filter.RegClassId"
-                            class="form-control select2">
-
-                        <option value="">Select</option>
-
+                <div class="col-6 col-md-4 col-lg-3 col-xl-2">
+                    <label>@Localizer.Get("Class")</label>
+                    <select asp-for="Filter.RegClassId" class="form-control form-control-sm select2">
+                        <option value="">@Localizer.Get("Select")</option>
                         @foreach (var item in ViewBag.ClassList)
                         {
-                            <option value="@item.DataListItemId">
-                                @item.DataListItemText
-                            </option>
+                            <option value="@item.DataListItemId">@item.DataListItemText</option>
                         }
-
                     </select>
-
                 </div>
-                <div class="col-md-2">
 
-                    <label>Category</label>
-
-                    <select asp-for="Filter.CategoryId"
-                            class="form-control select2">
-
-                        <option value="">Select</option>
-
-                        @foreach (var item in ViewBag.CategoryList)
+                <div class="col-6 col-md-4 col-lg-3 col-xl-2">
+                    <label>@Localizer.Get("Section")</label>
+                    <select asp-for="Filter.SectionId" class="form-control form-control-sm select2">
+                        <option value="">@Localizer.Get("Select")</option>
+                        @foreach (var item in ViewBag.SectionList)
                         {
-                            <option value="@item.DataListItemId">
-                                @item.DataListItemText
-                            </option>
+                            <option value="@item.DataListItemId">@item.DataListItemText</option>
                         }
-
                     </select>
-
                 </div>
-                <div class="col-md-2">
 
-                    <label>Batch</label>
-
-                    <select asp-for="Filter.AdmissionBatchId"
-                            class="form-control select2">
-
-                        <option value="">Select</option>
-
+                <div class="col-6 col-md-4 col-lg-3 col-xl-2">
+                    <label>@Localizer.Get("Batch")</label>
+                    <select asp-for="Filter.AdmissionBatchId" class="form-control form-control-sm select2">
+                        <option value="">@Localizer.Get("Select")</option>
                         @foreach (var item in ViewBag.BatchList)
                         {
-                            <option value="@item.BatchId">
-                                @item.AcademicYear
-                            </option>
+                            <option value="@item.BatchId">@item.AcademicYear</option>
                         }
-
                     </select>
-
-
-
                 </div>
+
+                <div class="col-6 col-md-4 col-lg-3 col-xl-2">
+                    <label>@Localizer.Get("Status")</label>
+                    <select asp-for="Filter.StatusId" class="form-control form-control-sm select2">
+                        <option value="">@Localizer.Get("Select")</option>
+                        @foreach (var item in ViewBag.StatusList)
+                        {
+                            <option value="@item.DataListItemId">@item.DataListItemText</option>
+                        }
+                    </select>
+                </div>
+
+                <!-- Removed action buttons from here -->
             </div>
 
-                <div class="card-body">
+           
 
-                    <div class="row">
+            <!-- Column Selection - Responsive Checkbox Grid -->
+            <div class="card-body px-0 pb-0 mt-2">
+                <h6 class="fw-bold mb-2">@Localizer.Get("Select Columns to Display")</h6>
+                <div class="row g-2 g-md-3">
 
-                        <div class="col-md-2">
-                            <label>
-                                <input type="checkbox"
-                                       name="Filter.SelectedColumns"
-                                       value="ApplicationNo"
-                                      checked="@(Model.Filter.SelectedColumns?.Contains("ApplicationNo") == true)" />
-                                Application No
-                            </label>
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="Filter.SelectedColumns" value="ApplicationNo"
+                                   checked="@(Model.Filter.SelectedColumns?.Contains("ApplicationNo") == true)" id="colAppNo" />
+                            <label class="form-check-label small" for="colAppNo">@Localizer.Get("Application No")</label>
                         </div>
-
-                        <div class="col-md-2">
-                            <label>
-                                <input type="checkbox"
-                                       name="Filter.SelectedColumns"
-                                       value="StudentName"
-                                   checked="@(Model.Filter.SelectedColumns?.Contains("StudentName") == true)" />
-                                Student Name
-                            </label>
-                        </div>
-
-                        <div class="col-md-2">
-                            <label>
-                                <input type="checkbox"
-                                       name="Filter.SelectedColumns"
-                                       value="FatherName"
-                                         checked="@(Model.Filter.SelectedColumns?.Contains("FatherName") == true)"  />
-                                Father Name
-                            </label>
-                        </div>
-                        <div class="col-md-2">
-                            <label>
-                                <input type="checkbox"
-                                       name="Filter.SelectedColumns"
-                                       value="MotherName"
-                                   checked="@(Model.Filter.SelectedColumns?.Contains("MotherName") == true)" />
-                                Mother Name
-                            </label>
-                        </div>
-                        <div class="col-md-2">
-                            <label>
-                                <input type="checkbox"
-                                       name="Filter.SelectedColumns"
-                                       value="GuardianName"
-                                   checked="@(Model.Filter.SelectedColumns?.Contains("GuardianName") == true)" />
-                                Guardian Name
-                            </label>
-                        </div>
-                        <div class="col-md-2">
-                            <label>
-                                <input type="checkbox"
-                                       name="Filter.SelectedColumns"
-                                       value="LocalAddress"
-                                   checked="@(Model.Filter.SelectedColumns?.Contains("LocalAddress") == true)" />
-                               Local Address
-                            </label>
-                        </div>
-                        <div class="col-md-2">
-                            <label>
-                                <input type="checkbox"
-                                       name="Filter.SelectedColumns"
-                                       value="PermanentAddress"
-                                   checked="@(Model.Filter.SelectedColumns?.Contains("PermanentAddress") == true)" />
-                               Permanent Address
-                            </label>
-                        </div>
-
-                        
-                        <div class="col-md-2">
-                            <label>
-                                <input type="checkbox"
-                                       name="Filter.SelectedColumns"
-                                       value="FatherMobile"
-                                   checked="@(Model.Filter.SelectedColumns?.Contains("FatherMobile") == true)" />
-                                Mobile
-                            </label>
-                        </div>
-
-                        <div class="col-md-2">
-                            <label>
-                                <input type="checkbox"
-                                       name="Filter.SelectedColumns"
-                                   value="DOB" checked="@(Model.Filter.SelectedColumns?.Contains("DOB") == true)" />
-                                DOB
-                            </label>
-                        </div>
-
-                        <div class="col-md-2">
-                            <label>
-                                <input type="checkbox"
-                                       name="Filter.SelectedColumns"
-                                   value="AadhaarNumber" checked="@(Model.Filter.SelectedColumns?.Contains("AadhaarNumer") == true)" />
-                                Aadhaar
-                            </label>
-                        </div>
-                       
-                       
-
                     </div>
 
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="Filter.SelectedColumns" value="StudentName"
+                                   checked="@(Model.Filter.SelectedColumns?.Contains("StudentName") == true)" id="colStudent" />
+                            <label class="form-check-label small" for="colStudent">@Localizer.Get("Student") @Localizer.Get("Name")</label>
+                        </div>
+                    </div>
+
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="Filter.SelectedColumns" value="FatherName"
+                                   checked="@(Model.Filter.SelectedColumns?.Contains("FatherName") == true)" id="colFather" />
+                            <label class="form-check-label small" for="colFather">@Localizer.Get("Father") @Localizer.Get("Name")</label>
+                        </div>
+                    </div>
+
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="Filter.SelectedColumns" value="MotherName"
+                                   checked="@(Model.Filter.SelectedColumns?.Contains("MotherName") == true)" id="colMother" />
+                            <label class="form-check-label small" for="colMother">@Localizer.Get("Mother") @Localizer.Get("Name")</label>
+                        </div>
+                    </div>
+
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="Filter.SelectedColumns" value="GuardianName"
+                                   checked="@(Model.Filter.SelectedColumns?.Contains("GuardianName") == true)" id="colGuardian" />
+                            <label class="form-check-label small" for="colGuardian">@Localizer.Get("Guardian") @Localizer.Get("Name")</label>
+                        </div>
+                    </div>
+
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="Filter.SelectedColumns" value="LocalAddress"
+                                   checked="@(Model.Filter.SelectedColumns?.Contains("LocalAddress") == true)" id="colLocal" />
+                            <label class="form-check-label small" for="colLocal">@Localizer.Get("Local") @Localizer.Get("Address")</label>
+                        </div>
+                    </div>
+
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="Filter.SelectedColumns" value="PermanentAddress"
+                                   checked="@(Model.Filter.SelectedColumns?.Contains("PermanentAddress") == true)" id="colPermanent" />
+                            <label class="form-check-label small" for="colPermanent">@Localizer.Get("Permanent") @Localizer.Get("Address")</label>
+                        </div>
+                    </div>
+
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="Filter.SelectedColumns" value="FatherMobile"
+                                   checked="@(Model.Filter.SelectedColumns?.Contains("FatherMobile") == true)" id="colMobile" />
+                            <label class="form-check-label small" for="colMobile">@Localizer.Get("Mobile")</label>
+                        </div>
+                    </div>
+
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="Filter.SelectedColumns" value="DOB"
+                                   checked="@(Model.Filter.SelectedColumns?.Contains("DOB") == true)" id="colDob" />
+                            <label class="form-check-label small" for="colDob">@Localizer.Get("DOB")</label>
+                        </div>
+                    </div>
+
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="Filter.SelectedColumns" value="AadhaarNumber"
+                                   checked="@(Model.Filter.SelectedColumns?.Contains("AadhaarNumber") == true)" id="colAadhaar" />
+                            <label class="form-check-label small" for="colAadhaar">@Localizer.Get("Aadhaar")</label>
+                        </div>
+                    </div>
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="Filter.SelectedColumns" value="Class"
+                                   checked="@(Model.Filter.SelectedColumns?.Contains("Class") == true)" id="colClass" />
+                            <label class="form-check-label small" for="colClass">@Localizer.Get("Class")</label>
+                        </div>
+                    </div>
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="Filter.SelectedColumns" value="Section"
+                                   checked="@(Model.Filter.SelectedColumns?.Contains("Section") == true)" id="colSection" />
+                            <label class="form-check-label small" for="colAadhaar">@Localizer.Get("Section")</label>
+                        </div>
+                    </div>
                 </div>
+            </div>
+            <!-- NEW ROW: Action Buttons in one line -->
+            <div class="row mt-3">
+                <div class="col-12">
+                    <div class="d-flex flex-wrap gap-2 align-items-center">
+                        <permission controller="Students" action="StudentRegistrations" type="create">
+                            <a asp-action="SaveStudentRegistrations" class="btn btn-primary btn-sm">
+                                <spam class="ti ti-plus"></spam>@Localizer.Get("New Registration")
+                            </a>
 
-            @* </div> *@
-
-            <br />
-            <permission controller="Students" action="StudentRegistrations" type="create">
-                <a asp-action="SaveStudentRegistrations">
-                    <spam class="ti ti-plus"></spam>
-                    </a>
-                </permission>
-            @* <button type="submit"
-                    class="btn btn-primary">
-                Search
-            </button> *@
-            <button type="submit" class="border-0 bg-transparent p-0">
-                <i class="ti ti-search fs-5"></i>
-            </button>
-
-            <button type="submit" formaction="@Url.Action("ExportExcel")" class="border-0 bg-transparent p-0">
-                <i class="ti ti-download"></i>
-            </button>
-           @*  <button type="button" class="btn btn-success" id="btnBulkStatus">
-                Update Status
-            </button> *@
-            <a href="javascript:void(0);" class="btnStatus" id="btnBulkStatus">
-                <spam class="ti ti-reload"></spam>
-            </a>
-
+                        </permission>
+                        <button type="submit" class="btn btn-primary btn-sm d-flex align-items-center gap-1">
+                            <i class="ti ti-search"></i> @Localizer.Get("Search")
+                        </button>
+                        <button type="submit" formaction="@Url.Action("ExportExcel")" class="btn btn-success btn-sm d-flex align-items-center gap-1">
+                            <i class="ti ti-excel ti ti-download"></i> @Localizer.Get("Export")
+                        </button>
+                        <a href="javascript:void(0);" class="btn btn-warning btn-sm d-flex align-items-center gap-1" id="btnBulkStatus">
+                            <i class="ti ti-reload"></i> @Localizer.Get("Bulk Status Update")
+                        </a>
+                    </div>
+                </div>
+            </div>
         </form>
 
         <hr />
@@ -366,24 +304,23 @@
             },
             success: function (res) {
 
-                if (res.success) {
-                    alert("Saved Successfully!")
-                    // Swal.fire(
-                    //     'Success',
-                    //     res.message,
-                    //     'success'
-                    // ).then(() => {
+                if (res.success) {                                                                                                                                                                                            
+                    Swal.fire(
+                        'Success',
+                        res.message,
+                        'success'
+                    ).then(() => {
 
-                    //     location.reload();
+                        location.reload();
 
-                    // });
+                    });
                 }
                 else {
                     alert(res.message);
-                    // Swal.fire(
-                    //     'Error',
-                    //     res.message,
-                    //     'error');
+                    Swal.fire(
+                        'Error',
+                        res.message,
+                        'error');
                 }
             }
         });

@@ -2,389 +2,182 @@
 @model Shikhsa.Models.Notification.NotificationTemplate
 
 @{
-    ViewData["Title"] = "Notification Template";
+    ViewData["Title"] = @Localizer.Get("Notification Template");
 
     var categories = ViewBag.Categories as List<NotificationCategory>;
     var placeholders = ViewBag.Placeholders as List<NotificationPlaceholder>;
-
     var selectedCategories = ViewBag.SelectedCategories as List<long> ?? new List<long>();
 }
-<form asp-action="SaveNotificationTemplate" method="post">
 
-    <input asp-for="NotificationTemplateId" type="hidden" />
+<div class="container-fluid">
+    <form asp-action="SaveNotificationTemplate" method="post">
+        <input asp-for="NotificationTemplateId" type="hidden" />
 
-    <div class="card shadow">
-
-        <div class="card-header bg-primary text-white">
-
-            <h5 class="mb-0">
-
-                Notification Template
-
-            </h5>
-
-        </div>
-
-        <div class="card-body">
-
-            <div class="row">
-
-                <div class="col-md-6 mb-3">
-
-                    <label>
-
-                        Template Name
-
-                    </label>
-
-                    <input asp-for="TemplateName"
-                           class="form-control" />
-
-                </div>
-
-                <div class="col-md-6 mb-3">
-
-                    <label>
-
-                        Template Code
-
-                    </label>
-
-                    <input asp-for="TemplateCode"
-                           class="form-control" />
-
-                </div>
-
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">@Localizer.Get("Notification Template")</h5>
             </div>
 
-            <div class="row">
+            <div class="card-body">
 
-                <div class="col-md-6 mb-3">
+                <!-- Basic Info -->
+                <div class="row g-3">
+                    <div class="col-12 col-md-6">
+                        <label class="form-label">@Localizer.Get("Template Name")</label>
+                        <input asp-for="TemplateName" class="form-control" />
+                    </div>
 
-                    <label>
+                    <div class="col-12 col-md-6">
+                        <label class="form-label">@Localizer.Get("Template Code")</label>
+                        <input asp-for="TemplateCode" class="form-control" />
+                    </div>
 
-                        Channel
+                    <div class="col-12 col-md-6">
+                        <label class="form-label">@Localizer.Get("Channel")</label>
+                        <select asp-for="Channel" class="form-select">
+                            <option value="1">@Localizer.Get("Email")</option>
+                            <option value="2">@Localizer.Get("SMS")</option>
+                            <option value="3">@Localizer.Get("WhatsApp")</option>
+                        </select>
+                    </div>
 
-                    </label>
-
-                    <select asp-for="Channel"
-                            class="form-select">
-
-                        <option value="1">
-
-                            Email
-
-                        </option>
-
-                        <option value="2">
-
-                            SMS
-
-                        </option>
-
-                        <option value="3">
-
-                            WhatsApp
-
-                        </option>
-
-                    </select>
-
-                </div>
-
-                <div class="col-md-6 mb-3">
-
-                    <label>
-
-                        Categories
-
-                    </label>
-
-                    <select class="form-select select2"
-                            multiple
-                            name="categoryIds">
-
-                        @foreach (var item in categories)
-                        {
-                            if (selectedCategories.Contains(item.NotificationCategoryId))
+                    <div class="col-12 col-md-6">
+                        <label class="form-label">@Localizer.Get("Categories")</label>
+                        <select class="form-select select2" multiple name="categoryIds">
+                            @foreach (var item in categories)
                             {
-                                <option selected
-                                        value="@item.NotificationCategoryId">
-
-                                    @item.CategoryName
-
-                                </option>
+                                if (selectedCategories.Contains(item.NotificationCategoryId))
+                                {
+                                    <option selected value="@item.NotificationCategoryId">@item.CategoryName</option>
+                                }
+                                else
+                                {
+                                    <option value="@item.NotificationCategoryId">@item.CategoryName</option>
+                                }
                             }
-                            else
-                            {
-                                <option value="@item.NotificationCategoryId">
+                        </select>
+                    </div>
 
-                                    @item.CategoryName
-
-                                </option>
-                            }
-                        }
-
-                    </select>
-
+                    <div class="col-12">
+                        <label class="form-label">@Localizer.Get("Subject")</label>
+                        <input asp-for="Subject" class="form-control" />
+                    </div>
                 </div>
 
-            </div>
+                <!-- Body + Placeholders -->
+                <div class="mt-3">
+                    <label class="form-label fw-bold">@Localizer.Get("Email Body")</label>
 
-            <div class="mb-3">
+                    <div class="row g-3">
 
-                <label>
-
-                    Subject
-
-                </label>
-
-                <input asp-for="Subject"
-                       class="form-control" />
-
-            </div>
-
-            <div class="mb-3">
-
-                <label>
-
-                    Email Body
-
-                </label>
-
-                <div class="row">
-
-                    <!-- Left Panel -->
-                    <div class="col-lg-3">
-
-                        <div class="card shadow-sm">
-
-                            <div class="card-header bg-primary text-white py-2">
-                                <i class="bi bi-tags"></i>
-                                Available Placeholders
-                            </div>
-
-                            <div class="card-body p-2">
-
-                                <input type="text"
-                                       id="txtSearch"
-                                       class="form-control form-control-sm mb-2"
-                                       placeholder="Search Placeholder..." />
-
-                                <div class="placeholder-container">
-
-                                    @foreach (var group in placeholders.GroupBy(x => x.NotificationCategory.CategoryName))
-                                    {
-                                        <div class="mb-2">
-
-                                            <div class="placeholder-category">
-                                                @group.Key
-                                            </div>
-
-                                            @foreach (var item in group)
-                                            {
-                                                <div class="placeholder-item"
-                                                     data-code="@item.PlaceholderCode">
-
-                                                    <div class="fw-semibold">
-                                                        @item.DisplayName
-                                                    </div>
-
-                                                    <small class="text-muted">
-                                                        @item.PlaceholderCode
-                                                    </small>
-
-                                                </div>
-                                            }
-
-                                        </div>
-                                    }
-
+                        <!-- Placeholder Panel -->
+                        <div class="col-12 col-lg-3">
+                            <div class="card shadow-sm h-100">
+                                <div class="card-header bg-primary text-white py-2">
+                                    <i class="bi bi-tags"></i>
+                                    @Localizer.Get("Available Placeholders")
                                 </div>
 
-                            </div>
+                                <div class="card-body p-2">
+                                    <input type="text"
+                                           id="txtSearch"
+                                           class="form-control form-control-sm mb-2"
+                                           placeholder="@Localizer.Get("Search Placeholder...")" />
 
+                                    <div class="placeholder-container">
+                                        @foreach (var group in placeholders.GroupBy(x => x.NotificationCategory.CategoryName))
+                                        {
+                                            <div class="mb-2">
+                                                <div class="placeholder-category">@group.Key</div>
+
+                                                @foreach (var item in group)
+                                                {
+                                                    <div class="placeholder-item" data-code="@item.PlaceholderCode">
+                                                        <div class="fw-semibold">@item.DisplayName</div>
+                                                        <small class="text-muted">@item.PlaceholderCode</small>
+                                                    </div>
+                                                }
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
+                        <!-- Editor -->
+                        <div class="col-12 col-lg-9">
+                            <textarea asp-for="Body" id="Body" class="form-control"></textarea>
+                        </div>
                     </div>
+                </div>
 
-                    <!-- Editor -->
-                    <div class="col-lg-9">
-
-                        <label class="fw-bold mb-2">
-                            Email Body
-                        </label>
-
-                        <textarea asp-for="Body"
-                                  id="Body"
-                                  rows="18"
-                                  class="form-control"></textarea>
-
-                    </div>
-
+                <div class="form-check mt-3">
+                    <input asp-for="IsActive" class="form-check-input" />
+                    <label asp-for="IsActive" class="form-check-label">
+                        @Localizer.Get("Active")
+                    </label>
                 </div>
 
             </div>
 
-            <div class="form-check">
-
-                <input asp-for="IsActive"
-                       class="form-check-input" />
-
-                <label asp-for="IsActive"
-                       class="form-check-label">
-
-                    Active
-
-                </label>
-
-            </div>
-
-        </div>
-
-        @*<div class="card-footer text-end">
-
-            <a asp-action="Index" class="btn btn-secondary">
-
-                Back
-
-            </a>
-
-            <button class="btn btn-primary">
-
-                Save
-
-            </button>
-
-        </div>*@
-        <div class="card-footer text-end">
-
-            <button type="button"
-                    class="btn btn-info"
-                    id="btnPreview">
-
-                <i class="bi bi-eye"></i>
-
-                Preview
-
-            </button>
-
-            <button type="button"
-                    class="btn btn-success"
-                    id="btnTestEmail">
-
-                <i class="bi bi-envelope"></i>
-
-                Send Test Email
-
-            </button>
-
-            <button type="submit"
-                    class="btn btn-primary">
-
-                Save
-
-            </button>
-
-        </div>
-
-    </div>
-
-</form>
-<div class="modal fade"
-     id="previewModal"
-     tabindex="-1">
-
-    <div class="modal-dialog modal-xl">
-
-        <div class="modal-content">
-
-            <div class="modal-header">
-
-                <h5>
-
-                    Email Preview
-
-                </h5>
-
-                <button class="btn-close"
-                        data-bs-dismiss="modal">
+            <div class="card-footer d-flex flex-column flex-sm-row justify-content-sm-end gap-2">
+                <button type="button" class="btn btn-info" id="btnPreview">
+                    <i class="bi bi-eye"></i> @Localizer.Get("Preview")
                 </button>
 
+                <button type="button" class="btn btn-success" id="btnTestEmail">
+                    <i class="bi bi-envelope"></i> @Localizer.Get("Send Test Email")
+                </button>
+
+                <button type="submit" class="btn btn-primary">
+                    @Localizer.Get("Save")
+                </button>
             </div>
-
-            <div class="modal-body">
-
-                <iframe id="previewFrame"
-                        style="width:100%;
-                               height:650px;
-                               border:none;">
-                </iframe>
-
-            </div>
-
         </div>
-
-    </div>
-
+    </form>
 </div>
-<div class="modal fade"
-     id="testEmailModal">
 
+<!-- Preview Modal -->
+<div class="modal fade" id="previewModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">@Localizer.Get("Email Preview")</h5>
+                <button class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <iframe id="previewFrame" style="width:100%;height:min(650px,70vh);border:none;"></iframe>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Test Email Modal -->
+<div class="modal fade" id="testEmailModal">
     <div class="modal-dialog">
-
         <div class="modal-content">
-
             <div class="modal-header">
-
-                <h5>
-
-                    Send Test Email
-
-                </h5>
-
+                <h5 class="modal-title">@Localizer.Get("Send Test Email")</h5>
             </div>
-
             <div class="modal-body">
-
-                <label>
-
-                    Email Address
-
-                </label>
-
-                <input type="email"
-                       id="txtEmail"
-                       class="form-control" />
-
+                <label class="form-label">@Localizer.Get("Email Address")</label>
+                <input type="email" id="txtEmail" class="form-control" />
             </div>
-
             <div class="modal-footer">
-
-                <button class="btn btn-secondary"
-                        data-bs-dismiss="modal">
-
-                    Close
-
+                <button class="btn btn-secondary" data-bs-dismiss="modal">
+                    @Localizer.Get("Close")
                 </button>
-
-                <button class="btn btn-success"
-                        id="btnSendEmail">
-
-                    Send
-
+                <button class="btn btn-success" id="btnSendEmail">
+                    @Localizer.Get("Send")
                 </button>
-
             </div>
-
         </div>
-
     </div>
-
 </div>
+
 <style>
     .placeholder-container {
-        height: 520px;
+        max-height: 520px;
         overflow-y: auto;
         overflow-x: hidden;
         padding-right: 5px;
@@ -426,8 +219,78 @@
     .ck-editor__editable {
         min-height: 520px;
     }
+
+    /* Mobile / tablet tweaks */
+    @@media (max-width: 991.98px) {
+        .placeholder-container {
+            max-height: 260px;
+        }
+
+        .ck-editor__editable {
+            min-height: 320px;
+        }
+    }
 </style>
-@section Scripts{
+
+@section Scripts {
+    <script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/classic/ckeditor.js"></script>
+     <partial name="_ValidationScriptsPartial" />
+    <script>
+        let editor;
+
+        ClassicEditor
+            .create(document.querySelector('#Body'))
+            .then(e => { editor = e; });
+
+        $(document).on("click", ".placeholder-item", function () {
+            var code = $(this).data("code");
+            editor.model.change(writer => {
+                editor.model.insertContent(writer.createText(code));
+            });
+        });
+
+        $("#txtSearch").keyup(function () {
+            var value = $(this).val().toLowerCase();
+            $(".placeholder-item").each(function () {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+            });
+        });
+
+        $("#btnPreview").click(function () {
+            var html = editor.getData();
+            var iframe = document.getElementById("previewFrame");
+            iframe.contentWindow.document.open();
+            iframe.contentWindow.document.write(html);
+            iframe.contentWindow.document.close();
+            new bootstrap.Modal(document.getElementById("previewModal")).show();
+        });
+
+        $("#btnTestEmail").click(function () {
+            new bootstrap.Modal(document.getElementById("testEmailModal")).show();
+        });
+
+        $("#btnSendEmail").click(function () {
+            $.ajax({
+                url: '/NotificationTemplate/SendTestEmail',
+                type: 'POST',
+                data: {
+                    email: $("#txtEmail").val(),
+                    subject: $("#Subject").val(),
+                    body: editor.getData()
+                },
+                success: function (res) {
+                    Swal.fire(
+                        res.status == 1 ? "@Localizer.Get("Success")" : "@Localizer.Get("Error")",
+                        res.message,
+                        res.status == 1 ? "success" : "error"
+                    );
+                }
+            });
+        });
+    </script>
+}
+@* @section Scripts
+{
 <script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/classic/ckeditor.js"></script>
 
 <script>
@@ -541,4 +404,4 @@
     });
 
 </script>
-}
+} *@

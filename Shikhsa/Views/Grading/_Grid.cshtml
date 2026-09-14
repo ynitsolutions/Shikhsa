@@ -1,125 +1,74 @@
 ﻿@using Shikhsa.ViewModels
 @model GradingCriteriaVM
 
-<table class="table table-bordered table-hover align-middle"
-       id="tblGrading">
-
-    <thead class="table-primary">
-
-        <tr>
-
-            <th width="60">#</th>
-
-            <th>Term</th>
-
-            <th>Class</th>
-
-            <th>Batch</th>
-
-            <th>Min %</th>
-
-            <th>Max %</th>
-
-            <th>Grade</th>
-
-            <th>Description</th>
-
-            <th>Status</th>
-
-            <th width="120">Action</th>
-
-        </tr>
-
-    </thead>
-
-    <tbody>
-
-        @if (Model.GradingList.Any())
-        {
-            int sr = 1;
-
-            foreach (var item in Model.GradingList)
+<div class="table-responsive">
+    <table class="table table-bordered table-hover align-middle"
+           id="tblGrading">
+        <thead class="table-primary">
+            <tr>
+                <th width="60" data-priority="1">#</th>
+                <th data-priority="2">@Localizer.Get("Term")</th>
+                <th>@Localizer.Get("Class")</th>
+                <th data-priority="3">@Localizer.Get("Batch")</th>
+                <th>@Localizer.Get("Min %")</th>
+                <th>@Localizer.Get("Max %")</th>
+                <th data-priority="4">@Localizer.Get("Grade")</th>
+                <th>@Localizer.Get("Description")</th>
+                <th data-priority="5">@Localizer.Get("Status")</th>
+                <th width="120" data-priority="6">@Localizer.Get("Action")</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.GradingList.Any())
+            {
+                int sr = 1;
+                foreach (var item in Model.GradingList)
+                {
+                    <tr>
+                        <td>@sr</td>
+                        <td>@item.Term?.ExamCategoryName</td>
+                        <td>@item.Class?.DataListItemText</td>
+                        <td>@item.Batch?.AcademicYear</td>
+                        <td>@item.MinPercentage</td>
+                        <td>@item.MaxPercentage</td>
+                        <td><span class="badge bg-primary">@item.Grade</span></td>
+                        <td>@item.Description</td>
+                        <td>
+                            @if (item.IsActive)
+                            {
+                                <span class="badge bg-success">@Localizer.Get("Active")</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">@Localizer.Get("Inactive")</span>
+                            }
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <permission controller="Grading" action="GradingCriteria" type="edit">
+                                <button class="btn btn-warning btnEdit" data-id="@item.GradingCriteriaId">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                </permission>
+                                <permission controller="Grading" action="GradingCriteria" type="delete">
+                                <button class="btn btn-danger btnDelete" data-id="@item.GradingCriteriaId">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                                </permission>
+                            </div>
+                        </td>
+                    </tr>
+                    sr++;
+                }
+            }
+            else
             {
                 <tr>
-
-                    <td>@sr</td>
-
-                    <td>@item.Term?.ExamCategoryName</td>
-
-                    <td>@item.Class?.DataListItemText</td>
-
-                    <td>@item.Batch?.AcademicYear</td>
-
-                    <td>@item.MinPercentage</td>
-
-                    <td>@item.MaxPercentage</td>
-
-                    <td>
-
-                        <span class="badge bg-primary">
-
-                            @item.Grade
-
-                        </span>
-
+                    <td colspan="10" class="text-center text-muted">
+                        @Localizer.Get("No Record Found")
                     </td>
-
-                    <td>@item.Description</td>
-
-                    <td>
-
-                        @if (item.IsActive)
-                        {
-                            <span class="badge bg-success">
-                                Active
-                            </span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-danger">
-                                Inactive
-                            </span>
-                        }
-
-                    </td>
-
-                    <td>
-
-                        <button class="btn btn-warning btn-sm btnEdit"
-                                data-id="@item.GradingCriteriaId">
-
-                            <i class="bi bi-pencil"></i>
-
-                        </button>
-
-                        <button class="btn btn-danger btn-sm btnDelete"
-                                data-id="@item.GradingCriteriaId">
-
-                            <i class="bi bi-trash"></i>
-
-                        </button>
-
-                    </td>
-
                 </tr>
-
-                sr++;
             }
-
-        }
-        else
-        {
-            <tr>
-
-                <td colspan="10" class="text-center text-muted">
-
-                    No Record Found
-
-                </td>
-
-            </tr>
-        }
-
-    </tbody>
-
-</table>
+        </tbody>
+    </table>
+</div>

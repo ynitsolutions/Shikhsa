@@ -54,16 +54,26 @@ namespace Shikhsa.Models
                 return age;
             }
         }
+        [MapName("Gender", nameof(GenderName))]
         public int? GenderId { get; set; }
-
+        [NotMapped]
+        public string? GenderName { get; set; }
+        [MapName("BloodGroup", nameof(BloodGroupName))]
         public int? BloodGroupId { get; set; }
-
+        [NotMapped]
+        public string? BloodGroupName { get; set; }
+        [MapName("MaritalStatus", nameof(MaritalStatusName))]
         public int? MaritalStatusId { get; set; }
-
+        [NotMapped]
+        public string? MaritalStatusName { get; set; }
+        [MapName("Religion", nameof(ReligionName))]
         public int? ReligionId { get; set; }
-
+        [NotMapped]
+        public string? ReligionName { get; set; }
+        [MapName("Category", nameof(CategoryName))]
         public int? CategoryId { get; set; }
-
+        [NotMapped]
+        public string? CategoryName { get; set; }
         public string? Nationality { get; set; }
 
         [Required]
@@ -128,18 +138,28 @@ namespace Shikhsa.Models
         #endregion
 
         #region Employment
-
+        [MapName("Department", nameof(DepartmentName))]
         public int? DepartmentId { get; set; }
-                  
+        [NotMapped]
+        public string? DepartmentName { get; set; }
+        [MapName("Designation", nameof(DesignationName))]
         public int? DesignationId { get; set; }
-                  
+        [NotMapped]
+        public string? DesignationName { get; set; }
+        [MapName("StaffType", nameof(StaffTypeName))]
         public int? StaffTypeId { get; set; }
-                  
+        [NotMapped]
+        public string? StaffTypeName { get; set; }
+        [MapName("EmploymentType", nameof(EmploymentTypeName))]
         public int? EmploymentTypeId { get; set; }
+        [NotMapped]
+        public string? EmploymentTypeName { get; set; }
 
         public long? ReportingStaffId { get; set; }
-
+        [MapName("Shift", nameof(ShiftName))]
         public int? ShiftId { get; set; }
+        [NotMapped]
+        public string? ShiftName { get; set; }
 
         public DateTime JoiningDate { get; set; }
 

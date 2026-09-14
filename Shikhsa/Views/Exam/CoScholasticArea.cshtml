@@ -10,71 +10,47 @@
     <!-- Form -->
     <div class="card shadow-sm mb-3">
 
-        <div class="card-header text-white">
+        <div class="card-header bg-primary text-white">
             <h5 class="mb-0">
-                @(Model.CoScholasticArea.CoScholasticAreaId == 0 ? "Add Co-Scholastic Area" : "Edit Co-Scholastic Area")
+                @(Model.CoScholasticArea.CoScholasticAreaId == 0 ? Localizer.Get("Add Co-Scholastic Area") : Localizer.Get("Edit Co-Scholastic Area"))
             </h5>
         </div>
 
         <div class="card-body">
 
             <form asp-action="SaveCoScholasticArea" method="post">
-
                 @Html.AntiForgeryToken()
-
                 <input asp-for="CoScholasticArea.CoScholasticAreaId" type="hidden" />
 
-                <div class="row">
+                <div class="row g-3 align-items-end">
 
-                    <div class="col-md-5 mb-3">
-
+                    <div class="col-12 col-md-5">
                         <label asp-for="CoScholasticArea.CoScholasticId" class="form-label"></label>
-
                         <select asp-for="CoScholasticArea.CoScholasticId"
                                 asp-items="Model.CoScholasticList"
-                                class="form-control select2 required">
-
-                            <option value="">Select</option>
-
+                                class="form-control form-control-sm select2 required">
+                            <option value="">@Localizer.Get("Select")</option>
                         </select>
-
-                        <span asp-validation-for="CoScholasticArea.CoScholasticId"
-                              class="text-danger"></span>
-
+                        <span asp-validation-for="CoScholasticArea.CoScholasticId" class="text-danger small"></span>
                     </div>
 
-                    <div class="col-md-5 mb-3">
-
+                    <div class="col-12 col-md-5">
                         <label asp-for="CoScholasticArea.ClassId" class="form-label"></label>
-
-                        @* <select asp-for="CoScholasticArea.ClassId"
-                                asp-items="Model.ClassList"
-                                class="form-select">
-
-                            <option value="">-- Select Class --</option>
-
-                        </select> *@
-                        <select asp-for="CoScholasticArea.ClassId" class="form-control select2 required">
+                        <select asp-for="CoScholasticArea.ClassId" class="form-control form-control-sm select2 required">
                             <option value="">@Localizer.Get("Select")</option>
                             @foreach (var item in Model.ClassList)
                             {
                                 <option value="@item.DataListItemId" data-name="@item.DataListItemText">@item.DataListItemText</option>
                             }
                         </select>
-
-                        <span asp-validation-for="CoScholasticArea.ClassId"
-                              class="text-danger"></span>
-
+                        <span asp-validation-for="CoScholasticArea.ClassId" class="text-danger small"></span>
                     </div>
 
-                    <div class="col-md-2 d-flex align-items-end">
-
-                        <button type="submit" class="btn btn-success w-100">
-
-                            @(Model.CoScholasticArea.CoScholasticAreaId == 0 ? "Save" : "Update")
-
+                    <div class="col-12 col-md-2">
+                        <button type="submit" class="btn btn-success w-100 btn-sm d-flex align-items-center justify-content-center gap-1">
+                            <i class="fa fa-save"></i>
+                            @(Model.CoScholasticArea.CoScholasticAreaId == 0 ? Localizer.Get("Save") : Localizer.Get("Update"))
                         </button>
-
                     </div>
 
                 </div>
@@ -85,64 +61,43 @@
 
     </div>
 
-
-    <!-- Filter -->
-
+    <!-- Filter & List -->
     <div class="card shadow-sm">
 
-        <div class="card-header">
-            <h5 class="mb-0">Search</h5>
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">@Localizer.Get("Search")</h5>
         </div>
 
         <div class="card-body">
 
             <form method="get">
 
-                <div class="row">
+                <div class="row g-3 align-items-end">
 
-                    <div class="col-md-5">
-
-                        <label>Co-Scholastic</label>
-
+                    <div class="col-12 col-md-5">
+                        <label class="form-label">@Localizer.Get("Co-Scholastic")</label>
                         <select asp-for="SearchCoScholasticId"
                                 asp-items="Model.CoScholasticList"
-                                class="form-control select2">
-
-                            <option value="">All</option>
-
+                                class="form-control form-control-sm select2">
+                            <option value="">@Localizer.Get("All")</option>
                         </select>
-
                     </div>
 
-                    <div class="col-md-5">
-
-                        <label>Class</label>
-
-                       @*  <select asp-for="SearchClassId"
-                                asp-items="Model.ClassList"
-                                class="form-select">
-
-                            <option value="">All</option>
-
-                        </select> *@
-                        <select asp-for="SearchClassId" class="form-control select2">
-                            <option value="">@Localizer.Get("Select")</option>
+                    <div class="col-12 col-md-5">
+                        <label class="form-label">@Localizer.Get("Class")</label>
+                        <select asp-for="SearchClassId" class="form-control form-control-sm select2">
+                            <option value="">@Localizer.Get("All")</option>
                             @foreach (var item in Model.ClassList)
                             {
                                 <option value="@item.DataListItemId" data-name="@item.DataListItemText">@item.DataListItemText</option>
                             }
                         </select>
-
                     </div>
 
-                    <div class="col-md-2 d-flex align-items-end">
-
-                        <button class="btn btn-primary w-100">
-
-                            Search
-
+                    <div class="col-12 col-md-2">
+                        <button class="btn btn-primary w-100 btn-sm d-flex align-items-center justify-content-center gap-1">
+                            <i class="fa fa-search"></i> @Localizer.Get("Search")
                         </button>
-
                     </div>
 
                 </div>
@@ -151,112 +106,76 @@
 
             <hr />
 
-            <table class="table table-bordered table-striped">
-
-                <thead class="table-light">
-
-                    <tr>
-
-                        <th width="70">#</th>
-
-                        <th>Co-Scholastic</th>
-
-                        <th>Class</th>
-
-                        <th width="90">Status</th>
-
-                        <th width="180">Action</th>
-
-                    </tr>
-
-                </thead>
-
-                <tbody>
-
-                    @if (list != null && list.Any())
-                    {
-                        int sr = 1;
-
-                        foreach (var item in list)
+            <!-- Responsive Table -->
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped table-hover align-middle mb-0 datatable">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width:60px;">#</th>
+                            <th style="min-width:150px;">@Localizer.Get("Co-Scholastic")</th>
+                            <th style="min-width:120px;">@Localizer.Get("Class")</th>
+                            <th style="min-width:100px;">@Localizer.Get("Status")</th>
+                            <th style="min-width:180px;">@Localizer.Get("Action")</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (list != null && list.Any())
+                        {
+                            int sr = 1;
+                            foreach (var item in list)
+                            {
+                                <tr>
+                                    <td class="text-center">@sr</td>
+                                    <td>@item.CoScholastic</td>
+                                    <td>@item.ClassName</td>
+                                    <td>
+                                        @if (item.IsActive)
+                                        {
+                                            <span class="badge bg-success">@Localizer.Get("Active")</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">@Localizer.Get("Inactive")</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="d-flex flex-wrap gap-1">
+                                             <permission controller="Exam" action="CoScholasticArea" type="delete">
+                                                <a asp-action="CoScholasticArea"
+                                                   asp-route-id="@item.CoScholasticAreaId"
+                                                   asp-route-searchClassId="@Model.SearchClassId"
+                                                   asp-route-searchCoScholasticId="@Model.SearchCoScholasticId"
+                                                   class="btn btn-warning btn-sm d-flex align-items-center gap-1">
+                                                    <i class="ti ti-pencil"></i> @Localizer.Get("Edit")
+                                                </a>
+                                            </permission>
+                                             <permission controller="Exam" action="CoScholasticArea" type="delete">
+                                                <form asp-action="DeleteCoScholasticArea"
+                                                      class="d-inline"
+                                                      onsubmit="return confirm('@Localizer.Get("Delete this record?")')">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="id" value="@item.CoScholasticAreaId" />
+                                                    <button type="submit" class="btn btn-sm @(item.IsActive ? "btn-danger" : "btn-success") d-flex align-items-center gap-1">
+                                                        <i class="ti ti-trash"></i>
+                                                        @(item.IsActive ? Localizer.Get("Delete") : Localizer.Get("Activate"))
+                                                    </button>
+                                                </form>
+                                            </permission>
+                                        </div>
+                                    </td>
+                                </tr>
+                                sr++;
+                            }
+                        }
+                        else
                         {
                             <tr>
-
-                                <td>@sr</td>
-
-                                <td>@item.CoScholastic</td>
-
-                                <td>@item.ClassName</td>
-
-                                <td>
-
-                                    @if (item.IsActive)
-                                    {
-                                        <span class="badge bg-success">
-                                            Active
-                                        </span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-danger">
-                                            Inactive
-                                        </span>
-                                    }
-
-                                </td>
-
-                                <td>
-
-                                    <a asp-action="CoScholasticArea"
-                                       asp-route-id="@item.CoScholasticAreaId"
-                                       asp-route-searchClassId="@Model.SearchClassId"
-                                       asp-route-searchCoScholasticId="@Model.SearchCoScholasticId"
-                                       class="btn btn-warning btn-sm">
-
-                                        <spam class="ti ti-pencil"></spam>
-
-                                    </a>
-
-                                    <form asp-action="DeleteCoScholasticArea"
-                                          method="post"
-                                          class="d-inline">
-
-                                        @Html.AntiForgeryToken()
-
-                                        <input type="hidden"
-                                               name="id"
-                                               value="@item.CoScholasticAreaId" />
-
-                                        <button class="btn btn-sm @(item.IsActive ? "btn-danger" : "btn-success")">
-
-                                            <spam class="ti ti-pencil"></spam>
-
-                                        </button>
-
-                                    </form>
-
-                                </td>
-
+                                <td colspan="5" class="text-center">@Localizer.Get("No Record Found")</td>
                             </tr>
-
-                            sr++;
                         }
-                    }
-                    else
-                    {
-                        <tr>
-
-                            <td colspan="5" class="text-center">
-
-                                No Record Found
-
-                            </td>
-
-                        </tr>
-                    }
-
-                </tbody>
-
-            </table>
+                    </tbody>
+                </table>
+            </div>
 
         </div>
 

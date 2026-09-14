@@ -99,6 +99,11 @@ builder.Services.AddScoped<FeeReceiptRecordRepository>();
 builder.Services.AddScoped<AtomPaymentService>();
 builder.Services.AddScoped<PaymentReconciliationService>();
 builder.Services.AddHostedService<PaymentReconciliationBackgroundService>();
+builder.Services.AddScoped<CertificateRepository>();
+builder.Services.AddScoped<CertificateTemplateRepository>();
+builder.Services.AddScoped<GeneratedCertificateRepository>();
+builder.Services.AddScoped<CertificateTypeRepository>();
+builder.Services.AddHttpClient();
 var app = builder.Build();
 
 

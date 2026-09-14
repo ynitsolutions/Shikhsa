@@ -347,97 +347,85 @@ function ReloadStaffDropdown(selectedValue, callback) {
         alert("Failed to load staff list.");
     });
 }
-function ValidatePassword() {
+function ValidatePasswordFields() {
+    var currentLoggedInUser = $("#CurrentLoggedInUserId").val();
+    var targetUserId = $("#PasswordUserId").val();
 
-    if ($("#IsAdmin").val() != "True") {
+    var oldPassword = $("#OldPassword").val();
+    var newPassword = $("#NewPassword").val();
+    var confirmPassword = $("#ConfirmPassword").val();
 
-        if ($("#OldPassword").val() == "") {
-
-            Swal.fire("Enter Old Password");
-
+    // CONDITION: Agar target user aur logged-in user SAME hain (matlab apna khud ka badal raha hai)
+    if (currentLoggedInUser === targetUserId) {
+        if (!oldPassword || oldPassword.trim() === "") {
+            alert("Kripya apna purana password dalein.");
             return false;
-
         }
-
     }
 
-    if ($("#NewPassword").val() == "") {
-
-        Swal.fire("Enter New Password");
-
+    // Common validations
+    if (!newPassword || newPassword.trim() === "") {
+        alert("Naya password bharna zaroori hai.");
         return false;
-
     }
 
-    if ($("#ConfirmPassword").val() == "") {
-
-        Swal.fire("Enter Confirm Password");
-
+    if (newPassword.length < 6) {
+        alert("Naya password kam se kam 6 characters ka hona chahiye.");
         return false;
-
     }
 
-    if ($("#NewPassword").val() != $("#ConfirmPassword").val()) {
-
-        Swal.fire("Password does not match.");
-
+    if (newPassword !== confirmPassword) {
+        alert("Naya password aur confirm password match nahi kar rahe hain!");
         return false;
-
     }
 
     return true;
-
 }
 function ChangePassword() {
-
-    if (!ValidatePassword())
-        return;
+    var currentLoggedInUser = $("#CurrentLoggedInUserId").val();
+    var targetUserId = $("#PasswordUserId").val();
 
     $.ajax({
-
         url: "/Staff/ChangePassword",
-
         type: "POST",
-
         data: {
-
-            UserId: $("#PasswordUserId").val(),
-
-            OldPassword: $("#OldPassword").val(),
-
+            UserId: targetUserId,
+            // Agar khud ka badal raha hai toh value jayegi, agar admin kisi aur ka badal raha hai toh empty string
+            OldPassword: (currentLoggedInUser === targetUserId) ? $("#OldPassword").val() : "",
             NewPassword: $("#NewPassword").val(),
-
             ConfirmPassword: $("#ConfirmPassword").val()
-
         },
-
         success: function (res) {
-
             if (res.status == 1) {
-
                 alert(res.message);
                 $("#passwordModal").modal("hide");
-
-                $("#OldPassword").val("");
-
-                $("#NewPassword").val("");
-
-                $("#ConfirmPassword").val("");
-
-                LoadGrid();
-
+                $("#OldPassword, #NewPassword, #ConfirmPassword").val("");
             }
             else {
-
-               
                 alert(res.message);
-
-               
-
             }
-
+        },
+        error: function () {
+            alert("Server error! Kripya dobara koshish karein.");
         }
-
     });
+}
 
+function OpenPasswordModal(targetUserId) {
+    $("#PasswordUserId").val(targetUserId);
+
+    var currentLoggedInUser = $("#CurrentLoggedInUserId").val();
+    var isAdmin = $("#IsAdmin").val() === "true";
+
+    // Agar banda khud apna password badal raha hai, toh Old Password dikhao
+    if (currentLoggedInUser === targetUserId) {
+        $("#OldPasswordDiv").show();
+    }
+    // Agar logged in banda Admin hai aur kisi aur ka badal raha hai, toh hide karo
+    else if (isAdmin) {
+        $("#OldPasswordDiv").hide();
+        $("#OldPassword").val(""); // Clear old value
+    }
+
+    $("#passwordModal").modal("show");
 }
