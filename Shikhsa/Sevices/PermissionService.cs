@@ -59,7 +59,7 @@ namespace Shikhsa.Services
                     on rm.MenuId equals m.Id
 
                 where roleIds.Contains(rm.RoleId) && m.IsActive
-
+                orderby m.DisplayOrder
                 select new PermissionItemVM
                 {
                     MenuId = m.Id,

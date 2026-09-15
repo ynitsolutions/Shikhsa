@@ -1,18 +1,11 @@
-﻿/* ============================================================
+/* ============================================================
    site.css — Shikhsa Common Styles
    ============================================================ */
 
-/* ============================================================
-   GOOGLE FONTS
-   ============================================================ */
-
+/* ── Google Fonts ─────────────────────────────────────────── */
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=DM+Sans:wght@400;500&display=swap');
 
-
-/* ============================================================
-   CSS VARIABLES
-   ============================================================ */
-
+/* ── CSS Variables ────────────────────────────────────────── */
 :root {
     --primary: #534AB7;
     --primary-dark: #3C3489;
@@ -30,9 +23,9 @@
     --success: #1D9E75;
     --danger: #E24B4A;
     --warning: #BA7517;
-    --shadow-sm: 0 2px 8px rgba(83, 74, 183, 0.08);
-    --shadow-md: 0 8px 32px rgba(83, 74, 183, 0.13);
-    --shadow-lg: 0 16px 48px rgba(83, 74, 183, 0.18);
+    --shadow-sm: 0 2px 8px rgba(83,74,183,0.08);
+    --shadow-md: 0 8px 32px rgba(83,74,183,0.13);
+    --shadow-lg: 0 16px 48px rgba(83,74,183,0.18);
     --radius-sm: 8px;
     --radius-md: 12px;
     --radius-lg: 18px;
@@ -41,17 +34,10 @@
     --font-body: 'DM Sans', sans-serif;
     --transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
     --sidebar-width: 260px;
-    --sidebar-collapsed-width: 72px;
 }
 
-
-/* ============================================================
-   RESET & BASE
-   ============================================================ */
-
-*,
-*::before,
-*::after {
+/* ── Reset & Base ─────────────────────────────────────────── */
+*, *::before, *::after {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
@@ -70,12 +56,7 @@ body {
     -webkit-font-smoothing: antialiased;
 }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
+h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-main);
     font-weight: 600;
     color: var(--text-primary);
@@ -98,11 +79,7 @@ img {
     display: block;
 }
 
-
-/* ============================================================
-   UTILITY CLASSES
-   ============================================================ */
-
+/* ── Utility Classes ──────────────────────────────────────── */
 .text-primary-color {
     color: var(--primary);
 }
@@ -117,10 +94,6 @@ img {
 
 .font-main {
     font-family: var(--font-main);
-}
-
-.text-nowrap {
-    white-space: nowrap;
 }
 
 .mt-1 {
@@ -151,11 +124,7 @@ img {
     margin-bottom: 1.5rem;
 }
 
-
-/* ============================================================
-   CARDS
-   ============================================================ */
-
+/* ── Cards ────────────────────────────────────────────────── */
 .card {
     background: var(--bg-card);
     border-radius: var(--radius-lg);
@@ -173,11 +142,7 @@ img {
     margin-bottom: 1rem;
 }
 
-
-/* ============================================================
-   FORM ELEMENTS
-   ============================================================ */
-
+/* ── Form Elements ────────────────────────────────────────── */
 .form-group {
     margin-bottom: 1.2rem;
 }
@@ -217,12 +182,12 @@ img {
     .form-control:focus {
         border-color: var(--border-focus);
         background: #fff;
-        box-shadow: 0 0 0 3px rgba(127, 119, 221, 0.15);
+        box-shadow: 0 0 0 3px rgba(127,119,221,0.15);
     }
 
     .form-control.is-invalid {
         border-color: var(--danger);
-        box-shadow: 0 0 0 3px rgba(226, 75, 74, 0.1);
+        box-shadow: 0 0 0 3px rgba(226,75,74,0.1);
     }
 
 .invalid-feedback {
@@ -232,11 +197,7 @@ img {
     margin-top: 4px;
 }
 
-
-/* ============================================================
-   INPUT GROUP
-   ============================================================ */
-
+/* Input with icon */
 .input-group {
     position: relative;
     display: flex;
@@ -276,11 +237,7 @@ img {
             color: var(--primary);
         }
 
-
-/* ============================================================
-   BUTTONS
-   ============================================================ */
-
+/* ── Buttons ──────────────────────────────────────────────── */
 .btn {
     display: inline-flex;
     align-items: center;
@@ -301,12 +258,12 @@ img {
 .btn-primary {
     background: var(--primary);
     color: #fff;
-    box-shadow: 0 4px 14px rgba(83, 74, 183, 0.3);
+    box-shadow: 0 4px 14px rgba(83,74,183,0.3);
 }
 
     .btn-primary:hover {
         background: var(--primary-dark);
-        box-shadow: 0 6px 20px rgba(83, 74, 183, 0.4);
+        box-shadow: 0 6px 20px rgba(83,74,183,0.4);
         transform: translateY(-1px);
         color: #fff;
     }
@@ -371,7 +328,7 @@ img {
 .btn .spinner {
     width: 16px;
     height: 16px;
-    border: 2px solid rgba(255, 255, 255, 0.3);
+    border: 2px solid rgba(255,255,255,0.3);
     border-top-color: #fff;
     border-radius: 50%;
     animation: spin 0.7s linear infinite;
@@ -386,11 +343,7 @@ img {
     opacity: 0.7;
 }
 
-
-/* ============================================================
-   BADGES
-   ============================================================ */
-
+/* ── Badges ───────────────────────────────────────────────── */
 .badge {
     display: inline-block;
     font-size: 0.72rem;
@@ -420,11 +373,7 @@ img {
     color: #854F0B;
 }
 
-
-/* ============================================================
-   ALERTS
-   ============================================================ */
-
+/* ── Alerts ───────────────────────────────────────────────── */
 .alert {
     padding: 0.85rem 1rem;
     border-radius: var(--radius-sm);
@@ -459,11 +408,7 @@ img {
     border-left: 3px solid var(--primary);
 }
 
-
-/* ============================================================
-   TABLES
-   ============================================================ */
-
+/* ── Tables ───────────────────────────────────────────────── */
 .table-wrapper {
     overflow-x: auto;
     border-radius: var(--radius-md);
@@ -515,17 +460,13 @@ img {
             background: #FAF9FF;
         }
 
-
-/* ============================================================
-   TABLE SCROLL
-   ============================================================ */
-
+/* ── NEW: Table Scroll (for large data) ─────────────────── */
 .table-scroll {
     width: 100%;
     max-width: 100%;
     overflow-x: auto;
     overflow-y: auto;
-    max-height: 600px;
+    max-height: 600px; /* can be overridden per page */
     white-space: nowrap;
 }
 
@@ -534,11 +475,7 @@ img {
         min-width: 100%;
     }
 
-
-/* ============================================================
-   FREEZE / UNFREEZE
-   ============================================================ */
-
+/* ── NEW: Freeze / Unfreeze Toggle ──────────────────────── */
 .toggle-freeze {
     border: none;
     background: none;
@@ -570,18 +507,11 @@ img {
             transform: scale(1.15);
         }
 
-
-/* ============================================================
-   MARK INPUT
-   ============================================================ */
-
+/* ── NEW: Mark input and helpers ────────────────────────── */
 .mark-input {
     text-align: right;
 }
-
-
-/* Remove number arrows */
-
+/* Remove number input arrows on touch devices */
 input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button {
     -webkit-appearance: none;
@@ -592,11 +522,7 @@ input[type=number] {
     -moz-appearance: textfield;
 }
 
-
-/* ============================================================
-   SUMMARY CARDS
-   ============================================================ */
-
+/* ── NEW: Summary Cards (Attendance) ────────────────────── */
 .summary-card .card-body {
     padding: 0.5rem;
 }
@@ -606,11 +532,7 @@ input[type=number] {
     margin-bottom: 0;
 }
 
-
-/* ============================================================
-   GRADE GROUP
-   ============================================================ */
-
+/* ── NEW: Grade radio group (Co-Scholastic) ────────────── */
 .grade-group .form-check {
     margin-right: 0.5rem;
     margin-left: 0.5rem;
@@ -620,11 +542,7 @@ input[type=number] {
     font-size: 0.9rem;
 }
 
-
-/* ============================================================
-   ATTENDANCE RADIO
-   ============================================================ */
-
+/* ── NEW: Attendance radio group ────────────────────────── */
 .attendance-radio-group .form-check {
     margin-right: 0.3rem;
     margin-left: 0.3rem;
@@ -634,20 +552,15 @@ input[type=number] {
     font-size: 0.85rem;
 }
 
-
-/* ============================================================
-   SIDEBAR LAYOUT
-   ============================================================ */
-
+/* ── Sidebar Layout ───────────────────────────────────────── */
 .app-layout {
     display: flex;
     min-height: 100vh;
 }
 
-
-/* ============================================================
-   SIDEBAR
-   ============================================================ */
+.text-nowrap {
+    white-space: nowrap;
+}
 
 .sidebar {
     width: var(--sidebar-width);
@@ -659,15 +572,82 @@ input[type=number] {
     top: 0;
     display: flex;
     flex-direction: column;
-    overflow: visible;
-    z-index: 200;
-    transition: width 0.22s ease, transform 0.22s ease, box-shadow 0.22s ease;
+    overflow: hidden;
+    z-index: 100;
 }
+/*.sidebar {
+    width:      var(--sidebar-width);
+    min-height: 100vh;
+    background: var(--bg-card);
+    border-right: 1px solid var(--border);
+    display:    flex;
+    flex-direction: column;
+    position:   fixed;
+    top:        0;
+    left:       0;
+    z-index:    100;
+    transition: var(--transition);
+    box-shadow: var(--shadow-sm);
+}*/
 
+@media (min-width: 992px) {
 
-/* ============================================================
-   SIDEBAR BRAND
-   ============================================================ */
+    .sidebar.collapsed {
+        width: 72px;
+    }
+
+    .main-content.sidebar-collapsed {
+        margin-left: 72px;
+    }
+
+    /* Hide logo text */
+    .sidebar.collapsed .sidebar-brand > div:not(.brand-icon) {
+        display: none;
+    }
+
+    .sidebar.collapsed .sidebar-brand {
+        justify-content: center;
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+
+    /* Center menu icons */
+    .sidebar.collapsed .nav-link {
+        justify-content: center;
+        padding-left: 0.6rem;
+        padding-right: 0.6rem;
+    }
+
+        /* Hide menu text */
+        .sidebar.collapsed .nav-link span {
+            display: none;
+        }
+
+        /* Hide submenu arrow */
+        .sidebar.collapsed .nav-link .nav-arrow {
+            display: none;
+        }
+
+    /* Hide submenus when collapsed */
+    .sidebar.collapsed .nav-submenu {
+        display: none !important;
+    }
+
+    /* Center footer */
+    .sidebar.collapsed > div:last-child {
+        padding: 0.75rem !important;
+    }
+
+        .sidebar.collapsed > div:last-child > div {
+            justify-content: center;
+        }
+
+            /* Hide footer text/logout */
+            .sidebar.collapsed > div:last-child > div > div:nth-child(2),
+            .sidebar.collapsed > div:last-child form {
+                display: none;
+            }
+}
 
 .sidebar-brand {
     display: flex;
@@ -675,7 +655,6 @@ input[type=number] {
     gap: 12px;
     padding: 1.4rem 1.5rem;
     border-bottom: 1px solid var(--border);
-    flex-shrink: 0;
 }
 
 .brand-icon {
@@ -691,45 +670,30 @@ input[type=number] {
     flex-shrink: 0;
 }
 
-.brand-logo {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-}
-
 .brand-name {
     font-family: var(--font-main);
     font-size: 1.05rem;
     font-weight: 700;
     color: var(--text-primary);
-    white-space: nowrap;
 }
 
 .brand-tagline {
     font-size: 0.7rem;
     color: var(--text-muted);
-    white-space: nowrap;
 }
 
-
-/* ============================================================
-   SIDEBAR NAV
-   ============================================================ */
-
+/*.sidebar-nav { flex: 1; padding: 1rem 0.75rem; overflow-y: auto; }*/
 .sidebar-nav {
     flex: 1;
     min-height: 0;
     overflow-y: auto;
-    overflow-x: visible;
+    overflow-x: auto;
     padding: 1rem 0.75rem;
-    scrollbar-width: thin;
 }
-
-
-    /* Chrome scrollbar */
-
+    /* Sidebar Scrollbar */
     .sidebar-nav::-webkit-scrollbar {
         width: 8px;
+        height: 8px;
     }
 
     .sidebar-nav::-webkit-scrollbar-thumb {
@@ -741,10 +705,10 @@ input[type=number] {
         background: transparent;
     }
 
-
-/* ============================================================
-   NAV ITEMS
-   ============================================================ */
+/* Firefox */
+.sidebar-nav {
+    scrollbar-width: thin;
+}
 
 .nav-section-label {
     font-size: 0.68rem;
@@ -758,13 +722,7 @@ input[type=number] {
 
 .nav-item {
     list-style: none;
-    position: relative;
 }
-
-
-/* ============================================================
-   NAV LINK
-   ============================================================ */
 
 .nav-link {
     display: flex;
@@ -794,7 +752,7 @@ input[type=number] {
     .nav-link.active {
         background: var(--primary);
         color: #fff;
-        box-shadow: 0 4px 12px rgba(83, 74, 183, 0.25);
+        box-shadow: 0 4px 12px rgba(83,74,183,0.25);
     }
 
     .nav-link .nav-arrow {
@@ -803,11 +761,11 @@ input[type=number] {
         transition: transform 0.2s ease;
     }
 
-
-/* ============================================================
-   NORMAL SUBMENU
-   ============================================================ */
-
+/*.nav-submenu {
+    list-style:  none;
+    padding:     4px 0 4px 2.4rem;
+    display:     none;
+}*/
 .nav-submenu {
     list-style: none;
     padding: 4px 0 4px 2.4rem;
@@ -837,24 +795,14 @@ input[type=number] {
             box-shadow: none;
         }
 
-
-/* ============================================================
-   MAIN CONTENT
-   ============================================================ */
-
+/* ── Main Content ─────────────────────────────────────────── */
 .main-content {
     margin-left: var(--sidebar-width);
     flex: 1;
     display: flex;
     flex-direction: column;
     min-height: 100vh;
-    transition: margin-left 0.22s ease;
 }
-
-
-/* ============================================================
-   TOPBAR
-   ============================================================ */
 
 .topbar {
     height: 64px;
@@ -882,61 +830,6 @@ input[type=number] {
     gap: 12px;
 }
 
-
-/* ============================================================
-   SIDEBAR TOGGLE
-   ============================================================ */
-
-.sidebar-toggle {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    background: transparent;
-    border: none;
-    border-radius: var(--radius-sm);
-    font-size: 1.4rem;
-    color: var(--text-primary);
-    cursor: pointer;
-    padding: 4px;
-    flex-shrink: 0;
-    transition: var(--transition);
-}
-
-    .sidebar-toggle:hover {
-        background: var(--primary-light);
-        color: var(--primary);
-    }
-
-    .sidebar-toggle:focus {
-        outline: none;
-        box-shadow: 0 0 0 3px rgba(83, 74, 183, 0.15);
-    }
-
-
-/* ============================================================
-   SIDEBAR OVERLAY
-   ============================================================ */
-
-.sidebar-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(26, 22, 64, 0.35);
-    z-index: 199;
-    backdrop-filter: blur(2px);
-}
-
-    .sidebar-overlay.open {
-        display: block;
-    }
-
-
-/* ============================================================
-   PAGE CONTENT
-   ============================================================ */
-
 .page-content {
     padding: 1.5rem;
     flex: 1;
@@ -962,11 +855,7 @@ input[type=number] {
     margin-top: 2px;
 }
 
-
-/* ============================================================
-   AVATAR
-   ============================================================ */
-
+/* ── Avatar ───────────────────────────────────────────────── */
 .avatar {
     width: 36px;
     height: 36px;
@@ -982,10 +871,43 @@ input[type=number] {
     flex-shrink: 0;
 }
 
+/* ── Sidebar Toggle (Mobile) ──────────────────────────────── */
+/*.sidebar-toggle {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 1.4rem;
+    color: var(--text-primary);
+    cursor: pointer;
+    padding: 4px;
+}*/
+.sidebar-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.4rem;
+    color: var(--text-primary);
+    cursor: pointer;
+    padding: 4px;
+    flex-shrink: 0;
+}
 
-/* ============================================================
-   SELECT2
-   ============================================================ */
+    .sidebar-toggle:hover {
+        background: var(--bg-hover);
+    }
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(26,22,64,0.35);
+    z-index: 99;
+    backdrop-filter: blur(2px);
+}
 
 .select2-container {
     width: 100% !important;
@@ -994,19 +916,16 @@ input[type=number] {
 .select2-container--open {
     z-index: 999999 !important;
 }
-
-
-/* ============================================================
-   SELECT2 VALIDATION
-   ============================================================ */
-
+/* Custom highlight for select2 required fields */
+/* Select2 core structure dropdown box validation fail style */
 .form-control.select2.required + .select2-container .select2-selection--single,
 .form-control.select2.required + .select2-container .select2-selection--multiple {
-    border-left: 4px solid #dc3545 !important;
-    border-color: #dc3545 !important;
-    background-color: #fff8f8 !important;
+    border-left: 4px solid #dc3545 !important; /* Left side sharp red line */
+    border-color: #dc3545 !important; /* Poori border red karne ke liye */
+    background-color: #fff8f8 !important; /* Light red tone mix style */
 }
 
+/* Red Error text validation message style */
 .select2-required-error {
     color: #dc3545;
     font-size: 13px;
@@ -1015,16 +934,14 @@ input[type=number] {
     font-weight: 500;
 }
 
-
-/* ============================================================
-   INPUT VALIDATION
-   ============================================================ */
-
-.form-control.is-invalid,
-.is-invalid {
-    border-left: 4px solid #dc3545 !important;
+/* Input control validation failure highlighting */
+.form-control.is-invalid, .is-invalid {
+    border-left: 4px solid #dc3545 !important; /* Left side thick red line */
+    /*border-color: #dc3545 !important;
+    background-color: #fff8f8 !important;*/ /* Light red background */
 }
 
+/* Common validation error text style */
 .jquery-validation-error {
     color: #dc3545;
     font-size: 13px;
@@ -1033,159 +950,74 @@ input[type=number] {
     font-weight: 500;
 }
 
-
-/* ============================================================
-   DESKTOP SIDEBAR COLLAPSED
-   ============================================================ */
-
-@media (min-width: 992px) {
-
-    /* ----------------------------------------
-       Sidebar width
-       ---------------------------------------- */
-
-    .sidebar.collapsed {
-        width: var(--sidebar-collapsed-width);
-    }
-
-    .main-content.sidebar-collapsed {
-        margin-left: var(--sidebar-collapsed-width);
-    }
-
-
-    /* ----------------------------------------
-       Brand
-       ---------------------------------------- */
-
-    .sidebar.collapsed .sidebar-brand {
-        justify-content: center;
-        padding-left: 0.75rem;
-        padding-right: 0.75rem;
-    }
-
-        .sidebar.collapsed .sidebar-brand > div:not(.brand-icon) {
-            display: none;
-        }
-
-
-    /* ----------------------------------------
-       Nav
-       ---------------------------------------- */
-
-    .sidebar.collapsed .sidebar-nav {
-        overflow: visible;
-    }
-
-    .sidebar.collapsed .nav-link {
-        justify-content: center;
-        padding-left: 0.6rem;
-        padding-right: 0.6rem;
-    }
-
-        .sidebar.collapsed .nav-link span {
-            display: none;
-        }
-
-        .sidebar.collapsed .nav-link .nav-arrow {
-            display: none;
-        }
-
-
-    /* ----------------------------------------
-       IMPORTANT:
-       Collapsed submenu becomes floating menu
-       ---------------------------------------- */
-
-    .sidebar.collapsed .nav-item {
-        position: relative;
-    }
-
-    .sidebar.collapsed .nav-submenu {
-        display: none;
-        position: absolute;
-        left: calc(100% + 8px);
-        top: 0;
-        width: 230px;
-        max-height: 350px;
-        padding: 8px;
-        margin: 0;
-        background: var(--bg-card);
-        border: 1px solid var(--border);
-        border-radius: var(--radius-md);
-        box-shadow: var(--shadow-lg);
-        z-index: 1000;
-        overflow-y: auto;
-        overflow-x: hidden;
-    }
-
-
-        /* Open submenu in collapsed mode */
-
-        .sidebar.collapsed .nav-submenu.open {
-            display: block !important;
-        }
-
-
-        /* Submenu links */
-
-        .sidebar.collapsed .nav-submenu .nav-link {
-            justify-content: flex-start;
-            padding: 0.6rem 0.75rem;
-            gap: 10px;
-            font-size: 0.84rem;
-            color: var(--text-secondary);
-            border-radius: var(--radius-sm);
-        }
-
-            .sidebar.collapsed .nav-submenu .nav-link span {
-                display: inline;
-            }
-
-            .sidebar.collapsed .nav-submenu .nav-link:hover {
-                background: var(--primary-light);
-                color: var(--primary);
-            }
-
-            .sidebar.collapsed .nav-submenu .nav-link.active {
-                background: var(--primary-light);
-                color: var(--primary);
-            }
-
-
-    /* ----------------------------------------
-       Footer
-       ---------------------------------------- */
-
-    .sidebar.collapsed > div:last-child {
-        padding: 0.75rem !important;
-    }
-
-        .sidebar.collapsed > div:last-child > div {
-            justify-content: center;
-        }
-
-            .sidebar.collapsed > div:last-child > div > div:nth-child(2) {
-                display: none;
-            }
-
-        .sidebar.collapsed > div:last-child form {
-            display: none;
-        }
-
-
-    /* ----------------------------------------
-       Tooltip-like title support
-       ---------------------------------------- */
-
-    .sidebar.collapsed .nav-link {
-        position: relative;
+/* ── Animations ───────────────────────────────────────────── */
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
     }
 }
 
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
 
-/* ============================================================
-   MOBILE / TABLET SIDEBAR
-   ============================================================ */
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-16px);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+.animate-fade {
+    animation: fadeIn 0.4s ease both;
+}
+
+.animate-slide {
+    animation: slideIn 0.4s ease both;
+}
+
+/* ── Responsive ───────────────────────────────────────────── */
+/*@media (max-width: 991px) {
+    .sidebar {
+        transform: translateX(-100%);
+        z-index: 200;
+    }
+
+        .sidebar.open {
+            transform: translateX(0);
+            box-shadow: var(--shadow-lg);
+        }
+
+    .sidebar-overlay.open {
+        display: block;
+    }
+
+    .main-content {
+        margin-left: 0;
+    }
+
+    .sidebar-toggle {
+        display: flex;
+    }
+
+    .page-content {
+        padding: 1rem;
+    }
+}*/
+/* ── Responsive Sidebar ───────────────────────────────────── */
 
 @media (max-width: 991px) {
 
@@ -1193,82 +1025,49 @@ input[type=number] {
         width: var(--sidebar-width);
         transform: translateX(-100%);
         z-index: 200;
-        box-shadow: none;
-        overflow: hidden;
     }
-
-
-        /* Open */
 
         .sidebar.open {
             transform: translateX(0);
             box-shadow: var(--shadow-lg);
         }
 
-
-        /* Mobile sidebar should never be collapsed */
-
-        .sidebar.collapsed {
-            width: var(--sidebar-width);
-            transform: translateX(-100%);
-        }
-
-            .sidebar.collapsed.open {
-                transform: translateX(0);
-            }
-
-
-            /* Disable desktop floating submenu on mobile */
-
-            .sidebar.collapsed .nav-submenu {
-                position: static;
-                width: auto;
-                max-height: 350px;
-                padding: 4px 0 4px 2.4rem;
-                border: none;
-                box-shadow: none;
-                background: transparent;
-            }
-
-
-    /* Main content */
+    .sidebar-overlay.open {
+        display: block;
+    }
 
     .main-content {
         margin-left: 0;
         width: 100%;
     }
 
-
-    /* Overlay */
-
-    .sidebar-overlay.open {
-        display: block;
-    }
-
-
-    /* Toggle */
-
     .sidebar-toggle {
         display: inline-flex;
+        align-items: center;
+        justify-content: center;
         width: 40px;
         height: 40px;
+        background: transparent;
+        border: none;
+        border-radius: var(--radius-sm);
+        font-size: 1.4rem;
+        color: var(--text-primary);
+        cursor: pointer;
+        padding: 4px;
+        flex-shrink: 0;
     }
 
-
-    /* Page */
+        .sidebar-toggle:hover {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
 
     .page-content {
         padding: 1rem;
     }
 }
-
-
-/* ============================================================
-   TABLET
-   ============================================================ */
-
+/* ── New Responsive Tweaks for Tables & Forms ────────────── */
 @media (max-width: 768px) {
-
     .table-scroll table {
         font-size: 0.85rem;
     }
@@ -1295,8 +1094,7 @@ input[type=number] {
         padding: 0.2rem 0.4rem;
     }
 
-    .table th,
-    .table td {
+    .table th, .table td {
         padding: 0.3rem 0.4rem;
     }
 
@@ -1319,26 +1117,7 @@ input[type=number] {
     }
 }
 
-
-/* ============================================================
-   MOBILE
-   ============================================================ */
-
 @media (max-width: 576px) {
-
-    .topbar {
-        padding: 0 0.75rem;
-    }
-
-    .topbar-right {
-        gap: 6px;
-    }
-
-        .topbar-right .badge {
-            display: none;
-        }
-
-
     .page-header {
         flex-direction: column;
         align-items: flex-start;
@@ -1348,8 +1127,7 @@ input[type=number] {
         padding: 1.1rem;
     }
 
-    .table th,
-    .table td {
+    .table th, .table td {
         padding: 0.4rem 0.5rem;
         font-size: 0.8rem;
     }
@@ -1405,81 +1183,3 @@ input[type=number] {
         font-size: 1rem;
     }
 }
-
-
-/* ============================================================
-   ANIMATIONS
-   ============================================================ */
-
-@keyframes spin {
-
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-@keyframes fadeIn {
-
-    from {
-        opacity: 0;
-        transform: translateY(8px);
-    }
-
-    to {
-        opacity: 1;
-        transform: none;
-    }
-}
-
-@keyframes slideIn {
-
-    from {
-        opacity: 0;
-        transform: translateX(-16px);
-    }
-
-    to {
-        opacity: 1;
-        transform: none;
-    }
-}
-
-.animate-fade {
-    animation: fadeIn 0.4s ease both;
-}
-
-.animate-slide {
-    animation: slideIn 0.4s ease both;
-}
-
-
-/* ============================================================
-   SIDEBAR COLLAPSED HOVER EFFECT
-   ============================================================ */
-
-@media (min-width: 992px) {
-
-    .sidebar.collapsed .nav-link:hover {
-        transform: none;
-    }
-
-    .sidebar.collapsed .nav-item > .nav-link {
-        width: 100%;
-    }
-}
-
-
-/* ============================================================
-   ACCESSIBILITY
-   ============================================================ */
-
-button:focus-visible,
-a:focus-visible {
-    outline: 2px solid var(--primary);
-    outline-offset: 2px;
-}
-
-
-/* ============================================================
-   END
-   ============================================================ */

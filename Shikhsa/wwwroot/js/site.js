@@ -5,74 +5,272 @@
 const Shikhsa = (() => {
 
     // ── Sidebar Toggle ─────────────────────────────────────
-    function initSidebar() {
-        const sidebar  = document.getElementById('sidebar');
-        const overlay  = document.getElementById('sidebarOverlay');
-        const toggleBtn = document.getElementById('sidebarToggle');
-        if (!sidebar) return;
+    // function initSidebar() {
+    //     const sidebar  = document.getElementById('sidebar');
+    //     const overlay  = document.getElementById('sidebarOverlay');
+    //     const toggleBtn = document.getElementById('sidebarToggle');
+    //     if (!sidebar) return;
 
-        function openSidebar() {
-            sidebar.classList.add('open');
-            overlay?.classList.add('open');
-            document.body.style.overflow = 'hidden';
-        }
+    //     function openSidebar() {
+    //         sidebar.classList.add('open');
+    //         overlay?.classList.add('open');
+    //         document.body.style.overflow = 'hidden';
+    //     }
 
-        function closeSidebar() {
-            sidebar.classList.remove('open');
-            overlay?.classList.remove('open');
-            document.body.style.overflow = '';
-        }
+    //     function closeSidebar() {
+    //         sidebar.classList.remove('open');
+    //         overlay?.classList.remove('open');
+    //         document.body.style.overflow = '';
+    //     }
 
-        toggleBtn?.addEventListener('click', () => {
-            sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
-        });
+    //     toggleBtn?.addEventListener('click', () => {
+    //         sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
+    //     });
 
-        overlay?.addEventListener('click', closeSidebar);
+    //     overlay?.addEventListener('click', closeSidebar);
 
-        // Close on resize to desktop
-        window.addEventListener('resize', () => {
-            if (window.innerWidth > 991) closeSidebar();
-        });
+    //     // Close on resize to desktop
+    //     window.addEventListener('resize', () => {
+    //         if (window.innerWidth > 991) closeSidebar();
+    //     });
+    // }
+    // ── Sidebar Toggle ─────────────────────────────────────
+function initSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    const toggleBtn = document.getElementById('sidebarToggle');
+    const mainContent = document.querySelector('.main-content');
+
+    if (!sidebar || !toggleBtn) return;
+
+    const MOBILE_BREAKPOINT = 991;
+
+    function isMobile() {
+        return window.innerWidth <= MOBILE_BREAKPOINT;
     }
+
+    // ── Mobile: Open Sidebar ─────────────────────────────
+    function openMobileSidebar() {
+        sidebar.classList.add('open');
+
+        if (overlay) {
+            overlay.classList.add('open');
+        }
+
+        document.body.style.overflow = 'hidden';
+        toggleBtn.setAttribute('aria-expanded', 'true');
+    }
+
+    // ── Mobile: Close Sidebar ────────────────────────────
+    function closeMobileSidebar() {
+        sidebar.classList.remove('open');
+
+        if (overlay) {
+            overlay.classList.remove('open');
+        }
+
+        document.body.style.overflow = '';
+        toggleBtn.setAttribute('aria-expanded', 'false');
+    }
+
+    // ── Desktop: Collapse Sidebar ────────────────────────
+    function collapseDesktopSidebar() {
+        sidebar.classList.add('collapsed');
+
+        if (mainContent) {
+            mainContent.classList.add('sidebar-collapsed');
+        }
+
+        toggleBtn.setAttribute('aria-expanded', 'false');
+
+        // Save state
+        localStorage.setItem('shikhsa-sidebar-collapsed', 'true');
+    }
+
+    // ── Desktop: Expand Sidebar ──────────────────────────
+    function expandDesktopSidebar() {
+        sidebar.classList.remove('collapsed');
+
+        if (mainContent) {
+            mainContent.classList.remove('sidebar-collapsed');
+        }
+
+        toggleBtn.setAttribute('aria-expanded', 'true');
+
+        // Save state
+        localStorage.setItem('shikhsa-sidebar-collapsed', 'false');
+    }
+
+    // ── Toggle Button ─────────────────────────────────────
+    toggleBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (isMobile()) {
+
+            // Mobile
+            if (sidebar.classList.contains('open')) {
+                closeMobileSidebar();
+            } else {
+                openMobileSidebar();
+            }
+
+        } else {
+
+            // Desktop
+            if (sidebar.classList.contains('collapsed')) {
+                expandDesktopSidebar();
+            } else {
+                collapseDesktopSidebar();
+            }
+
+        }
+    });
+
+    // ── Overlay Click ─────────────────────────────────────
+    overlay?.addEventListener('click', function () {
+        if (isMobile()) {
+            closeMobileSidebar();
+        }
+    });
+
+    // ── ESC Key ───────────────────────────────────────────
+    document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+
+        if (isMobile()) {
+            closeMobileSidebar();
+        }
+    });
+
+    // ── Restore Desktop State ─────────────────────────────
+    if (!isMobile()) {
+        const collapsed =
+            localStorage.getItem('shikhsa-sidebar-collapsed') === 'true';
+
+        if (collapsed) {
+            collapseDesktopSidebar();
+        }
+    }
+
+    // ── Resize Handler ────────────────────────────────────
+    window.addEventListener('resize', function () {
+
+        if (isMobile()) {
+
+            // Desktop state must not affect mobile
+            sidebar.classList.remove('collapsed');
+
+            if (mainContent) {
+                mainContent.classList.remove('sidebar-collapsed');
+            }
+
+            // Don't leave desktop overflow locked
+            document.body.style.overflow = '';
+
+        } else {
+
+            // Going back to desktop
+            closeMobileSidebar();
+
+            const collapsed =
+                localStorage.getItem('shikhsa-sidebar-collapsed') === 'true';
+
+            if (collapsed) {
+                collapseDesktopSidebar();
+            } else {
+                expandDesktopSidebar();
+            }
+        }
+    });
+}
+    // ── Submenu Accordion ──────────────────────────────────
+    // function initSubmenus() {
+    //     document.querySelectorAll('.nav-link[data-submenu]').forEach(link => {
+    //         link.addEventListener('click', function (e) {
+    //             e.preventDefault();
+    //             const targetId = this.dataset.submenu;
+    //             const submenu  = document.getElementById(targetId);
+    //             const arrow    = this.querySelector('.nav-arrow');
+    //             if (!submenu) return;
+
+    //             const isOpen = submenu.classList.contains('open');
+
+    //             // Close all others
+    //             document.querySelectorAll('.nav-submenu.open').forEach(sm => {
+    //                 sm.classList.remove('open');
+    //             });
+    //             document.querySelectorAll('.nav-arrow').forEach(a => {
+    //                 a.style.transform = '';
+    //             });
+
+    //             if (!isOpen) {
+    //                 submenu.classList.add('open');
+    //                 if (arrow) arrow.style.transform = 'rotate(90deg)';
+    //             }
+    //         });
+    //     });
+
+    //     // Auto-open active submenu on page load
+    //     document.querySelectorAll('.nav-submenu .nav-link.active').forEach(link => {
+    //         const submenu = link.closest('.nav-submenu');
+    //         if (submenu) {
+    //             submenu.classList.add('open');
+    //             const parentLink = document.querySelector(`[data-submenu="${submenu.id}"]`);
+    //             const arrow = parentLink?.querySelector('.nav-arrow');
+    //             if (arrow) arrow.style.transform = 'rotate(90deg)';
+    //         }
+    //     });
+    // }
 
     // ── Submenu Accordion ──────────────────────────────────
-    function initSubmenus() {
-        document.querySelectorAll('.nav-link[data-submenu]').forEach(link => {
-            link.addEventListener('click', function (e) {
-                e.preventDefault();
-                const targetId = this.dataset.submenu;
-                const submenu  = document.getElementById(targetId);
-                const arrow    = this.querySelector('.nav-arrow');
-                if (!submenu) return;
+function initSubmenus() {
 
-                const isOpen = submenu.classList.contains('open');
+    document.querySelectorAll('.nav-link[data-submenu]').forEach(link => {
 
-                // Close all others
-                document.querySelectorAll('.nav-submenu.open').forEach(sm => {
-                    sm.classList.remove('open');
-                });
-                document.querySelectorAll('.nav-arrow').forEach(a => {
-                    a.style.transform = '';
-                });
+        link.addEventListener('click', function (e) {
 
-                if (!isOpen) {
-                    submenu.classList.add('open');
-                    if (arrow) arrow.style.transform = 'rotate(90deg)';
-                }
+            e.preventDefault();
+            e.stopPropagation();
+
+            const targetId = this.dataset.submenu;
+            const submenu = document.getElementById(targetId);
+            const arrow = this.querySelector('.nav-arrow');
+
+            if (!submenu) return;
+
+            const isOpen = submenu.classList.contains('open');
+
+            // Close ALL submenus
+            document.querySelectorAll('.nav-submenu.open').forEach(sm => {
+                sm.classList.remove('open');
             });
-        });
 
-        // Auto-open active submenu on page load
-        document.querySelectorAll('.nav-submenu .nav-link.active').forEach(link => {
-            const submenu = link.closest('.nav-submenu');
-            if (submenu) {
+            // Reset ALL arrows
+            document.querySelectorAll('.nav-arrow').forEach(a => {
+                a.style.transform = '';
+            });
+
+            // Reset aria-expanded
+            document.querySelectorAll('.nav-link[data-submenu]').forEach(parent => {
+                parent.setAttribute('aria-expanded', 'false');
+            });
+
+            // If current submenu was closed, open it
+            if (!isOpen) {
+
                 submenu.classList.add('open');
-                const parentLink = document.querySelector(`[data-submenu="${submenu.id}"]`);
-                const arrow = parentLink?.querySelector('.nav-arrow');
-                if (arrow) arrow.style.transform = 'rotate(90deg)';
+
+                this.setAttribute('aria-expanded', 'true');
+
+                if (arrow) {
+                    arrow.style.transform = 'rotate(90deg)';
+                }
             }
         });
-    }
+    });
+
+}
 
     // ── Password Toggle ────────────────────────────────────
     function initPasswordToggle() {

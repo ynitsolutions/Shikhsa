@@ -107,12 +107,17 @@
                             <li class="nav-item">
                                 @if (hasChildren)
                                 {
-                                    <a class="nav-link @(isParentActive ? "active" : "")" href="#" data-submenu="@menuId"
-                                       aria-expanded="@(isParentActive ? "true" : "false")">
+                                   @*  <a class="nav-link @(isParentActive ? "active" : "")" href="#" data-submenu="@menuId"
+                                       aria-expanded="@(isParentActive ? "true" : "false")"> *@
+                                       <a class="nav-link @(isParentActive ? "active" : "")"
+                                           href="#"
+                                           data-submenu="@menuId"
+                                           aria-expanded="false">
                                         <i class="ti @(menu.Icon ?? "ti-circle")"></i><span>@menu.Name</span>
                                         <i class="ti ti-chevron-right nav-arrow" style="@(isParentActive ? "transform:rotate(90deg)" : "")"></i>
                                     </a>
-                                    <ul id="@menuId" class="nav-submenu @(isParentActive ? "open" : "")">
+                                    @* <ul id="@menuId" class="nav-submenu @(isParentActive ? "open" : "")"> *@
+                                    <ul id="@menuId" class="nav-submenu">
                                         @foreach (var child in menu.Children)
                                         {
                                             var isChildActive = child.ControllerName != null && child.ActionName != null &&
@@ -167,7 +172,17 @@
                 <!-- Top Bar -->
                 <header class="topbar">
                     <div class="topbar-left">
-                        <button id="sidebarToggle" class="sidebar-toggle" aria-label="Toggle sidebar">
+                       @*  <button id="sidebarToggle" class="sidebar-toggle" aria-label="Toggle sidebar">
+                            <i class="ti ti-menu-2" aria-hidden="true"></i>
+                        </button> *@
+                       @*  <button id="sidebarToggle" class="sidebar-toggle" type="button" aria-label="Toggle sidebar" aria-expanded="true">
+                            <i class="ti ti-menu-2" aria-hidden="true"></i>
+                        </button> *@
+                        <button type="button"
+                                id="sidebarToggle"
+                                class="sidebar-toggle"
+                                aria-label="Toggle sidebar"
+                                aria-expanded="true">
                             <i class="ti ti-menu-2" aria-hidden="true"></i>
                         </button>
                         <div>
@@ -335,36 +350,7 @@
 
     </script>
 
-    <!-- Sidebar toggle -->
-    <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const sidebar = document.getElementById('sidebar');
-                const overlay = document.getElementById('sidebarOverlay');
-                const toggle = document.getElementById('sidebarToggle');
-                if (!sidebar || !overlay || !toggle) return;
-
-                function openSidebar() {
-                    sidebar.classList.add('open');
-                    overlay.classList.add('open');
-                    document.body.style.overflow = 'hidden';
-                }
-                function closeSidebar() {
-                    sidebar.classList.remove('open');
-                    overlay.classList.remove('open');
-                    document.body.style.overflow = '';
-                }
-                toggle.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    if (sidebar.classList.contains('open')) closeSidebar();
-                    else openSidebar();
-                });
-                overlay.addEventListener('click', closeSidebar);
-                // close on escape key
-                document.addEventListener('keydown', function(e) {
-                    if (e.key === 'Escape') closeSidebar();
-                });
-            });
-    </script>
+    
 
     <!-- Select2 & Flatpickr init (global) -->
     <script>
