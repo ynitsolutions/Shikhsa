@@ -408,7 +408,7 @@
             });
     </script>
     <!-- Global DataTable Initialization -->
-    <script>
+   @*  <script>
             $(document).ready(function () {
 
                 // Check whether DataTable plugin is available
@@ -442,6 +442,104 @@
                             infoEmpty: "Showing 0 to 0 of 0 entries",
                             zeroRecords: "No matching records found",
                             emptyTable: "No data available in table"
+                        },
+                        initComplete: function() {
+
+                            var api = this.api();
+
+                            var input = $(api.table().container())
+                                .find('.dataTables_filter input');
+
+                            input.attr({
+                                type: 'search',
+                                autocomplete: 'new-password',
+                                autocorrect: 'off',
+                                autocapitalize: 'none',
+                                spellcheck: 'false',
+                                inputmode: 'search',
+                                name: 'dt_search_' + Date.now()
+                            });
+
+                            input.val('');
+
+                            api.search('').draw();
+                        }
+                    });
+
+                });
+
+            });
+    </script> *@
+    <!-- Global DataTable Initialization -->
+    <script>
+            $(document).ready(function() {
+
+                if (!$.fn.DataTable) {
+                    return;
+                }
+
+                $('.datatable').each(function() {
+
+                    var table = this;
+
+                    // AJAX/DataTable pages will initialize themselves
+                    if ($(table).hasClass('ajax-datatable')) {
+                        return;
+                    }
+
+                    if ($.fn.DataTable.isDataTable(table)) {
+                        return;
+                    }
+
+                    $(table).DataTable({
+                        responsive: true,
+                        autoWidth: false,
+                        pageLength: 10,
+
+                        lengthMenu: [
+                            [10, 25, 50, 100, -1],
+                            [10, 25, 50, 100, "All"]
+                        ],
+
+                        language: {
+                            search: "Search:",
+                            lengthMenu: "Show _MENU_ entries",
+                            info: "Showing _START_ to _END_ of _TOTAL_ entries",
+                            infoEmpty: "Showing 0 to 0 of 0 entries",
+                            zeroRecords: "No matching records found",
+                            emptyTable: "No data available in table"
+                        },
+
+                        initComplete: function() {
+
+                            var api = this.api();
+
+                            var input = $(api.table().container())
+                                .find('.dataTables_filter input');
+
+                            /*
+                             * Chrome autofill protection
+                             */
+                            input.attr({
+                                type: 'search',
+                                autocomplete: 'off',
+                                autocorrect: 'off',
+                                autocapitalize: 'none',
+                                spellcheck: 'false',
+                                inputmode: 'search',
+                                'data-lpignore': 'true',
+                                'data-1p-ignore': 'true',
+                                'data-form-type': 'other'
+                            });
+
+                            input.removeAttr('name');
+                            input.removeAttr('id');
+
+                            /*
+                             * Always start with empty DataTable search
+                             */
+                            input.val('');
+                            api.search('');
                         }
                     });
 

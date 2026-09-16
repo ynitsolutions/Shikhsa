@@ -678,8 +678,8 @@ namespace Shikhsa.Controllers
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 $"StudentReport_{DateTime.Now:yyyyMMddHHmmss}.xlsx");
         }
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+       // [HttpPost]
+       // [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteStudentRegistrations(long id)
         {
             var student = await _context.Tbl_StudentsRegistrations
