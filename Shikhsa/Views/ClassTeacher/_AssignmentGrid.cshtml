@@ -68,7 +68,7 @@
 
                                     <td>
 
-                                        <select multiple class="form-select subjectSelect select2">
+                                        <select multiple class="form-control subjectSelect select2">
 
                                             @foreach (var sub in teacher.Subjects)
                                             {
@@ -94,7 +94,7 @@
                                         <button type="button"
                                                 class="btn btn-danger btn-sm btnDelete">
 
-                                            <i class="bi bi-trash"></i>
+                                            <i class="fa fa-trash"></i>
 
                                         </button>
                                         </permission></td>
@@ -111,9 +111,9 @@
                             class="btn btn-success btn-sm btnAddTeacher"
                             data-class="@cls.ClassId">
 
-                        <i class="bi bi-plus-circle"></i>
+                        <i class="fa fa-plus-circle"></i>
 
-                        Add Teacher
+                        @Localizer.Get("Add Teacher")
 
                     </button>
 

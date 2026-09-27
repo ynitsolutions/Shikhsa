@@ -1,142 +1,1050 @@
-﻿@model List<Shikhsa.Models.Certificate.CertificateTemplate>
+﻿@model Shikhsa.Models.Certificate.CertificateTemplate
 @{
-    ViewData["Title"] = @Localizer.Get("Certificate Templates");
-    var types = ViewBag.CertificateTypes as List<Shikhsa.Models.Certificate.CertificateTypeMaster> ?? new();
+    bool isEdit = Model.CertificateTemplateId != 0;
+    ViewData["Title"] = isEdit ? "Edit Certificate Template" : "New Certificate Template";
+
+    var certificateTypes = ViewBag.CertificateTypes as List<Shikhsa.Models.Certificate.CertificateTypeMaster> ?? new();
+    var categories = ViewBag.Categories as List<Shikhsa.Models.Notification.NotificationCategory> ?? new();
+    var placeholders = ViewBag.Placeholders as List<Shikhsa.Models.Notification.NotificationPlaceholder> ?? new();
+    var selectedCategories = ViewBag.SelectedCategories as List<long> ?? new();
+
+    var placeholderGroups = placeholders
+        .GroupBy(p => p.NotificationCategory.CategoryName)
+        .OrderBy(g => g.First().NotificationCategory.DisplayOrder)
+        .ToList();
 }
 
-<div class="container-fluid py-3">
-    <div class="card shadow-sm">
+@* <link href="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.snow.min.css" rel="stylesheet" /> *@
 
-        <div class="card-header bg-dark text-white d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2">
-            <h5 class="mb-0">@Localizer.Get("Certificate Templates")</h5>
+<div class="tpl-page">
+    <div class="tpl-header">Certificate Template</div>
 
-            <a asp-controller="CertificateType" asp-action="CertificateType"
-               class="btn btn-outline-light btn-sm">
-                @Localizer.Get("Manage Certificate Types") &rarr;
-            </a>
+    <form method="post" asp-action="SaveCertificateTemplate" id="tplForm">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="CertificateTemplateId" value="@Model.CertificateTemplateId" />
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="tpl-alert tpl-alert--error">@TempData["Error"]</div>
+        }
+
+        <div class="tpl-row">
+            <div class="tpl-field">
+                <label>Template Name</label>
+                <input type="text" name="TemplateName" value="@Model.TemplateName" required placeholder="e.g. Bonafide Certificate - Standard" />
+            </div>
+            <div class="tpl-field">
+                <label>Template Code</label>
+                <input type="text" name="TemplateCode" value="@Model.TemplateCode" required placeholder="e.g. BONAFIDE_STANDARD" />
+            </div>
         </div>
 
-        <div class="card-body">
-
-            @if (TempData["Success"] != null)
-            {
-                <div class="alert alert-success py-2">@TempData["Success"]</div>
-            }
-            @if (TempData["Error"] != null)
-            {
-                <div class="alert alert-danger py-2">@TempData["Error"]</div>
-            }
-
-            <!-- Quick-create buttons -->
-            <div class="d-flex flex-wrap gap-2 mb-3">
-                @foreach (var t in types)
+        <div class="tpl-row">
+            <div class="tpl-field">
+                <label>Certificate Type</label>
+                <select name="CertificateTypeId" required>
+                    <option value="">--Select Certificate Type--</option>
+                    @foreach (var t in certificateTypes)
+                    {
+                        <option value="@t.CertificateTypeId" selected="@(Model.CertificateTypeId == t.CertificateTypeId ? "selected" : null)">
+                            @t.TypeName (@t.AppliesTo)
+                        </option>
+                    }
+                </select>
+                @if (!certificateTypes.Any())
                 {
-                    <a asp-action="SaveCertificateTemplate" asp-route-typeId="@t.CertificateTypeId"
-                       class="btn btn-outline-primary btn-sm">
-                        + @t.TypeName
-                    </a>
-                }
-                @if (!types.Any())
-                {
-                    <span class="small text-muted">
-                        @Localizer.Get("Create a Certificate Type first:")
-                        <a asp-controller="CertificateType" asp-action="SaveCertificateType">
-                            @Localizer.Get("New Certificate Type")
-                        </a>
-                    </span>
+                    <p style="font-size:12px;color:#dc2626;margin-top:4px;">
+                        Koi certificate type nahi mila.
+                        <a asp-controller="CertificateType" asp-action="SaveCertificateType">Pehle ek type banao</a>
+                        (e.g. Bonafide Certificate, Migration Certificate, Internship Certificate,
+                        Attendance Certificate, Staff Experience Certificate).
+                    </p>
                 }
             </div>
-
-            <div class="table-responsive">
-                <table class="table table-bordered table-hover align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th>@Localizer.Get("Template Name")</th>
-                            <th>@Localizer.Get("Code")</th>
-                            <th>@Localizer.Get("Type")</th>
-                            <th class="text-nowrap" style="width:220px;">@Localizer.Get("Actions")</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @if (Model.Count == 0)
+            <div class="tpl-field">
+                <label>Categories</label>
+                <div class="chip-input" id="categoryInput">
+                    <div class="chips" id="chipsContainer"></div>
+                    <select id="categoryPicker">
+                        <option value="">+ Add category...</option>
+                        @foreach (var c in categories)
                         {
-                            <tr>
-                                <td colspan="4" class="text-center text-muted py-4">
-                                    @Localizer.Get("No templates yet.")
-                                </td>
-                            </tr>
+                            <option value="@c.NotificationCategoryId">@c.CategoryName</option>
                         }
-                        else
-                        {
-                            foreach (var t in Model)
+                    </select>
+                </div>
+                <div id="categoryHiddenInputs"></div>
+            </div>
+        </div>
+
+        <div class="tpl-body-heading">Template Body</div>
+
+        <div class="tpl-body-grid">
+            @* ---------- LEFT: Available Placeholders (live from NotificationPlaceholder) ---------- *@
+            <div class="ph-panel">
+                <div class="ph-panel__title">Available Placeholders</div>
+                <input type="text" id="phSearch" class="ph-search" placeholder="Search Placeholder..." />
+
+                <div class="ph-tabs" id="phTabs">
+                    @for (int i = 0; i < placeholderGroups.Count; i++)
+                    {
+                        <button type="button" class="ph-tab @(i == 0 ? "active" : "")" data-group="@placeholderGroups[i].Key">@placeholderGroups[i].Key</button>
+                    }
+                </div>
+
+                <div class="ph-list" id="phList">
+                    @for (int i = 0; i < placeholderGroups.Count; i++)
+                    {
+                        var group = placeholderGroups[i];
+                        <div class="ph-group" data-group="@group.Key" style="@(i == 0 ? "" : "display:none;")">
+                            @foreach (var item in group)
                             {
-                                <tr>
-                                    <td>@t.TemplateName</td>
-                                    <td><code>@t.TemplateCode</code></td>
-                                    <td>
-                                        @t.CertificateType?.TypeName
-                                        <span class="text-muted">(@t.CertificateType?.AppliesTo)</span>
-                                    </td>
-                                    <td class="text-nowrap">
-                                        <a asp-action="SaveCertificateTemplate"
-                                           asp-route-id="@t.CertificateTemplateId"
-                                           class="btn btn-warning btn-sm">
-                                            @Localizer.Get("Edit")
-                                        </a>
-
-                                        <a asp-controller="CertificateGenerate"
-                                           asp-action="DataEntry"
-                                           asp-route-templateId="@t.CertificateTemplateId"
-                                           class="btn btn-primary btn-sm">
-                                            @Localizer.Get("Generate")
-                                        </a>
-
-                                        <button type="button"
-                                                class="btn btn-danger btn-sm delete-btn"
-                                                data-id="@t.CertificateTemplateId">
-                                            @Localizer.Get("Delete")
-                                        </button>
-                                    </td>
-                                </tr>
+                                string token = $"{{{{{group.Key}.{item.PlaceholderCode}}}}}";
+                                <div class="ph-item" data-token="@token" data-label="@item.DisplayName" title="Click to insert">
+                                    <strong>@item.DisplayName</strong>
+                                    <span>@(group.Key + "." + item.PlaceholderCode)</span>
+                                </div>
                             }
-                        }
-                    </tbody>
-                </table>
+                        </div>
+                    }
+                    @if (!placeholderGroups.Any())
+                    {
+                        <p style="font-size:12px;color:#6b7280;">
+                            Koi placeholder nahi mila. Notification &gt; Placeholder screen se
+                            categories/placeholders add karo (e.g. category "Certificate" banao
+                            aur usme TotalWorkingDays, ReasonForLeaving jaise manual-entry
+                            fields, ya "Staff" category banao Experience Certificate ke liye).
+                        </p>
+                    }
+                </div>
             </div>
 
+            @* ---------- RIGHT: Rich text editor ---------- *@
+            <div class="editor-panel">
+                <div id="quillEditor"></div>
+                <textarea name="Body" id="bodyHtmlHidden" style="display:none;">@Model.Body</textarea>
+            </div>
         </div>
-    </div>
+
+        <div class="tpl-actions">
+            <button type="submit" class="btn btn--primary">Save Template</button>
+            <a asp-action="CertificateTemplate" class="btn btn--ghost">Cancel</a>
+        </div>
+    </form>
 </div>
 
-<form id="tokenForm" style="display:none;">@Html.AntiForgeryToken()</form>
+<style>
+    .tpl-page { max-width:1200px; margin:24px auto; font-family:'Segoe UI', Arial, sans-serif; }
+    .tpl-header { background:#2563eb; color:#fff; font-weight:600; padding:14px 18px; border-radius:8px 8px 0 0; font-size:16px; }
+    #tplForm { border:1px solid #e5e7eb; border-top:none; border-radius:0 0 8px 8px; padding:24px; background:#fff; }
+    .tpl-alert { padding:10px 14px; border-radius:6px; margin-bottom:16px; font-size:13px; }
+    .tpl-alert--error { background:#fef2f2; color:#b91c1c; border:1px solid #fecaca; }
 
-@section Scripts {
-        <partial name="_ValidationScriptsPartial" />
-    <script>
-        document.querySelectorAll('.delete-btn').forEach(btn => {
-            btn.addEventListener('click', async () => {
-                if (!confirm('@Localizer.Get("Delete this template?")')) return;
+    .tpl-row { display:flex; gap:24px; margin-bottom:18px; }
+    .tpl-field { flex:1; }
+    .tpl-field label { display:block; font-size:13px; color:#374151; margin-bottom:6px; font-weight:500; }
+    .tpl-field input[type="text"], .tpl-field select {
+        width:100%; padding:9px 12px; border:1px solid #d1d5db; border-radius:6px; font-size:14px; background:#f8f8fc;
+    }
 
-                const res = await fetch('@Url.Action("Delete")/' + btn.dataset.id, {
-                    method: 'POST',
-                    headers: {
-                        'RequestVerificationToken':
-                            document.querySelector('#tokenForm input[name="__RequestVerificationToken"]')?.value || ''
+    .chip-input { border:1px solid #d1d5db; border-radius:6px; padding:6px 8px; display:flex; flex-wrap:wrap; gap:6px; align-items:center; background:#f8f8fc; }
+    .chips { display:flex; flex-wrap:wrap; gap:6px; }
+    .chip { background:#eef0f3; border-radius:5px; padding:4px 8px; font-size:12px; display:flex; align-items:center; gap:6px; }
+    .chip button { border:none; background:none; cursor:pointer; color:#6b7280; font-size:12px; }
+    #categoryPicker { border:none; outline:none; flex:1; min-width:120px; padding:4px; background:transparent; font-size:13px; }
+
+    .tpl-body-heading { font-weight:600; font-size:14px; margin:10px 0 12px; }
+    .tpl-body-grid { display:flex; gap:16px; align-items:flex-start; }
+
+    .ph-panel { flex:0 0 270px; border:1px solid #e5e7eb; border-radius:8px; padding:14px; background:#fafafa; max-height:520px; overflow-y:auto; }
+    .ph-panel__title { background:#2563eb; color:#fff; font-size:13px; font-weight:600; padding:8px 10px; border-radius:6px; margin-bottom:10px; }
+    .ph-search { width:100%; padding:7px 10px; border:1px solid #d1d5db; border-radius:6px; font-size:12px; margin-bottom:10px; }
+    .ph-tabs { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
+    .ph-tab { border:none; background:#eef0f3; color:#374151; font-size:11px; padding:5px 9px; border-radius:5px; cursor:pointer; }
+    .ph-tab.active { background:#2563eb; color:#fff; }
+    .ph-item { padding:8px 6px; border-bottom:1px solid #eee; cursor:pointer; font-size:12px; }
+    .ph-item:hover { background:#eef2ff; }
+    .ph-item strong { display:block; color:#111827; }
+    .ph-item span { color:#6b7280; font-family:monospace; font-size:11px; }
+
+    .editor-panel { flex:1; border:1px solid #e5e7eb; border-radius:8px; overflow:hidden; }
+    #quillEditor { min-height:420px; background:#fff; font-size:14px; }
+
+    .tpl-actions { margin-top:20px; display:flex; gap:10px; }
+    .btn { padding:10px 20px; border-radius:8px; font-size:14px; cursor:pointer; text-decoration:none; display:inline-block; }
+    .btn--primary { background:#2563eb; color:#fff; border:none; }
+    .btn--primary:hover { background:#1d4ed8; }
+    .btn--ghost { background:#f3f4f6; color:#374151; }
+</style>
+
+  @*   <script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/classic/ckeditor.js"></script>
+<script>
+    // ---------- Rich text editor ----------
+    // const quill = new Quill('#quillEditor', {
+    //     theme: 'snow',
+    //     modules: {
+    //         toolbar: [
+    //             ['bold', 'italic', 'underline'],
+    //             [{ header: [1, 2, 3, false] }],
+    //             ['link', 'image'],
+    //             [{ list: 'ordered' }, { list: 'bullet' }],
+    //             [{ indent: '-1' }, { indent: '+1' }],
+    //             ['blockquote'],
+    //             ['clean']
+    //         ]
+    //     }
+    // });
+
+    const bodyHidden = document.getElementById('bodyHtmlHidden');
+    quill.root.innerHTML = bodyHidden.value || '';
+
+    document.getElementById('tplForm').addEventListener('submit', () => {
+        bodyHidden.value = quill.root.innerHTML;
+    });
+
+    // ---------- Placeholder sidebar: tabs + search + click-to-insert ----------
+    const phTabs = document.querySelectorAll('.ph-tab');
+    const phGroups = document.querySelectorAll('.ph-group');
+    phTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            phTabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            const group = tab.dataset.group;
+            phGroups.forEach(g => g.style.display = (g.dataset.group === group) ? '' : 'none');
+        });
+    });
+
+    document.getElementById('phSearch')?.addEventListener('input', (e) => {
+        const q = e.target.value.toLowerCase().trim();
+        if (q.length === 0) {
+            phTabs[0]?.click();
+            return;
+        }
+        phGroups.forEach(g => g.style.display = '');
+        document.querySelectorAll('.ph-item').forEach(item => {
+            const match = item.dataset.label.toLowerCase().includes(q) || item.dataset.token.toLowerCase().includes(q);
+            item.style.display = match ? '' : 'none';
+        });
+    });
+
+    document.querySelectorAll('.ph-item').forEach(item => {
+        item.addEventListener('click', () => {
+            const range = quill.getSelection(true) || { index: quill.getLength(), length: 0 };
+            quill.insertText(range.index, item.dataset.token, 'user');
+            quill.setSelection(range.index + item.dataset.token.length, 0);
+        });
+    });
+
+    // ---------- Categories multi-select -> chips ----------
+    const chipsContainer = document.getElementById('chipsContainer');
+    const categoryPicker = document.getElementById('categoryPicker');
+    const hiddenInputsContainer = document.getElementById('categoryHiddenInputs');
+    let selected = @Html.Raw(Json.Serialize(selectedCategories));
+    const categoryNames = @Html.Raw(Json.Serialize(categories.ToDictionary(c => c.NotificationCategoryId, c => c.CategoryName)));
+
+    function renderChips() {
+        chipsContainer.innerHTML = '';
+        hiddenInputsContainer.innerHTML = '';
+        selected.forEach(id => {
+            const chip = document.createElement('div');
+            chip.className = 'chip';
+            chip.innerHTML = `<span>${categoryNames[id] ?? id}</span><button type="button">✕</button>`;
+            chip.querySelector('button').addEventListener('click', () => {
+                selected = selected.filter(x => x !== id);
+                renderChips();
+            });
+            chipsContainer.appendChild(chip);
+
+            const hidden = document.createElement('input');
+            hidden.type = 'hidden';
+            hidden.name = 'categoryIds';
+            hidden.value = id;
+            hiddenInputsContainer.appendChild(hidden);
+        });
+    }
+
+    categoryPicker.addEventListener('change', () => {
+        const id = parseInt(categoryPicker.value, 10);
+        if (id && !selected.includes(id)) {
+            selected.push(id);
+            renderChips();
+        }
+        categoryPicker.value = '';
+    });
+
+    renderChips();
+</script> *@
+<script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/classic/ckeditor.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        /* =========================================================
+           CKEDITOR
+           ========================================================= */
+
+        let editor = null;
+
+        const editorElement =
+            document.querySelector('#quillEditor');
+
+        const bodyHidden =
+            document.querySelector('#bodyHtmlHidden');
+
+        if (editorElement && bodyHidden) {
+
+            ClassicEditor
+                .create(editorElement, {
+                    toolbar: [
+                        'heading',
+                        '|',
+                        'bold',
+                        'italic',
+                        'underline',
+                        'strikethrough',
+                        '|',
+                        'fontSize',
+                        'fontFamily',
+                        '|',
+                        'fontColor',
+                        'fontBackgroundColor',
+                        '|',
+                        'alignment',
+                        '|',
+                        'bulletedList',
+                        'numberedList',
+                        '|',
+                        'outdent',
+                        'indent',
+                        '|',
+                        'link',
+                        'blockQuote',
+                        'insertTable',
+                        '|',
+                        'undo',
+                        'redo'
+                    ],
+
+                    heading: {
+                        options: [
+                            {
+                                model: 'paragraph',
+                                title: 'Paragraph',
+                                class: 'ck-heading_paragraph'
+                            },
+                            {
+                                model: 'heading1',
+                                view: 'h1',
+                                title: 'Heading 1',
+                                class: 'ck-heading_heading1'
+                            },
+                            {
+                                model: 'heading2',
+                                view: 'h2',
+                                title: 'Heading 2',
+                                class: 'ck-heading_heading2'
+                            },
+                            {
+                                model: 'heading3',
+                                view: 'h3',
+                                title: 'Heading 3',
+                                class: 'ck-heading_heading3'
+                            }
+                        ]
                     }
+                })
+                .then(function (createdEditor) {
+
+                    editor = createdEditor;
+
+                    /*
+                     * Load existing HTML when editing
+                     */
+                    editor.setData(bodyHidden.value || '');
+
+                    console.log('CKEditor initialized successfully.');
+                })
+                .catch(function (error) {
+
+                    console.error(
+                        'CKEditor initialization failed:',
+                        error
+                    );
+                });
+        }
+
+
+        /* =========================================================
+           FORM SUBMIT
+           ========================================================= */
+
+        const form =
+            document.getElementById('tplForm');
+
+        if (form) {
+
+            form.addEventListener('submit', function () {
+
+                /*
+                 * Copy CKEditor HTML into hidden textarea
+                 * before MVC form submission.
+                 */
+                if (editor && bodyHidden) {
+
+                    bodyHidden.value =
+                        editor.getData();
+                }
+
+                console.log(
+                    'Certificate template body:',
+                    bodyHidden ? bodyHidden.value : ''
+                );
+            });
+        }
+
+
+        /* =========================================================
+           PLACEHOLDER TABS
+           ========================================================= */
+
+        const phTabs =
+            document.querySelectorAll('.ph-tab');
+
+        const phGroups =
+            document.querySelectorAll('.ph-group');
+
+
+        phTabs.forEach(function (tab) {
+
+            tab.addEventListener('click', function () {
+
+                /*
+                 * Remove active class
+                 * from all tabs.
+                 */
+                phTabs.forEach(function (item) {
+
+                    item.classList.remove('active');
+
                 });
 
-                if (res.ok) {
-                    window.location.reload();
-                } else {
-                    Swal.fire({
-                            icon: 'error',
-                            title: '@Localizer.Get("Error")',
-                            text: res.message || '@Localizer.Get("Something went wrong.")',
-                            confirmButtonText: 'OK'
-                        });
-                   // alert('@Localizer.Get("Error while deleting.")');
-                }
+
+                /*
+                 * Activate clicked tab.
+                 */
+                tab.classList.add('active');
+
+
+                const group =
+                    tab.dataset.group;
+
+
+                /*
+                 * Show only selected group.
+                 */
+                phGroups.forEach(function (groupElement) {
+
+                    if (groupElement.dataset.group === group) {
+
+                        groupElement.style.display = '';
+
+                    }
+                    else {
+
+                        groupElement.style.display = 'none';
+
+                    }
+
+                });
+
             });
+
         });
-    </script>
-}
+
+
+        /* =========================================================
+           PLACEHOLDER SEARCH
+           ========================================================= */
+
+        const phSearch =
+            document.getElementById('phSearch');
+
+
+        if (phSearch) {
+
+            phSearch.addEventListener('input', function (event) {
+
+                const searchText =
+                    event.target.value
+                        .toLowerCase()
+                        .trim();
+
+
+                /*
+                 * Empty search:
+                 * show first category only.
+                 */
+                if (searchText.length === 0) {
+
+                    phGroups.forEach(function (group, index) {
+
+                        group.style.display =
+                            index === 0 ? '' : 'none';
+
+                    });
+
+
+                    phTabs.forEach(function (tab, index) {
+
+                        tab.classList.toggle(
+                            'active',
+                            index === 0
+                        );
+
+                    });
+
+                    return;
+                }
+
+
+                /*
+                 * Search all groups.
+                 */
+                phGroups.forEach(function (group) {
+
+                    group.style.display = '';
+
+                });
+
+
+                phTabs.forEach(function (tab) {
+
+                    tab.classList.remove('active');
+
+                });
+
+
+                /*
+                 * Search individual placeholders.
+                 */
+                document
+                    .querySelectorAll('.ph-item')
+                    .forEach(function (item) {
+
+                        const label =
+                            (
+                                item.dataset.label || ''
+                            ).toLowerCase();
+
+                        const token =
+                            (
+                                item.dataset.token || ''
+                            ).toLowerCase();
+
+                        const matched =
+                            label.includes(searchText) ||
+                            token.includes(searchText);
+
+                        item.style.display =
+                            matched ? '' : 'none';
+
+                    });
+
+            });
+
+        }
+
+
+        /* =========================================================
+           PLACEHOLDER CLICK -> CKEDITOR
+           ========================================================= */
+
+        document
+            .querySelectorAll('.ph-item')
+            .forEach(function (item) {
+
+                item.addEventListener('click', function () {
+
+                    if (!editor) {
+
+                        console.warn(
+                            'CKEditor is not initialized yet.'
+                        );
+
+                        return;
+                    }
+
+
+                    const token =
+                        item.dataset.token;
+
+
+                    if (!token) {
+                        return;
+                    }
+
+
+                    /*
+                     * Insert placeholder into CKEditor.
+                     */
+                    editor.model.change(function (writer) {
+
+                        editor.model.insertContent(
+                            writer.createText(token)
+                        );
+
+                    });
+
+
+                    /*
+                     * Put focus back into editor.
+                     */
+                    editor.editing.view.focus();
+
+                });
+
+            });
+
+
+        /* =========================================================
+           CATEGORY CHIP SYSTEM
+           ========================================================= */
+
+        const chipsContainer =
+            document.getElementById('chipsContainer');
+
+        const categoryPicker =
+            document.getElementById('categoryPicker');
+
+        const hiddenInputsContainer =
+            document.getElementById(
+                'categoryHiddenInputs'
+            );
+
+
+        /*
+         * Existing selected category IDs
+         * supplied by Razor.
+         */
+        let selected =
+            @Html.Raw(
+                Json.Serialize(selectedCategories)
+            );
+
+
+        /*
+         * Category ID -> Category Name
+         */
+        const categoryNames =
+            @Html.Raw(
+                Json.Serialize(
+                    categories.ToDictionary(
+                        c => c.NotificationCategoryId,
+                        c => c.CategoryName
+                    )
+                )
+            );
+
+
+        /*
+         * Make sure IDs are numbers.
+         */
+        selected =
+            selected.map(function (id) {
+
+                return Number(id);
+
+            });
+
+
+        /* =========================================================
+           RENDER CATEGORY CHIPS
+           ========================================================= */
+
+        function renderChips() {
+
+            if (!chipsContainer ||
+                !hiddenInputsContainer) {
+
+                return;
+            }
+
+
+            /*
+             * Clear existing chips.
+             */
+            chipsContainer.innerHTML = '';
+
+            /*
+             * Clear hidden inputs.
+             */
+            hiddenInputsContainer.innerHTML = '';
+
+
+            /*
+             * Create chip for every selected category.
+             */
+            selected.forEach(function (id) {
+
+                const chip =
+                    document.createElement('div');
+
+                chip.className = 'chip';
+
+
+                const name =
+                    categoryNames[id] || id;
+
+
+                chip.innerHTML = `
+                    <span>${escapeHtml(name)}</span>
+                    <button type="button"
+                            class="remove-category"
+                            title="Remove">
+                        ✕
+                    </button>
+                `;
+
+
+                /*
+                 * Remove category.
+                 */
+                const removeButton =
+                    chip.querySelector(
+                        '.remove-category'
+                    );
+
+
+                removeButton.addEventListener(
+                    'click',
+                    function () {
+
+                        selected =
+                            selected.filter(
+                                function (x) {
+                                    return x !== id;
+                                }
+                            );
+
+                        renderChips();
+
+                    }
+                );
+
+
+                chipsContainer.appendChild(chip);
+
+
+                /*
+                 * Hidden MVC input.
+                 *
+                 * POST:
+                 *
+                 * categoryIds=1
+                 * categoryIds=2
+                 * categoryIds=5
+                 */
+                const hidden =
+                    document.createElement('input');
+
+                hidden.type = 'hidden';
+
+                hidden.name = 'categoryIds';
+
+                hidden.value = id;
+
+
+                hiddenInputsContainer
+                    .appendChild(hidden);
+
+            });
+
+        }
+
+
+        /* =========================================================
+           ADD CATEGORY
+           ========================================================= */
+
+        if (categoryPicker) {
+
+            categoryPicker.addEventListener(
+                'change',
+                function () {
+
+                    const id =
+                        parseInt(
+                            categoryPicker.value,
+                            10
+                        );
+
+
+                    /*
+                     * Ignore invalid value.
+                     */
+                    if (!id) {
+
+                        categoryPicker.value = '';
+
+                        return;
+                    }
+
+
+                    /*
+                     * Prevent duplicate category.
+                     */
+                    if (!selected.includes(id)) {
+
+                        selected.push(id);
+
+                        renderChips();
+
+                    }
+
+
+                    /*
+                     * Reset dropdown.
+                     */
+                    categoryPicker.value = '';
+
+                }
+            );
+
+        }
+
+
+        /* =========================================================
+           ESCAPE HTML
+           ========================================================= */
+
+        function escapeHtml(value) {
+
+            if (value === null ||
+                value === undefined) {
+
+                return '';
+
+            }
+
+
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+
+        }
+
+
+        /* =========================================================
+           INITIAL CATEGORY RENDER
+           ========================================================= */
+
+        renderChips();
+
+
+        /* =========================================================
+           DELETE TEMPLATE
+           ========================================================= */
+
+        const deleteButtons =
+            document.querySelectorAll(
+                '.delete-btn'
+            );
+
+
+        deleteButtons.forEach(function (button) {
+
+            button.addEventListener(
+                'click',
+                async function () {
+
+                    const id =
+                        button.dataset.id;
+
+
+                    if (!id) {
+
+                        console.error(
+                            'CertificateTemplateId missing.'
+                        );
+
+                        return;
+
+                    }
+
+
+                    /*
+                     * Confirmation.
+                     */
+                    const confirmed =
+                        confirm(
+                            'Delete this certificate template?'
+                        );
+
+
+                    if (!confirmed) {
+                        return;
+                    }
+
+
+                    /*
+                     * Get Anti-Forgery token.
+                     */
+                    const tokenInput =
+                        document.querySelector(
+                            '#tokenForm input[name="__RequestVerificationToken"]'
+                        );
+
+
+                    const token =
+                        tokenInput
+                            ? tokenInput.value
+                            : '';
+
+
+                    try {
+
+                        const response =
+                            await fetch(
+                                '@Url.Action("Delete", "CertificateTemplate")/' + id,
+                                {
+                                    method: 'POST',
+
+                                    headers: {
+                                        'RequestVerificationToken':
+                                            token
+                                    }
+                                }
+                            );
+
+
+                        if (response.ok) {
+
+                            /*
+                             * Refresh page after delete.
+                             */
+                            window.location.reload();
+
+                            return;
+                        }
+
+
+                        /*
+                         * Try to read server response.
+                         */
+                        let message =
+                            'Something went wrong while deleting.';
+
+
+                        try {
+
+                            const result =
+                                await response.json();
+
+                            if (result.message) {
+
+                                message =
+                                    result.message;
+
+                            }
+
+                        }
+                        catch (e) {
+                            // Response wasn't JSON.
+                        }
+
+
+                        if (typeof Swal !== 'undefined') {
+
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: message,
+                                confirmButtonText: 'OK'
+                            });
+
+                        }
+                        else {
+
+                            alert(message);
+
+                        }
+
+                    }
+                    catch (error) {
+
+                        console.error(
+                            'Delete error:',
+                            error
+                        );
+
+
+                        if (typeof Swal !== 'undefined') {
+
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text:
+                                    'Unable to delete the certificate template.',
+                                confirmButtonText: 'OK'
+                            });
+
+                        }
+                        else {
+
+                            alert(
+                                'Unable to delete the certificate template.'
+                            );
+
+                        }
+
+                    }
+
+                }
+            );
+
+        });
+
+
+        /* =========================================================
+           NEW TEMPLATE BUTTON / RESET
+           ========================================================= */
+
+        const newTemplateButtons =
+            document.querySelectorAll(
+                '[data-new-template]'
+            );
+
+
+        newTemplateButtons.forEach(function (button) {
+
+            button.addEventListener(
+                'click',
+                function () {
+
+                    /*
+                     * This is optional.
+                     * Your anchor normally handles this.
+                     */
+                    console.log(
+                        'Creating new certificate template.'
+                    );
+
+                }
+            );
+
+        });
+
+
+        /* =========================================================
+           DEBUG
+           ========================================================= */
+
+        console.log(
+            'Certificate Template page initialized.'
+        );
+
+    });
+</script>

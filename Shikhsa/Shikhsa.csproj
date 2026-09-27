@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <Compile Remove="Middlewares\PermissionMiddleware.cs" />
+    <Compile Remove="Sevices\ZohoApiClient.cs" />
   </ItemGroup>
 
 

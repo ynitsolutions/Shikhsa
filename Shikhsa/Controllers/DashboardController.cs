@@ -12,7 +12,7 @@ namespace Shikhsa.Controllers
 {
     [Authorize]
     public class DashboardController : Controller
-    {
+    {   
         private readonly ApplicationDbContext _db;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<ApplicationRole> _roleManager;

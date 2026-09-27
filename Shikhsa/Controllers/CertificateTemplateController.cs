@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Shikhsa.Data;
 using Shikhsa.DataBase.Repositry;
 using Shikhsa.Models.Certificate;
+using Shikhsa.ViewModels;
 
 namespace Shikhsa.Controllers
 {
@@ -52,6 +53,8 @@ namespace Shikhsa.Controllers
             await LoadLookupsAsync();
             return View(model);
         }
+
+
 
         // POST /CertificateTemplate/SaveCertificateTemplate
         [HttpPost]

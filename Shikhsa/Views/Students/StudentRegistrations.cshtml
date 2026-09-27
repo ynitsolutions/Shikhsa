@@ -214,9 +214,11 @@
                         <button type="submit" formaction="@Url.Action("ExportExcel")" class="btn btn-success btn-sm d-flex align-items-center gap-1">
                             <i class="ti ti-excel ti ti-download"></i> @Localizer.Get("Export")
                         </button>
-                        <a href="javascript:void(0);" class="btn btn-warning btn-sm d-flex align-items-center gap-1" id="btnBulkStatus">
-                            <i class="ti ti-reload"></i> @Localizer.Get("Bulk Status Update")
-                        </a>
+                         <permission controller="Students" action="StudentRegistrations" type="edit">
+                            <a href="javascript:void(0);" class="btn btn-warning btn-sm d-flex align-items-center gap-1" id="btnBulkStatus">
+                                <i class="ti ti-reload"></i> @Localizer.Get("Bulk Status Update")
+                            </a>
+                        </permission>
                     </div>
                 </div>
             </div>

@@ -109,9 +109,9 @@
             <button type="submit" asp-action="ExportAttendanceExcel" class="btn btn-success btn-sm d-flex align-items-center gap-1">
                 <i class="fa fa-file-excel"></i> @Localizer.Get("Export Excel")
             </button>
-            <permission controller="Attendance" action="StudentAttendance" type="create">
+            <permission controller="Attendance" action="StudentsAttendance" type="create">
                 <button type="submit" asp-action="StudentsAttendance" class="btn btn-primary btn-sm d-flex align-items-center gap-1">
-                    <i class="fa fa-save"></i> @Localizer.Get("Save") @Localizer.Get("Attendance")
+                    <i class="fa fa-save"></i> @Localizer.Get("Save Attendance")
                 </button>
             </permission>
         </div>

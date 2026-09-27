@@ -1164,7 +1164,7 @@ namespace Shikhsa.Controllers
             return View(model);
         }
         [HttpPost]
-        public async Task<IActionResult> PromoteStudents(StudentStatusUpdateVM model)
+        public async Task<IActionResult> StudentPromotions(StudentStatusUpdateVM model)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
 
@@ -1175,11 +1175,11 @@ namespace Shikhsa.Controllers
 
                 var ids = model.StudentIds
                                .Split(',', StringSplitOptions.RemoveEmptyEntries)
-                               .Select(long.Parse)
+                              // .Select(long.Parse)
                                .ToList();
 
                 var students = await _context.Tbl_Students
-                                             .Where(x => ids.Contains(x.StudentRegisterId))
+                                             .Where(x => ids.Contains(x.ApplicationNo))
                                              .ToListAsync();
 
                 if (!students.Any())

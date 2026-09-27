@@ -161,7 +161,7 @@
         // Single student promote (from the table action button)
         $(".btnStatus").click(function() {
             var studentId = $(this).data("studentid");
-            $("#StudentIds").val(studentId);
+            $("#StudentIds").val(studentId);console.log(studentId)
             var modal = new bootstrap.Modal(document.getElementById('statusModal'));
             modal.show();
         });
@@ -184,7 +184,7 @@
         // Save promotion
         $("#btnSaveStatus").click(function() {
             $.ajax({
-                url: '/Students/PromoteStudents',
+                url: '/Students/StudentPromotions',
                 type: 'POST',
                 data: {
                     StudentIds: $("#StudentIds").val(),
@@ -194,10 +194,10 @@
                 },
                 success: function(res) {
                     if (res.success) {
-                        alert("@Localizer.Get("Saved Successfully!")");
+                        ShowSuccess(res.message);
                         location.reload();
                     } else {
-                        alert(res.message);
+                        ShowError(res.message);
                     }
                 }
             });

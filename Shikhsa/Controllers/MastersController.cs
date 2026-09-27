@@ -1380,7 +1380,9 @@ namespace Shikhsa.Controllers
                             if (dbItem != null)
                             {
                                 dbItem.DataListItemText = item.DataListItemText;
-                                dbItem.IsActive = true;
+                                //dbItem.IsActive = true;
+                                dbItem.DisplayOrder = item.DisplayOrder;
+                                dbItem.IsActive = item.IsActive;
                                 dbItem.UpdatedBy = userName;
                                 dbItem.UpdatedDate = DateTime.Now;
                             }
