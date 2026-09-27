@@ -11,6 +11,7 @@ using Shikhsa.Models.Payment;
 using Shikhsa.Repositories;
 using Shikhsa.Repository;
 using Shikhsa.Services;
+//using Shikhsa.Services.Payment;
 using Shikhsa.Sevices;
 using StackExchange.Redis;
 
@@ -97,12 +98,24 @@ builder.Services.AddScoped<IRazorViewToStringRenderer, RazorViewToStringRenderer
 builder.Services.AddSingleton<PdfGeneratorService>();   // Singleton better hai — browser download check ek hi baar
 builder.Services.AddScoped<FeeReceiptRecordRepository>();
 builder.Services.AddScoped<AtomPaymentService>();
+builder.Services.AddScoped<ZohoPaymentService>();
 builder.Services.AddScoped<PaymentReconciliationService>();
 builder.Services.AddHostedService<PaymentReconciliationBackgroundService>();
 builder.Services.AddScoped<CertificateRepository>();
 builder.Services.AddScoped<CertificateTemplateRepository>();
 builder.Services.AddScoped<GeneratedCertificateRepository>();
 builder.Services.AddScoped<CertificateTypeRepository>();
+//builder.Services.Configure<ZohoOptions>(
+//    builder.Configuration.GetSection(ZohoOptions.SectionName));
+
+//builder.Services.AddHttpClient<ZohoApiClient>(client =>
+//{
+//    client.Timeout = TimeSpan.FromSeconds(30);
+//    client.DefaultRequestHeaders.Add("Accept", "application/json");
+//});
+
+//builder.Services.AddScoped<ZohoSignatureService>();
+//builder.Services.AddScoped<PaymentOrchestrator>();
 builder.Services.AddHttpClient();
 var app = builder.Build();
 

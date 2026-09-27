@@ -52,6 +52,14 @@
                 {
                     <th>@Localizer.Get("Aadhaar")</th>
                 }
+                @if (cols.Contains("Class"))
+                {
+                    <th>@Localizer.Get("Class")</th>
+                }
+                @if (cols.Contains("Section"))
+                {
+                    <th>@Localizer.Get("Section")</th>
+                }
                 <th style="min-width:120px;">@Localizer.Get("Action")</th>
             </tr>
         </thead>
@@ -104,6 +112,14 @@
                         {
                             <td>@item.AadhaarNumber</td>
                         }
+                         @if (cols.Contains("Class"))
+                        {
+                            <td>@item.ClassName </td>
+                        }
+                         @if (cols.Contains("Section"))
+                        {
+                            <td>@item.SectionName</td>
+                        }
                         <td>
                             <div class="d-flex flex-wrap gap-1">
                                 <permission controller="Students" action="StudentRegistrations" type="edit">
@@ -116,10 +132,12 @@
                                         <i class="ti ti-trash"></i>
                                     </a>
                                 </permission>
-                                <button type="button" class="btn btn-info btn-sm btnStatus" data-studentid="@item.StudentId" title="@Localizer.Get("Change Status")">
-                                    <i class="ti ti-reload"></i>
-                                </button>
-                            </div>
+                                 <permission controller="Students" action="StudentRegistrations" type="edit">
+                                    <button type="button" class="btn btn-info btn-sm btnStatus" data-studentid="@item.StudentId" title="@Localizer.Get("Change Status")">
+                                        <i class="ti ti-reload"></i>
+                                    </button>
+                                </permission>
+                             </div>
                         </td>
                     </tr>
                 }

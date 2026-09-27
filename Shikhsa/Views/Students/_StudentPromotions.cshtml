@@ -6,7 +6,7 @@
 }
 
 <div class="table-responsive">
-    <table class="table table-bordered table-striped align-middle" id="studentTable">
+    <table class="table table-bordered table-striped align-middle datatable" id="studentTable">
         <thead class="table-light">
             <tr>
                 <th style="width:40px;">
@@ -28,7 +28,7 @@
                 {
                     <tr>
                         <td>
-                            <input type="checkbox" class="student-checkbox" name="selectedStudents" value="@item.StudentId" />
+                            <input type="checkbox" class="student-checkbox" name="selectedStudents" value="@item.ApplicationNo" />
                         </td>
                         <td>@item.StudentName</td>
                         <td>@item.FatherName</td>
@@ -38,7 +38,7 @@
                         <td>@item.BatchName</td>
                         <td>
                             <div class="d-flex flex-wrap gap-1">
-                                <button type="button" class="btn btn-info btn-sm btnStatus" data-studentid="@item.StudentId" title="@Localizer.Get("Promote")">
+                                <button type="button" class="btn btn-info btn-sm btnStatus" data-studentid="@item.ApplicationNo" title="@Localizer.Get("Promote")">
                                     <i class="ti ti-reload"></i>
                                 </button>
                             </div>

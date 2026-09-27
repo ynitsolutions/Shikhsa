@@ -1,4 +1,4 @@
-@model Shikhsa.Controllers.AtomCheckoutVM
+@* @model Shikhsa.Controllers.AtomCheckoutVM
 @{
     ViewData["Title"] = "Online Fee Payment";
 }
@@ -31,5 +31,97 @@
         }
 
         new AtomPaynetz(options, '@Model.Environment');
+    });
+</script>
+ *@
+@model Shikhsa.Controllers.AtomCheckoutVM
+@{
+    ViewData["Title"] = "Online Fee Payment";
+}
+
+<div class="container py-5">
+    <div class="card shadow-sm mx-auto" style="max-width:520px;">
+        <div class="card-body text-center">
+            <h5 class="mb-3">Online Fee Payment</h5>
+            <div class="small text-muted mb-2">Transaction ID: @Model.MerchantTransactionId</div>
+            <div class="fs-4 fw-bold mb-4">₹@Model.Amount.ToString("N2")</div>
+
+            <div class="d-grid gap-2">
+                <!-- Atom Payment Button -->
+                <button type="button" class="btn btn-primary px-4 mb-2" id="payNowAtom">Pay with Atom (NTT Data)</button>
+
+                <!-- Zoho Payment Button -->
+                <button type="button" class="btn btn-outline-dark px-4" id="payNowZoho">Pay with Zoho Payments</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- =================--- Payment Gateway CDNs ---================= -->
+<!-- Atom Checkout CDN -->
+<script src="@Model.CheckoutCdn?v=@DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()"></script>
+
+<!-- Zoho Checkout CDN (Yahan dynamic CDN url backend class me add kar ke inject karein) -->
+<!-- Standard script typically looks like: https://zoho.in -->
+<script src="@(Model.GetType().GetProperty("ZohoCheckoutCdn") != null ? Model.GetType().GetProperty("ZohoCheckoutCdn").GetValue(Model, null) : "https://zoho.in")"></script>
+
+<script>
+    // ============================================
+    // 1. ATOM PAYNETZ INTEGRATION
+    // ============================================
+    document.getElementById('payNowAtom').addEventListener('click', function () {
+        const options = {
+            atomTokenId: '@Model.AtomTokenId',
+            merchId: '@Model.MerchId',
+            custEmail: '@Model.CustomerEmail',
+            custMobile: '@Model.CustomerMobile',
+            returnUrl: '@Model.ReturnUrl'
+        };
+
+        if (typeof AtomPaynetz === 'undefined') {
+            alert('Atom Payment gateway could not be loaded. Please try again.');
+            return;
+        }
+
+        new AtomPaynetz(options, '@Model.Environment');
+    });
+
+    // ============================================
+    // 2. ZOHO PAYMENTS INTEGRATION
+    // ============================================
+    document.getElementById('payNowZoho').addEventListener('click', function () {
+        if (typeof ZohoPayments === 'undefined') {
+            alert('Zoho Payment gateway could not be loaded. Please try again.');
+            return;
+        }
+
+        // Backend Controller me standard checkout API response generate karke ClientConfiguration nikalen
+        // Zoho handler setup example:
+        const zohoOptions = {
+            // Note: In parameters ko secure backend controller API payload response se fill karna sabse safe hota hai.
+            clientConfiguration: '@(Model.GetType().GetProperty("ZohoClientJson") != null ? Model.GetType().GetProperty("ZohoClientJson").GetValue(Model, null) : "")',
+
+            handler: function (response) {
+                // Success Callback: Jab payment submit ya success ho jaye
+                console.log("Zoho Payment Initiated/Completed:", response);
+                if (response.payment_id) {
+                    window.location.href = '@Model.ReturnUrl?paymentId=' + response.payment_id + '&status=success';
+                }
+            },
+            modal: {
+                ondismiss: function () {
+                    console.log('Zoho checkout modal closed by user.');
+                }
+            }
+        };
+
+        // Initialize Zoho Payments Checkout Popup
+        try {
+            const zohoCheckout = new ZohoPayments(zohoOptions);
+            zohoCheckout.open();
+        } catch (err) {
+            console.error("Zoho checkout initialization error: ", err);
+            alert("Error launching Zoho Payments.");
+        }
     });
 </script>

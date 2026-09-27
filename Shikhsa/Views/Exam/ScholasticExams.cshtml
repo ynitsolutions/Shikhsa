@@ -32,6 +32,7 @@
                     <div class="col-12 col-md-3">
                         <label class="form-label">@Localizer.Get("Batch")</label>
                         <select asp-for="Exam.BatchId" class="form-control select2 required">
+                              <option value="">@Localizer.Get("Select")</option>
                             @foreach (var item in Model.Batches)
                             {
                                 <option value="@item.BatchId">@item.AcademicYear</option>
@@ -43,6 +44,7 @@
                     <div class="col-12 col-md-4">
                         <label class="form-label">@Localizer.Get("Class")</label>
                         <select asp-for="Exam.ClassId" class="form-control select2 required">
+                              <option value="">@Localizer.Get("Select")</option>
                             @foreach (var item in Model.Classes)
                             {
                                 <option value="@item.DataListItemId">@item.DataListItemText</option>
@@ -54,6 +56,7 @@
                     <div class="col-12 col-md-4">
                         <label class="form-label">@Localizer.Get("Exam Term")</label>
                         <select asp-for="Exam.ExamCategoryId" class="form-control select2 required">
+                              <option value="">@Localizer.Get("Select")</option>
                             @foreach (var item in Model.ExamCategories)
                             {
                                 <option value="@item.ExamCategoryId">@item.ExamCategoryName</option>
@@ -65,7 +68,7 @@
                     <div class="col-12 col-md-4">
                         <label class="form-label">@Localizer.Get("Exam Type")</label>
                         <select asp-for="Exam.ExamType" class="form-control select2 required">
-                            <option></option>
+                              <option value="">@Localizer.Get("Select")</option>
                             @foreach (var item in Model.ExamType)
                             {
                                 <option value="@item.DataListItemId">@item.DataListItemText</option>

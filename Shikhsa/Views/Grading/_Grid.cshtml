@@ -1,4 +1,4 @@
-﻿@using Shikhsa.ViewModels
+﻿@* @using Shikhsa.ViewModels
 @model GradingCriteriaVM
 
 <div class="table-responsive">
@@ -71,4 +71,351 @@
             }
         </tbody>
     </table>
+</div> *@
+
+@using Shikhsa.ViewModels
+@model GradingCriteriaVM
+
+<div class="table-responsive">
+    <table class="table table-bordered table-hover align-middle datatable"
+           id="tblGrading">
+        <thead class="table-primary">
+            <tr>
+                <th width="60" data-priority="1">#</th>
+                <th data-priority="2">@Localizer.Get("Term")</th>
+                <th>@Localizer.Get("Class")</th>
+                <th data-priority="3">@Localizer.Get("Batch")</th>
+                <th>@Localizer.Get("Min %")</th>
+                <th>@Localizer.Get("Max %")</th>
+                <th data-priority="4">@Localizer.Get("Grade")</th>
+                <th>@Localizer.Get("Description")</th>
+                <th data-priority="5">@Localizer.Get("Status")</th>
+                <th width="120" data-priority="6">@Localizer.Get("Action")</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @if (Model.GradingList.Any())
+            {
+                int sr = 1;
+
+                foreach (var item in Model.GradingList)
+                {
+                    <tr>
+                        <td>@sr</td>
+
+                        <td>
+                            @item.Term?.ExamCategoryName
+                        </td>
+
+                        <td>
+                            @item.Class?.DataListItemText
+                        </td>
+
+                        <td>
+                            @item.Batch?.AcademicYear
+                        </td>
+
+                        <td>
+                            @item.MinPercentage
+                        </td>
+
+                        <td>
+                            @item.MaxPercentage
+                        </td>
+
+                        <td>
+                            <span class="badge bg-primary">
+                                @item.Grade
+                            </span>
+                        </td>
+
+                        <td>
+                            <span class="text-break">
+                                @item.Description
+                            </span>
+                        </td>
+
+                        <td>
+                            @if (item.IsActive)
+                            {
+                                <span class="badge bg-success">
+                                    @Localizer.Get("Active")
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">
+                                    @Localizer.Get("Inactive")
+                                </span>
+                            }
+                        </td>
+
+                        <td>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <permission controller="Grading"
+                                            action="GradingCriteria"
+                                            type="edit">
+                                    <button class="btn btn-warning btnEdit"
+                                            data-id="@item.GradingCriteriaId">
+                                        <i class="fa fa-pencil"></i>
+                                    </button>
+                                </permission>
+
+                                <permission controller="Grading"
+                                            action="GradingCriteria"
+                                            type="delete">
+                                    <button class="btn btn-danger btnDelete"
+                                            data-id="@item.GradingCriteriaId">
+                                        <i class="fa fa-trash"></i>
+                                    </button>
+                                </permission>
+                            </div>
+                        </td>
+                    </tr>
+
+                    sr++;
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="10" class="text-center text-muted">
+                        @Localizer.Get("No Record Found")
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
 </div>
+<style>
+    
+#tblGrading {
+    width: 100%;
+    min-width: 900px;
+}
+
+#tblGrading th,
+#tblGrading td {
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+#tblGrading td:nth-child(8) {
+    white-space: normal;
+    min-width: 180px;
+    max-width: 300px;
+}
+
+#tblGrading .btn-group {
+    white-space: nowrap;
+}
+
+/* Bulk table */
+#tblBulk {
+    width: 100%;
+    min-width: 650px;
+}
+
+#tblBulk th,
+#tblBulk td {
+    vertical-align: middle;
+}
+
+/* Prevent long text from breaking layout */
+.text-break {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+/* Tablet */
+@@media (max-width: 991.98px) {
+
+    #tblGrading {
+        min-width: 850px;
+    }
+
+    #tblGrading th,
+    #tblGrading td {
+        font-size: 0.9rem;
+    }
+
+    #tblGrading td:nth-child(8) {
+        min-width: 160px;
+    }
+}
+
+/* Mobile */
+@@media (max-width: 767.98px) {
+
+    .container-fluid.mt-4 {
+        margin-top: 0.75rem !important;
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    .page-card {
+        width: 100%;
+    }
+
+    .page-header {
+        padding: 1rem !important;
+    }
+
+    .page-header h3 {
+        font-size: 1.15rem;
+    }
+
+    .page-header small {
+        display: block;
+        margin-top: 0.35rem;
+        line-height: 1.4;
+    }
+
+    .page-header .d-flex {
+        width: 100%;
+    }
+
+    .page-header .btn {
+        flex: 1 1 auto;
+    }
+
+    .form-card {
+        width: 100%;
+    }
+
+    .section-title {
+        font-size: 1rem;
+    }
+
+    /* Form fields remain one column */
+    .form-card .row > [class*="col-"] {
+        width: 100%;
+    }
+
+    /* Submit button */
+    .text-end {
+        text-align: stretch !important;
+    }
+
+    .text-end .btn {
+        width: 100%;
+    }
+
+    /* Grid card */
+    .card-header .d-flex {
+        align-items: stretch !important;
+    }
+
+    .card-header .btn {
+        width: 100%;
+    }
+
+    /* Horizontal table scrolling */
+    .table-responsive {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    #tblGrading {
+        min-width: 850px;
+    }
+
+    #tblGrading th,
+    #tblGrading td {
+        font-size: 0.82rem;
+        padding: 0.5rem;
+    }
+
+    #tblGrading td:nth-child(8) {
+        min-width: 160px;
+        max-width: 220px;
+    }
+
+    #tblGrading .badge {
+        font-size: 0.72rem;
+    }
+
+    #tblGrading .btn {
+        min-width: 32px;
+        min-height: 32px;
+        padding: 0.25rem 0.45rem;
+    }
+
+    /* Bulk table inside modal */
+    #tblBulk {
+        min-width: 650px;
+    }
+
+    #bulkModal .modal-dialog {
+        margin: 0.5rem;
+    }
+
+    #bulkModal .modal-body {
+        padding: 0.75rem;
+    }
+
+    #bulkModal .modal-footer {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    #bulkModal .modal-footer .btn {
+        flex: 1 1 100%;
+    }
+}
+
+/* Very small phones */
+@@media (max-width: 575.98px) {
+
+    .page-header {
+        padding: 0.75rem !important;
+    }
+
+    .page-header h3 {
+        font-size: 1rem;
+    }
+
+    .form-card {
+        padding: 0.75rem !important;
+    }
+
+    .card-header {
+        padding: 0.75rem;
+    }
+
+    .card-body {
+        padding: 0.75rem;
+    }
+
+    .section-title {
+        font-size: 0.95rem;
+    }
+
+    #tblGrading {
+        min-width: 800px;
+    }
+
+    #tblGrading th,
+    #tblGrading td {
+        font-size: 0.78rem;
+        padding: 0.4rem;
+    }
+
+    #tblBulk {
+        min-width: 620px;
+    }
+
+    #bulkModal .modal-dialog {
+        margin: 0;
+        min-height: 100%;
+    }
+
+    #bulkModal .modal-content {
+        min-height: 100vh;
+        border-radius: 0;
+    }
+}
+
+</style>

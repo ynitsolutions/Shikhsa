@@ -149,12 +149,12 @@
                                 <td>@item.Subjects</td>
                                 <td>
                                     <div class="d-flex flex-wrap gap-1">
-                                        <permission controller="Masters" action="ClassBatcheSubjectMapping" type="edit">
+                                        <permission controller="Masters" action="ClassBatchSubjectMapping" type="edit">
                                             <a asp-action="ClassBatchSubjectMapping" asp-route-headerId="@item.HeaderId" class="btn btn-warning btn-sm">
                                                 <i class="ti ti-edit"></i>
                                             </a>
                                         </permission>
-                                        <permission controller="Masters" action="ClassBatcheSubjectMapping" type="edit">
+                                        <permission controller="Masters" action="ClassBatchSubjectMapping" type="delete">
                                             <a asp-action="DeleteClassBatchSubject" asp-route-id="@item.HeaderId" onclick="return confirm('Delete?')" class="btn btn-danger btn-sm">
                                                 <i class="ti ti-trash"></i>
                                             </a>

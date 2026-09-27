@@ -1,16 +1,23 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Shikhsa.Data;
 using Shikhsa.Models;
+using Shikhsa.Services;
 using Shikhsa.ViewModels;
 
 namespace Shikhsa.Controllers
 {
-    public class LocalizationController : Controller
+    public class LocalizationController : BaseController
     {
         private readonly ApplicationDbContext _context;
-        public LocalizationController(
-           ApplicationDbContext context)
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IWebHostEnvironment _env;
+        public readonly EmailService _emailService;
+        public readonly NotificationService _notificationService;
+        private readonly LookupService _lookup;
+        public LocalizationController( ApplicationDbContext context,UserManager<ApplicationUser> userManager,PermissionService permissionService, IWebHostEnvironment env, EmailService emailService, NotificationService notificationService, LookupService lookup) 
+            : base(userManager, permissionService, context, emailService, lookup)
         {
             _context = context;
         }
@@ -127,8 +134,7 @@ namespace Shikhsa.Controllers
 
             await _context.SaveChangesAsync();
 
-            TempData["Success"] =
-                "Saved Successfully";
+            SuccessMessage("Saved Successfully");
 
             return RedirectToAction("Index");
         }
@@ -141,7 +147,7 @@ namespace Shikhsa.Controllers
             return View(data);
         }
         [HttpPost]
-        public async Task<IActionResult> SaveLanguage(List<Language> model)
+        public async Task<IActionResult> SaveLanguages(List<Language> model)
         {
             foreach (var item in model)
             {
@@ -249,15 +255,11 @@ namespace Shikhsa.Controllers
 
             await _context.SaveChangesAsync();
 
-            TempData["Success"] =
-                "Languages Saved Successfully";
+            SuccessMessage("Languages Saved Successfully");
 
             return RedirectToAction("Index");
         }
-        // =====================================================
-        // INACTIVE
-        // =====================================================
-
+      
         public async Task<IActionResult> Inactive(int id)
         {
             var data = await _context.Languages
@@ -274,14 +276,8 @@ namespace Shikhsa.Controllers
                 await _context.SaveChangesAsync();
             }
 
-            return RedirectToAction("Index");
+            return RedirectToAction("Languages");
         }
-
-
-
-        // =====================================================
-        // ACTIVE
-        // =====================================================
 
         public async Task<IActionResult> Active(int id)
         {
@@ -299,7 +295,22 @@ namespace Shikhsa.Controllers
                 await _context.SaveChangesAsync();
             }
 
-            return RedirectToAction("Index");
+            return RedirectToAction("Languages");
         }
+        public async Task<IActionResult> DeleteLanguages(int id)
+        {
+            var data = await _context.Languages
+                .FirstOrDefaultAsync(x => x.LanguageId == id);
+
+            if (data != null)
+            {
+                data.IsActive = !data.IsActive;
+                data.UpdatedDate = DateTime.Now;
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction("Languages");
+        }
+
     }
 }
