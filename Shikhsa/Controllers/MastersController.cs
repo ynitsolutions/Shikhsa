@@ -1309,6 +1309,22 @@ namespace Shikhsa.Controllers
 
                 if (!ModelState.IsValid)
                 {
+                    foreach (var entry in ModelState)
+                    {
+                        if (entry.Value.Errors.Count > 0)
+                        {
+                            foreach (var error in entry.Value.Errors)
+                            {
+                                var msg = string.IsNullOrEmpty(error.ErrorMessage)
+                                    ? error.Exception?.Message
+                                    : error.ErrorMessage;
+
+                                Console.WriteLine($"Invalid Key: {entry.Key} | Error: {msg}");
+                                System.Diagnostics.Debug.WriteLine($"Invalid Key: {entry.Key} | Error: {msg}");
+                            }
+                        }
+                    }
+
                     return View(vm);
                 }
 

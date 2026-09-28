@@ -38,7 +38,7 @@
 
                     <div class="col-12 col-md-6 col-lg-4">
                         <label class="form-label">@Localizer.Get("Category")</label>
-                        <select asp-for="Placeholder.NotificationCategoryId" class="form-select">
+                        <select asp-for="Placeholder.NotificationCategoryId" class="form-select select2">
                             <option value="">@Localizer.Get("Select")</option>
                             @foreach (var item in Model.Categories)
                             {

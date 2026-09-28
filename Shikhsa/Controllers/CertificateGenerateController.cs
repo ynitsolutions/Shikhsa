@@ -11,6 +11,7 @@ using Shikhsa.Models.Certificate;
 using Shikhsa.Services;
 using System.Reflection;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace Shikhsa.Controllers
 {
@@ -142,24 +143,54 @@ namespace Shikhsa.Controllers
 
             // 5. Final values dictionary taiyar karein (Pehle auto values daalein, fir manual se override karein)
             var finalValues = new Dictionary<string, string>();
-
             // Auto values ko map karein
             foreach (var item in autoPlaceholders)
             {
                 finalValues[item.Key] = item.Value?.ToString() ?? "";
             }
-
-            // Form se aayi hui manual values ko merge/override karein
+            // Form se aayi manual values merge
             foreach (var kvp in manualValues)
             {
                 finalValues[kvp.Key] = kvp.Value;
             }
 
-            // 6. Template.Body ke placeholders ko real values se replace karein
-            // Agar PlaceholderHelper.ReplacePlaceholders aapke paas hai to use karein, nahi to TemplateMergeHelper.Merge
-            var finalHtml = PlaceholderHelper.ReplacePlaceholders(template.Body ?? "", finalValues);
+            // 1) Sabhi values se braces hatao (pehle)
+            foreach (var key in finalValues.Keys.ToList())
+            {
+                finalValues[key] = (finalValues[key] ?? "").Replace("{{", "").Replace("}}", "").Trim();
+            }
 
-            // 7. Database me save karein
+            // 2) Logo / Photo ko <img> banao (keys bina braces ke)
+            string ToImg(string path, string alt) =>
+                $"<img src=\"{Request.Scheme}://{Request.Host}{path}\" alt=\"{alt}\" style=\"height:100;width:auto;\" />";
+
+            if (finalValues.TryGetValue("{{School.LogoPath}}", out var logoPath) && !string.IsNullOrWhiteSpace(logoPath))
+                finalValues["{{School.LogoPath}}"] = ToImg(logoPath, "Logo");
+
+            if (finalValues.TryGetValue("{{Staff.PhotoPath}}", out var staffPhoto) && !string.IsNullOrWhiteSpace(staffPhoto))
+                finalValues["{{Staff.PhotoPath}}"] = ToImg(staffPhoto, "Photo");
+
+            if (finalValues.TryGetValue("{{Student.PhotoPath}}", out var studentPhoto) && !string.IsNullOrWhiteSpace(studentPhoto))
+                finalValues["{{Student.PhotoPath}}"] = ToImg(studentPhoto, "Photo");
+
+            // 3) Template body ke extra braces saaf karo
+            var body = template.Body ?? "";
+            //body = Regex.Replace(body, @"\{{3,}", "{{");
+            //body = Regex.Replace(body, @"\}{3,}", "}}");
+            body = Regex.Replace(body, @"\{\{\s*\{\{\s*([^{}]+?)\s*\}\}\s*\}\}", "{{$1}}");
+            body = Regex.Replace(body, @"\{{3,}", "{{");
+            body = Regex.Replace(body, @"\}{3,}", "}}");
+            // 4) Saaf ki hui body bhejo (template.Body nahi)
+            var finalHtml = PlaceholderHelper.ReplacePlaceholders(body, finalValues);
+            foreach (var kvp in manualValues)
+            {
+                var v = (kvp.Value ?? "").Trim();
+                if (v.Length == 0) continue;
+
+                finalHtml = Regex.Replace(finalHtml,
+                    @"\{\{\s*" + Regex.Escape(v) + @"\s*\}\}",
+                    System.Text.RegularExpressions.Regex.Escape(v).Replace("\\", "\\\\") == null ? v : v.Replace("$", "$$"));
+            }
             var generated = await _generatedRepository.SaveAsync(new GeneratedCertificate
             {
                 CertificateTemplateId = templateId,

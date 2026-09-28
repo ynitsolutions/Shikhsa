@@ -41,6 +41,7 @@ namespace Shikhsa.Controllers
             _viewRenderer = viewRenderer;                  // 👈 assign
             _pdfGenerator = pdfGenerator;
             _feeReceiptRecordRepository = feeReceiptRecordRepository;
+            _env = env;
         }
         #region Frequency
         public async Task<IActionResult> FeeFrequency(int id = 0)

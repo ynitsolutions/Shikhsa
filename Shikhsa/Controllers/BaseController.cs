@@ -162,7 +162,7 @@ namespace Shikhsa.Controllers
             if (dataListId == 0) return new List<DataListItem>();
 
             return _context.DataListItems
-                .Where(x => x.DataListId == dataListId)
+                .Where(x => x.DataListId == dataListId && x.IsActive == true)
                 .ToList();
         }
 

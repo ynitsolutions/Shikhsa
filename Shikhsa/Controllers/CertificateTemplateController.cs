@@ -29,68 +29,67 @@ namespace Shikhsa.Controllers
         }
 
         // GET /CertificateTemplate/SaveCertificateTemplate?id=0
-        //public async Task<IActionResult> SaveCertificateTemplate(long id = 0, long typeId = 0)
-        //{
-        //    CertificateTemplate model;
-
-        //    if (id == 0)
-        //    {
-        //        model = new CertificateTemplate { CertificateTypeId = typeId };
-        //    }
-        //    else
-        //    {
-        //        model = await _repository.GetByIdAsync(id);
-        //        if (model == null)
-        //        {
-        //            return NotFound();
-        //        }
-
-        //        ViewBag.SelectedCategories = model.CertificateTemplateCategories
-        //            .Select(x => x.NotificationCategoryId)
-        //            .ToList();
-        //    }
-
-        //    await LoadLookupsAsync();
-        //    return View(model);
-        //}
-        public async Task<IActionResult> SaveCertificateTemplate(
-    long id = 0,
-    long typeId = 0)
+        public async Task<IActionResult> SaveCertificateTemplate(long id = 0, long typeId = 0)
         {
-            var vm = new CertificateTemplatePageVM();
+            CertificateTemplate model;
 
-            // Load list
-            vm.Templates = await _repository.GetAllAsync();
-
-            // Load certificate types
-           // vm.CertificateTypes = await _repository.GetCertificateTypesAsync();
-
-            // New
             if (id == 0)
             {
-                vm.Form = new CertificateTemplate
-                {
-                    CertificateTypeId = typeId
-                };
+                model = new CertificateTemplate { CertificateTypeId = typeId };
             }
             else
             {
-                var model = await _repository.GetByIdAsync(id);
-
+                model = await _repository.GetByIdAsync(id);
                 if (model == null)
+                {
                     return NotFound();
+                }
 
-                vm.Form = model;
-
-                vm.SelectedCategories = model.CertificateTemplateCategories?
+                ViewBag.SelectedCategories = model.CertificateTemplateCategories
                     .Select(x => x.NotificationCategoryId)
-                    .ToList() ?? new List<long>();
+                    .ToList();
             }
 
             await LoadLookupsAsync();
-
-            return View(vm);
+            return View(model);
         }
+        //public async Task<IActionResult> SaveCertificateTemplate(long id = 0, long typeId = 0)
+        //{
+        //    var vm = new CertificateTemplatePageVM();
+
+        //    Load list
+
+        //   vm.Templates = await _repository.GetAllAsync();
+
+        //    Load certificate types
+        //    vm.CertificateTypes = await _repository.GetCertificateTypesAsync();
+
+        //    New
+        //    if (id == 0)
+        //    {
+        //        vm.Form = new CertificateTemplate
+        //        {
+        //            CertificateTypeId = typeId
+        //        };
+        //    }
+        //    else
+        //    {
+        //        var model = await _repository.GetByIdAsync(id);
+
+        //        if (model == null)
+        //            return NotFound();
+
+        //        vm.Form = model;
+
+        //        vm.SelectedCategories = model.CertificateTemplateCategories?
+        //            .Select(x => x.NotificationCategoryId)
+        //            .ToList() ?? new List<long>();
+        //    }
+
+        //    await LoadLookupsAsync();
+
+        //    return View(vm);
+        //}
 
 
 

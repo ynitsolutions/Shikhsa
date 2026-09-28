@@ -13,7 +13,7 @@ namespace Shikhsa.Models
         [StringLength(200)]
         public string DataListName { get; set; }
 
-        public string Description { get; set; }
+        public string? Description { get; set; }
         public virtual ICollection<DataListItem> DataListItems { get; set; }= new List<DataListItem>();
     }
     public class DataListItem: BaseEntity
@@ -27,7 +27,8 @@ namespace Shikhsa.Models
         [Required]
         [StringLength(200)]
         public string DataListItemText { get; set; }
-
+        [Required]
+        [StringLength(200)]
         public string DataListItemValue { get; set; }
 
         public int DisplayOrder { get; set; }
