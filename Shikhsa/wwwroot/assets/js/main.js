@@ -107,7 +107,7 @@
     function updateThemeControls(theme) {
       var nextTheme = theme === "dark" ? "light" : "dark";
       var label = "Switch to " + nextTheme + " mode";
-      var iconClass = theme === "dark" ? "bi bi-sun" : "bi bi-moon-stars";
+        var iconClass = theme === "dark" ? "fa fa-sun" : "fa-solid fa-moon-stars";
 
       Array.prototype.forEach.call(themeToggles, function (button) {
         button.setAttribute("aria-label", label);

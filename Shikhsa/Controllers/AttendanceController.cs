@@ -398,10 +398,7 @@ namespace Shikhsa.Controllers
         public async Task<IActionResult> ViewAttendance(StudentAttendanceReportVM vm)
         {
            // await _lookup.BindAsync(vm, User);
-           vm.Batches = _context.Batches
-                .Where(x => x.IsActive)
-                .OrderByDescending(x => x.BatchId)
-                .ToList();
+           vm.Batches = _context.Batches.Where(x => (x.ActiveForAdmission || x.ActiveForRegistration) && x.IsActive == true).OrderByDescending(x => x.BatchId).ToList();
             vm.Classes = GetDataListItems("Class");
             vm.Sections = GetDataListItems("Section");
             if (vm.BatchId > 0 &&

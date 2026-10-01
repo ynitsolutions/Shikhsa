@@ -140,7 +140,7 @@ namespace Shikhsa.Controllers
             ViewBag.MealType = GetDataListItems("Meal Type");
 
             ViewBag.Batches = await _context.Batches
-                .Where(x => x.IsActive && x.ActiveForAdmission)
+                .Where(x => (x.ActiveForAdmission || x.ActiveForRegistration) && x.IsActive == true)
                 .ToListAsync();
             ViewBag.FeeHeadingList = await _repository.GetAllFeeHeadingAsync();
 

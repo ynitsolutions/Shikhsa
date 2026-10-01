@@ -265,7 +265,7 @@ namespace Shikhsa.DataBase.Repositry
 
             return result.ToList();
         }
-               public async Task<List<StudentListReportVM>> GetStudentReportStatusWise(StudentListFilterVM filter)
+        public async Task<List<StudentListReportVM>> GetStudentReportStatusWise(StudentListFilterVM filter)
         {
             using var con = new SqlConnection(
                 _configuration.GetConnectionString("DefaultConnection"));
@@ -339,5 +339,124 @@ namespace Shikhsa.DataBase.Repositry
             return result.ToList();
         }
 
+        //public async Task<List<StudentListReportVM>> GetStudentUserNamePasswordAsync(StudentListFilterVM filter)
+        //{
+        //    var list = new List<StudentListReportVM>();
+
+        //    using (SqlConnection conn = new SqlConnection("DefaultConnection"))
+        //    {
+        //        using (SqlCommand cmd = new SqlCommand("GetStudentUserNamePasswordDetails", conn))
+        //        {
+        //            cmd.CommandType = CommandType.StoredProcedure;
+
+        //            cmd.Parameters.AddWithValue("@StudentName", (object)filter.StudentName ?? DBNull.Value);
+        //            cmd.Parameters.AddWithValue("@FatherName", (object)filter.FatherName ?? DBNull.Value);
+        //            cmd.Parameters.AddWithValue("@MotherName", (object)filter.MotherName ?? DBNull.Value);
+        //            cmd.Parameters.AddWithValue("@ClassId", (object)filter.RegClassId ?? DBNull.Value);
+        //            cmd.Parameters.AddWithValue("@SectionId", (object)filter.SectionId ?? DBNull.Value);
+        //            cmd.Parameters.AddWithValue("@StatusId", (object)filter.StatusId ?? DBNull.Value);
+        //            cmd.Parameters.AddWithValue("@UserName", (object)filter.UserName ?? DBNull.Value);
+        //            cmd.Parameters.AddWithValue("@Email", (object)filter.Email ?? DBNull.Value);
+        //            await conn.OpenAsync();
+        //            using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
+        //            {
+        //                while (await reader.ReadAsync())
+        //                {
+        //                    list.Add(new StudentListReportVM
+        //                    {
+        //                        StudentName= reader["Email"]?.ToString(),
+        //                        Email = reader["Email"]?.ToString(),
+        //                        FatherName = reader["FatherName"]?.ToString(),
+        //                        MotherName = reader["MotherName"]?.ToString(),
+        //                        UserName = reader["UserName"]?.ToString(),
+        //                        //Email = reader["Email"]?.ToString(),
+        //                        Password = reader["NormalPassword "]?.ToString(),
+        //                        ClassName = reader["ClassName"]?.ToString(),
+        //                        SectionName = reader["SectionName"]?.ToString()
+        //                    });
+        //                }
+        //            }
+        //        }
+        //    }
+        //    return list;
+        //}
+
+        public async Task<List<StudentListReportVM>> GetStudentUserNamePasswordAsync(
+    StudentListFilterVM filter)
+        {
+            var list = new List<StudentListReportVM>();
+
+            var connectionString =
+                _configuration.GetConnectionString("DefaultConnection");
+
+            if (string.IsNullOrWhiteSpace(connectionString))
+            {
+                throw new InvalidOperationException(
+                    "Connection string 'DefaultConnection' was not found.");
+            }
+
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                using (SqlCommand cmd = new SqlCommand(
+                    "GetStudentUserNamePasswordDetails", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue(
+                        "@StudentName",
+                        (object?)filter.StudentName ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue(
+                        "@FatherName",
+                        (object?)filter.FatherName ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue(
+                        "@MotherName",
+                        (object?)filter.MotherName ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue(
+                        "@ClassId",
+                        (object?)filter.RegClassId ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue(
+                        "@SectionId",
+                        (object?)filter.SectionId ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue(
+                        "@StatusId",
+                        (object?)filter.StatusId ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue(
+                        "@UserName",
+                        (object?)filter.UserName ?? DBNull.Value);
+
+                    cmd.Parameters.AddWithValue(
+                        "@Email",
+                        (object?)filter.Email ?? DBNull.Value);
+
+                    await conn.OpenAsync();
+
+                    using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            list.Add(new StudentListReportVM
+                            {
+                                StudentName = reader["StudentName"]?.ToString(),
+                                Email = reader["Email"]?.ToString(),
+                                FatherName = reader["FatherName"]?.ToString(),
+                                MotherName = reader["MotherName"]?.ToString(),
+                                UserName = reader["UserName"]?.ToString(),
+                                Password = reader["NormalPassword"]?.ToString(),
+                                ClassName = reader["ClassName"]?.ToString(),
+                                SectionName = reader["SectionName"]?.ToString()
+                            });
+                        }
+                    }
+                }
+            }
+
+            return list;
+        }
     }
 }

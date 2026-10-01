@@ -105,8 +105,8 @@ namespace Shikhsa.DataBase.Repositry
             if (attendance == null)
                 return false;
 
-            _context.StaffAttendances.Remove(attendance);
-
+            //_context.StaffAttendances.Remove(attendance);
+            attendance.IsActive = !attendance.IsActive;
             return await _context.SaveChangesAsync() > 0;
         }
         public async Task<bool> MarkAllPresentAsync(DateOnly attendanceDate, string userId)
@@ -267,11 +267,12 @@ namespace Shikhsa.DataBase.Repositry
         {
             var data = await _context.AttendanceTypes.FindAsync(id);
 
-            if (data != null)
-            {
-                _context.AttendanceTypes.Remove(data);
-                await _context.SaveChangesAsync();
-            }
+            if (data == null)
+                return;
+
+            data.IsActive = !data.IsActive;
+
+            await _context.SaveChangesAsync();
         }
     }
 }

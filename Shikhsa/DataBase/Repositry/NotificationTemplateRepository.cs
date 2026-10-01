@@ -84,8 +84,8 @@ public class NotificationTemplateRepository
             response.Message = "Record not found.";
             return response;
         }
-
-        _context.NotificationTemplates.Remove(entity);
+        entity.IsActive = !entity.IsActive;
+       // _context.NotificationTemplates.Remove(entity);
 
         await _context.SaveChangesAsync();
 
@@ -202,8 +202,8 @@ public class NotificationTemplateRepository
             response.Message = "Record not found.";
             return response;
         }
-
-        _context.NotificationCategories.Remove(entity);
+        entity.IsActive = !entity.IsActive;
+        //_context.NotificationCategories.Remove(entity);
 
         await _context.SaveChangesAsync();
 
@@ -316,8 +316,8 @@ public class NotificationTemplateRepository
             return response;
         }
 
-        _context.NotificationPlaceholders.Remove(entity);
-
+        //_context.NotificationPlaceholders.Remove(entity);
+        entity.IsActive = !entity.IsActive;
         await _context.SaveChangesAsync();
 
         response.Status = 1;

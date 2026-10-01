@@ -16,7 +16,7 @@
                 align-items-center">
 
         <h3>
-            Language Management
+            @Localizer.Get("Language Management")
         </h3>
 
         <button type="button"
@@ -25,7 +25,7 @@
 
             <i class="ti ti-plus"></i>
 
-            Add Row
+            @Localizer.Get("Add Row")
 
         </button>
 
@@ -34,23 +34,12 @@
 
     <div class="card-body">
 
-        @if (TempData["Success"] != null)
-        {
-            <div class="alert alert-success">
 
-                @TempData["Success"]
-
-            </div>
-        }
-
-
-        <form asp-action="Save"
-              method="post">
+        <form asp-action="SaveIndex" method="post">
 
             <div class="table-responsive">
 
-                <table class="table table-bordered"
-                       id="translationTable">
+                <table class="table table-bordered datatable" id="translationTable">
 
                     <thead>
 
@@ -60,7 +49,7 @@
 
                             <th style="min-width:200px;">
 
-                                Word Key
+                                @Localizer.Get("Word Key")
 
                             </th>
 
@@ -137,12 +126,11 @@
 
             <div class="mt-3">
 
-                <button type="submit"
-                        class="btn btn-success">
+                <button type="submit" class="btn btn-success">
 
                     <i class="ti ti-device-floppy"></i>
 
-                    Save All
+                    @Localizer.Get("Save All")
 
                 </button>
 

@@ -72,8 +72,8 @@ namespace Shikhsa.DataBase.Repositry
             {
                 return new SaveResult { Status = 0, Message = "Certificate type not found." };
             }
-
-            _context.CertificateTypes.Remove(existing);
+            existing.IsActive = !existing.IsActive;
+            // _context.CertificateTypes.Remove(existing);
             await _context.SaveChangesAsync();
             return new SaveResult { Status = 1, Message = "Certificate type deleted." };
         }

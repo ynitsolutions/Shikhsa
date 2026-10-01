@@ -46,7 +46,7 @@ namespace Shikhsa.Controllers
         #region Registration
         public async Task<IActionResult> StudentRegistrations()
         {
-            ViewBag.BatchList = _context.Batches.Where(x => x.ActiveForAdmission || x.ActiveForRegistration).ToList();
+            ViewBag.BatchList = _context.Batches.Where(x => (x.ActiveForAdmission || x.ActiveForRegistration) && x.IsActive == true).ToList();
             ViewBag.CategoryList = GetDataListItems("Category");
             ViewBag.ReligionList = GetDataListItems("Religion");
             ViewBag.BoardList = GetDataListItems("Board");
@@ -71,7 +71,7 @@ namespace Shikhsa.Controllers
         [HttpPost]
         public async Task<IActionResult> StudentRegistrations(StudentReportPageVM model)
         {
-            ViewBag.BatchList = _context.Batches.Where(x => x.ActiveForAdmission || x.ActiveForRegistration).ToList();
+            ViewBag.BatchList = _context.Batches.Where(x => (x.ActiveForAdmission || x.ActiveForRegistration) && x.IsActive == true).ToList();
             ViewBag.CategoryList = GetDataListItems("Category");
             ViewBag.ReligionList = GetDataListItems("Religion");
             ViewBag.BoardList = GetDataListItems("Board");
@@ -223,9 +223,7 @@ namespace Shikhsa.Controllers
         }
         private async Task PopulateViewBags()
         {
-            ViewBag.BatchList = _context.Batches
-                .Where(x => x.ActiveForAdmission || x.ActiveForRegistration)
-                .ToList();
+            ViewBag.BatchList = _context.Batches.Where(x => (x.ActiveForAdmission || x.ActiveForRegistration) && x.IsActive == true).ToList();
             ViewBag.CategoryList = GetDataListItems("Category");
             ViewBag.ReligionList = GetDataListItems("Religion");
             ViewBag.BoardList = GetDataListItems("Board");
@@ -609,10 +607,18 @@ namespace Shikhsa.Controllers
         }
         [SkipPermission]
         [HttpPost]
-        public async Task<IActionResult> ExportExcel(StudentReportPageVM model)
+        public async Task<IActionResult> ExportExcel(StudentReportPageVM model,string? Page)
         {
-            var students = await _repo
-                .GetStudentReport(model.Filter);
+            List<StudentListReportVM> students;
+            if (Page == "Register")
+            {
+                students= await _repo.GetStudentReport(model.Filter);
+            }
+            else
+            {
+                students = await _repo.GetStudentReportStatusWise(model.Filter);
+            }
+          
 
             using var workbook = new XLWorkbook();
 
@@ -631,14 +637,37 @@ namespace Shikhsa.Controllers
             if (cols.Contains("FatherName"))
                 worksheet.Cell(1, col++).Value = "Father Name";
 
+            if (cols.Contains("MotherName"))
+                worksheet.Cell(1, col++).Value = "Mother Name";
+
+            if (cols.Contains("GuardianName"))
+                worksheet.Cell(1, col++).Value = "Guardian Name";
+
+            if (cols.Contains("LocalAddress"))
+                worksheet.Cell(1, col++).Value = "Local Address";
+
+            if (cols.Contains("PermanentAddress"))
+                worksheet.Cell(1, col++).Value = "Permanent Address";
+
             if (cols.Contains("FatherMobile"))
-                worksheet.Cell(1, col++).Value = "Father Mobile";
+                worksheet.Cell(1, col++).Value = "Mobile";
 
             if (cols.Contains("DOB"))
                 worksheet.Cell(1, col++).Value = "DOB";
 
             if (cols.Contains("AadhaarNumber"))
-                worksheet.Cell(1, col++).Value = "Aadhaar No";
+                worksheet.Cell(1, col++).Value = "Aadhaar";
+
+            if (cols.Contains("Class"))
+                worksheet.Cell(1, col++).Value = "Class";
+
+            if (cols.Contains("Section"))
+                worksheet.Cell(1, col++).Value = "Section";
+
+
+            // =========================================================
+            // DATA
+            // =========================================================
 
             int row = 2;
 
@@ -647,25 +676,50 @@ namespace Shikhsa.Controllers
                 col = 1;
 
                 if (cols.Contains("ApplicationNo"))
-                    worksheet.Cell(row, col++).Value = item.ApplicationNo;
+                    worksheet.Cell(row, col++).Value = item.ApplicationNo ?? "";
 
                 if (cols.Contains("StudentName"))
-                    worksheet.Cell(row, col++).Value = item.StudentName;
+                    worksheet.Cell(row, col++).Value = item.StudentName ?? "";
 
                 if (cols.Contains("FatherName"))
-                    worksheet.Cell(row, col++).Value = item.FatherName;
+                    worksheet.Cell(row, col++).Value = item.FatherName ?? "";
+
+                if (cols.Contains("MotherName"))
+                    worksheet.Cell(row, col++).Value = item.MotherName ?? "";
+
+                if (cols.Contains("GuardianName"))
+                    worksheet.Cell(row, col++).Value = item.GuardianName ?? "";
+
+                if (cols.Contains("LocalAddress"))
+                    worksheet.Cell(row, col++).Value = item.LocalAddress ?? "";
+
+                if (cols.Contains("PermanentAddress"))
+                    worksheet.Cell(row, col++).Value = item.PermanentAddress ?? "";
 
                 if (cols.Contains("FatherMobile"))
-                    worksheet.Cell(row, col++).Value = item.FatherMobile;
+                    worksheet.Cell(row, col++).Value = item.FatherMobile ?? "";
 
                 if (cols.Contains("DOB"))
-                    worksheet.Cell(row, col++).Value = item.DOB.ToString("dd/MM/yyyy");
+                {
+                    if (cols.Contains("DOB"))
+                        worksheet.Cell(row, col++).Value =
+                            item.DOB.ToString("dd/MM/yyyy");
+                    else
+                        worksheet.Cell(row, col++).Value = "";
+                }
 
                 if (cols.Contains("AadhaarNumber"))
-                    worksheet.Cell(row, col++).Value = item.AadhaarNumber;
+                    worksheet.Cell(row, col++).Value = item.AadhaarNumber ?? "";
+
+                if (cols.Contains("Class"))
+                    worksheet.Cell(row, col++).Value = item.ClassName?? "";
+
+                if (cols.Contains("Section"))
+                    worksheet.Cell(row, col++).Value = item.SectionName?? "";
 
                 row++;
             }
+
 
             worksheet.Columns().AdjustToContents();
 
@@ -937,181 +991,501 @@ namespace Shikhsa.Controllers
         #endregion
         [SkipPermission]
         [HttpPost]
-       
-        public async Task<IActionResult> UpdateStudentStatus(StudentStatusUpdateVM model)
+        public async Task<IActionResult> UpdateStudentStatus(StudentStatusUpdateVM model,CancellationToken cancellationToken)
         {
-            // ---------- 1) Input validation ----------
+            // ============================================================
+            // 1. VALIDATION
+            // ============================================================
+
             if (string.IsNullOrWhiteSpace(model?.StudentIds))
-                return Json(new { success = false, message = "No students selected." });
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "No students selected."
+                });
+            }
 
             var ids = model.StudentIds
-                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                .Select(s => long.TryParse(s, out var v) ? v : (long?)null)
-                .Where(v => v.HasValue)
-                .Select(v => v!.Value)
+                .Split(
+                    ',',
+                    StringSplitOptions.RemoveEmptyEntries |
+                    StringSplitOptions.TrimEntries)
+                .Select(x => long.TryParse(x, out var id) ? id : (long?)null)
+                .Where(x => x.HasValue)
+                .Select(x => x!.Value)
                 .Distinct()
                 .ToList();
 
             if (ids.Count == 0)
-                return Json(new { success = false, message = "Invalid student ids." });
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "Invalid student ids."
+                });
+            }
 
-            // ---------- 2) Resolve statuses once ----------
+
+            // ============================================================
+            // 2. RESOLVE STATUS IDS ONCE
+            // ============================================================
+
             var dataListItems = GetDataListItems("Status");
 
-           int? rejected = dataListItems.FirstOrDefault(x =>
-                x.DataListItemValue.Contains("Rejected", StringComparison.OrdinalIgnoreCase))?.DataListItemId;
+            int? rejected = dataListItems
+                .FirstOrDefault(x =>
+                    x.DataListItemValue.Contains(
+                        "Rejected",
+                        StringComparison.OrdinalIgnoreCase))
+                ?.DataListItemId;
 
-            int? tcIssued = dataListItems.FirstOrDefault(x =>
-                x.DataListItemValue.Contains("TC", StringComparison.OrdinalIgnoreCase))?.DataListItemId;
+            int? tcIssued = dataListItems
+                .FirstOrDefault(x =>
+                    x.DataListItemValue.Contains(
+                        "TC",
+                        StringComparison.OrdinalIgnoreCase))
+                ?.DataListItemId;
 
-            int? admitted = dataListItems.FirstOrDefault(x =>
-                x.DataListItemValue.Contains("Admitted", StringComparison.OrdinalIgnoreCase))?.DataListItemId;
+            int? admitted = dataListItems
+                .FirstOrDefault(x =>
+                    x.DataListItemValue.Contains(
+                        "Admitted",
+                        StringComparison.OrdinalIgnoreCase))
+                ?.DataListItemId;
+
+
+            // ============================================================
+            // 3. VALIDATE ADMITTED STATUS
+            // ============================================================
 
             if (admitted == null)
-                return Json(new { success = false, message = "Admitted status is not configured." });
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "Admitted status is not configured."
+                });
+            }
+
+
+            // ============================================================
+            // 4. CURRENT USER
+            // ============================================================
 
             var currentUser = HttpContext.Session.GetCurrentUser();
-            string luserName = currentUser?.UserName ?? User.Identity?.Name ?? "";
 
-            // ---------- 3) Transaction ----------
-            await using var transaction = await _context.Database.BeginTransactionAsync();
+            string loggedInUser =
+                currentUser?.UserName ??
+                User.Identity?.Name ??
+                "";
+
+
+            // ============================================================
+            // 5. REJECTED / TC
+            //    SINGLE SQL UPDATE
+            // ============================================================
+
+            if (model.StatusId == rejected ||
+                model.StatusId == tcIssued)
+            {
+                var updatedCount = await _context
+                    .Tbl_StudentsRegistrations
+                    .Where(x => ids.Contains(x.StudentId))
+                    .ExecuteUpdateAsync(setters =>
+                        setters
+                            .SetProperty(
+                                x => x.Status,
+                                model.StatusId)
+                            .SetProperty(
+                                x => x.UpdatedDate,
+                                DateTime.Now)
+                            .SetProperty(
+                                x => x.UpdatedBy,
+                                loggedInUser),
+                        cancellationToken);
+
+                return Json(new
+                {
+                    success = true,
+                    message = $"{updatedCount} student(s) status updated successfully."
+                });
+            }
+
+
+            // ============================================================
+            // 6. ONLY ADMITTED PROCESS FROM HERE
+            // ============================================================
+
+            if (model.StatusId != admitted)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "Invalid status."
+                });
+            }
+
+
+            // ============================================================
+            // 7. LOAD ALL REGISTRATIONS IN ONE QUERY
+            // ============================================================
+
+            var registrations = await _context
+                .Tbl_StudentsRegistrations
+                .Include(x => x.Parent)
+                .Where(x => ids.Contains(x.StudentId))
+                .ToListAsync(cancellationToken);
+
+            if (registrations.Count == 0)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "No valid student registrations found."
+                });
+            }
+
+
+            // ============================================================
+            // 8. LOAD EXISTING STUDENTS IN ONE QUERY
+            //
+            // Replaces:
+            // await _context.Tbl_Students.AnyAsync(...)
+            // inside foreach
+            // ============================================================
+
+            var registrationIds = registrations
+                .Select(x => x.StudentId)
+                .ToList();
+
+            var existingRegisterIds = await _context
+                .Tbl_Students
+                .Where(x =>
+                    registrationIds.Contains(x.StudentRegisterId))
+                .Select(x => x.StudentRegisterId)
+                .ToHashSetAsync(cancellationToken);
+
+
+            // ============================================================
+            // 9. TRANSACTION
+            // ============================================================
+
+            await using var transaction =
+                await _context.Database.BeginTransactionAsync(
+                    cancellationToken);
 
             var admittedStudents = new List<Tbl_Students>();
 
             try
             {
-                var registrations = await _context.Tbl_StudentsRegistrations
-                    .Include(x => x.Parent)
-                    .Where(x => ids.Contains(x.StudentId))
-                    .ToListAsync();
+                var now = DateTime.Now;
+
+
+                // ========================================================
+                // 10. PROCESS REGISTRATIONS
+                // ========================================================
 
                 foreach (var registration in registrations)
                 {
-                    // ---- Rejected / TC ----
-                    if (model.StatusId == rejected || model.StatusId == tcIssued)
+                    // ----------------------------------------------------
+                    // Already admitted
+                    // ----------------------------------------------------
+
+                    if (existingRegisterIds.Contains(
+                            registration.StudentId))
                     {
-                        registration.Status = model.StatusId;
-                        registration.UpdatedDate = DateTime.Now;
-                        registration.UpdatedBy = luserName;
+                        registration.Status = admitted;
+                        registration.UpdatedDate = now;
+                        registration.UpdatedBy = loggedInUser;
+
                         continue;
                     }
 
-                    // ---- Admitted ----
-                    if (model.StatusId == admitted)
+
+                    // ----------------------------------------------------
+                    // Update registration
+                    // ----------------------------------------------------
+
+                    registration.Status = admitted;
+                    registration.RegClassId = model.ClassId;
+                    registration.AdmissionBatchId = model.BatchId;
+                    registration.UpdatedDate = now;
+                    registration.UpdatedBy = loggedInUser;
+
+
+                    // ----------------------------------------------------
+                    // Full name
+                    // ----------------------------------------------------
+
+                    var fullName = string.Join(
+                            " ",
+                            new[]
+                            {
+                        registration.FirstName,
+                        registration.MiddleName,
+                        registration.LastName
+                            }
+                            .Where(x =>
+                                !string.IsNullOrWhiteSpace(x)))
+                        .Trim();
+
+                    if (string.IsNullOrWhiteSpace(fullName))
                     {
-                        var alreadyExists = await _context.Tbl_Students
-                            .AnyAsync(x => x.StudentRegisterId == registration.StudentId);
-
-                        if (alreadyExists)
-                        {
-                            // Still keep the registration in sync
-                            registration.Status = admitted;
-                            registration.UpdatedDate = DateTime.Now;
-                            registration.UpdatedBy = luserName;
-                            continue;
-                        }
-
-                        registration.Status = admitted;
-                        registration.RegClassId = model.ClassId;
-                        registration.AdmissionBatchId = model.BatchId;
-                        registration.UpdatedDate = DateTime.Now;
-                        registration.UpdatedBy = luserName;
-
-                        var fullName = string.Join(" ",
-                                new[] { registration.FirstName, registration.MiddleName, registration.LastName }
-                                    .Where(s => !string.IsNullOrWhiteSpace(s)))
-                            .Trim();
-
-                        if (string.IsNullOrWhiteSpace(fullName))
-                            fullName = $"Student {registration.StudentId}";
-
-                        var userName = fullName.Replace(" ", "");
-                        if (string.IsNullOrWhiteSpace(userName))
-                            userName = $"student{registration.StudentId}";
-
-                        if (await _userManager.FindByNameAsync(userName) != null)
-                            userName = $"{userName}{registration.StudentId}";
-
-                        string password = registration.DOB.ToString("dd/MM/yyyy");
-
-                        var user = new ApplicationUser
-                        {
-                            UserName = userName,
-                            FullName = fullName,
-                            Email = registration.Email,
-                            IsActive = true,
-                            NormalPassword = password
-                        };
-
-                        var result = await _userManager.CreateAsync(user, password);
-                        if (!result.Succeeded)
-                        {
-                            throw new Exception(string.Join(", ",
-                                result.Errors.Select(x => x.Description)));
-                        }
-
-                        await _userManager.AddToRoleAsync(user, "Students");
-
-                        var student = new Tbl_Students
-                        {
-                            StudentRegisterId = registration.StudentId,
-                            UserId = user.Id,
-                            AdmitClassId = model.ClassId ?? 0,
-                            AdmitSectionId = model.SectionId ?? 0,
-                            AdmitBatchId = model.BatchId ?? 0,
-                            AdmissionBatchId = registration.AdmissionBatchId,
-                            ApplicationNo = registration.ApplicationNo,
-                            FirstName = registration.FirstName,
-                            MiddleName = registration.MiddleName,
-                            LastName = registration.LastName,
-                            DOB = registration.DOB,
-                            Email = registration.Email,
-                            ContactNo = registration.ContactNo,
-                            LastClass = registration.LastClass,
-                            AadhaarNumber = registration.AadhaarNumber,
-                            APAARId = registration.APAARId,
-                            PENNumber = registration.PENNumber,
-                            LocalAddress = registration.LocalAddress,
-                            PermanentAddress = registration.PermanentAddress,
-                            CategoryId = registration.CategoryId,
-                            GenderId = registration.GenderId,
-                            ReligionId = registration.ReligionId,
-                            ParentId = registration.ParentId,
-                            IsHandicap = registration.IsHandicap,
-                            HandicapDetails = registration.HandicapDetails,
-                            IdentificationMark = registration.IdentificationMark,
-                            IsInitialClassAdmission = registration.IsInitialClassAdmission,
-                            IsHostel = registration.IsHostel,
-                            HostelId = registration.HostelId,
-                            IsTranspot = registration.IsTranspot,
-                            TranspotId = registration.TranspotId,
-                            Status = admitted,
-                            AddedBy = luserName,
-                            IsActive = true
-                        };
-
-                        _context.Tbl_Students.Add(student);
-                        admittedStudents.Add(student);       // ✅ collect for post-commit
+                        fullName =
+                            $"Student {registration.StudentId}";
                     }
+
+
+                    // ----------------------------------------------------
+                    // Username
+                    // ----------------------------------------------------
+
+                    var userName = new string(
+                        fullName
+                            .Where(char.IsLetterOrDigit)
+                            .ToArray());
+
+                    if (string.IsNullOrWhiteSpace(userName))
+                    {
+                        userName =
+                            $"student{registration.StudentId}";
+                    }
+
+
+                    // ----------------------------------------------------
+                    // Identity username uniqueness
+                    // ----------------------------------------------------
+
+                    var originalUserName = userName;
+
+                    var existingUser =
+                        await _userManager.FindByNameAsync(userName);
+
+                    if (existingUser != null)
+                    {
+                        userName =
+                            $"{originalUserName}{registration.StudentId}";
+                    }
+
+
+                    // ----------------------------------------------------
+                    // Password
+                    // ----------------------------------------------------
+
+                    string password =
+                        registration.DOB.ToString("dd/MM/yyyy");
+
+
+                    // ----------------------------------------------------
+                    // Create Identity User
+                    // ----------------------------------------------------
+
+                    var user = new ApplicationUser
+                    {
+                        UserName = userName,
+                        FullName = fullName,
+                        Email = registration.Email,
+                        IsActive = true,
+                        NormalPassword = password
+                    };
+
+
+                    var createResult =
+                        await _userManager.CreateAsync(
+                            user,
+                            password);
+
+                    if (!createResult.Succeeded)
+                    {
+                        throw new Exception(
+                            string.Join(
+                                ", ",
+                                createResult.Errors
+                                    .Select(x => x.Description)));
+                    }
+
+
+                    // ----------------------------------------------------
+                    // Student Role
+                    // ----------------------------------------------------
+
+                    var roleResult =
+                        await _userManager.AddToRoleAsync(
+                            user,
+                            "Students");
+
+                    if (!roleResult.Succeeded)
+                    {
+                        throw new Exception(
+                            string.Join(
+                                ", ",
+                                roleResult.Errors
+                                    .Select(x => x.Description)));
+                    }
+
+
+                    // ----------------------------------------------------
+                    // Create Student
+                    // ----------------------------------------------------
+
+                    var student = new Tbl_Students
+                    {
+                        StudentRegisterId =
+                            registration.StudentId,
+
+                        UserId = user.Id,
+
+                        AdmitClassId =
+                            model.ClassId ?? 0,
+
+                        AdmitSectionId =
+                            model.SectionId ?? 0,
+
+                        AdmitBatchId =
+                            model.BatchId ?? 0,
+
+                        AdmissionBatchId =
+                            registration.AdmissionBatchId,
+
+                        ApplicationNo =
+                            registration.ApplicationNo,
+
+                        FirstName =
+                            registration.FirstName,
+
+                        MiddleName =
+                            registration.MiddleName,
+
+                        LastName =
+                            registration.LastName,
+
+                        DOB =
+                            registration.DOB,
+
+                        Email =
+                            registration.Email,
+
+                        ContactNo =
+                            registration.ContactNo,
+
+                        LastClass =
+                            registration.LastClass,
+
+                        AadhaarNumber =
+                            registration.AadhaarNumber,
+
+                        APAARId =
+                            registration.APAARId,
+
+                        PENNumber =
+                            registration.PENNumber,
+
+                        LocalAddress =
+                            registration.LocalAddress,
+
+                        PermanentAddress =
+                            registration.PermanentAddress,
+
+                        CategoryId =
+                            registration.CategoryId,
+
+                        GenderId =
+                            registration.GenderId,
+
+                        ReligionId =
+                            registration.ReligionId,
+
+                        ParentId =
+                            registration.ParentId,
+
+                        IsHandicap =
+                            registration.IsHandicap,
+
+                        HandicapDetails =
+                            registration.HandicapDetails,
+
+                        IdentificationMark =
+                            registration.IdentificationMark,
+
+                        IsInitialClassAdmission =
+                            registration.IsInitialClassAdmission,
+
+                        IsHostel =
+                            registration.IsHostel,
+
+                        HostelId =
+                            registration.HostelId,
+
+                        IsTranspot =
+                            registration.IsTranspot,
+
+                        TranspotId =
+                            registration.TranspotId,
+
+                        Status =
+                            admitted,
+
+                        AddedBy =
+                            loggedInUser,
+
+                        IsActive =
+                            true
+                    };
+
+
+                    _context.Tbl_Students.Add(student);
+
+                    admittedStudents.Add(student);
                 }
 
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
+
+                // ========================================================
+                // 11. ONE SAVE
+                // ========================================================
+
+                await _context.SaveChangesAsync(
+                    cancellationToken);
+
+
+                // ========================================================
+                // 12. COMMIT
+                // ========================================================
+
+                await transaction.CommitAsync(
+                    cancellationToken);
             }
             catch (Exception ex)
             {
-                await transaction.RollbackAsync();
-                return Json(new { success = false, message = ex.Message });
+                await transaction.RollbackAsync(
+                    cancellationToken);
+
+                return Json(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
             }
 
-            // ---------- 4) Post-commit work (NOT rolled back) ----------
+
+            // ============================================================
+            // 13. POST-COMMIT NOTIFICATION
+            // ============================================================
+            //
+            // IMPORTANT:
+            // Do NOT keep DB transaction open while sending notification.
+            //
+            // ============================================================
+
             foreach (var student in admittedStudents)
             {
                 try
                 {
                     await _lookup.PopulateAsync(student);
 
-                    var user = await _userManager.FindByIdAsync(student.UserId);
+                    var user =
+                        await _userManager.FindByIdAsync(
+                            student.UserId);
 
                     await _notificationService.SendAsync(
                         "STUDENT_ADMISSION_CONFIRMED",
@@ -1123,13 +1497,18 @@ namespace Shikhsa.Controllers
                 }
                 catch (Exception ex)
                 {
-                    return Json(new
-                    {
-                        success = true,
-                        message = ex.Message
-                    });
+                    // Admission already committed.
+                    // Don't report the admission itself as failed.
+                    //
+                    // Ideally log this exception instead of returning
+                    // success with an error message.
                 }
             }
+
+
+            // ============================================================
+            // 14. RESPONSE
+            // ============================================================
 
             return Json(new
             {
@@ -1139,11 +1518,12 @@ namespace Shikhsa.Controllers
                     : "Status updated successfully."
             });
         }
+
         #endregion
         #region Promotion
         public async Task<IActionResult> StudentPromotions()
         {
-            ViewBag.BatchList = _context.Batches.Where(x => x.ActiveForAdmission || x.ActiveForRegistration).ToList();
+            ViewBag.BatchList = _context.Batches.Where(x => (x.ActiveForAdmission || x.ActiveForRegistration) && x.IsActive == true).ToList();
             ViewBag.CategoryList = GetDataListItems("Category");
             ViewBag.ReligionList = GetDataListItems("Religion");
             ViewBag.BoardList = GetDataListItems("Board");
@@ -1272,7 +1652,7 @@ namespace Shikhsa.Controllers
         #region Student Report
         public async Task<IActionResult> StudentsReport()
         {
-            ViewBag.BatchList = _context.Batches.Where(x => x.ActiveForAdmission || x.ActiveForRegistration).ToList();
+            ViewBag.BatchList = _context.Batches.Where(x => (x.ActiveForAdmission || x.ActiveForRegistration) && x.IsActive == true).ToList();
             ViewBag.ClassList = GetDataListItems("Class");
             ViewBag.StatusList = GetDataListItems("Status");
             ViewBag.SectionList = GetDataListItems("Section");
@@ -1296,7 +1676,7 @@ namespace Shikhsa.Controllers
         [HttpPost]
         public async Task<IActionResult> StudentsReport(StudentReportPageVM model)
         {
-            ViewBag.BatchList = _context.Batches.Where(x => x.ActiveForAdmission || x.ActiveForRegistration).ToList();
+            ViewBag.BatchList = _context.Batches.Where(x => (x.ActiveForAdmission || x.ActiveForRegistration) && x.IsActive == true).ToList();
            
             ViewBag.ClassList = GetDataListItems("Class");
            
@@ -1309,7 +1689,7 @@ namespace Shikhsa.Controllers
         }
         public async Task<IActionResult> StudentsTCReport()
         {
-            ViewBag.BatchList = _context.Batches.Where(x => x.ActiveForAdmission || x.ActiveForRegistration).ToList();
+            ViewBag.BatchList = _context.Batches.Where(x => (x.ActiveForAdmission || x.ActiveForRegistration) && x.IsActive == true).ToList();
             ViewBag.ClassList = GetDataListItems("Class");
             ViewBag.SectionList = GetDataListItems("Section");
             ViewBag.StudentCertificateTemplates =await _TemplateRepository.GetStudentCertificateTemplatesAsync("Student");
@@ -1332,7 +1712,7 @@ namespace Shikhsa.Controllers
         [HttpPost]
         public async Task<IActionResult> StudentsTCReport(StudentReportPageVM model)
         {
-            ViewBag.BatchList = _context.Batches.Where(x => x.ActiveForAdmission || x.ActiveForRegistration).ToList();
+            ViewBag.BatchList = _context.Batches.Where(x => (x.ActiveForAdmission || x.ActiveForRegistration) && x.IsActive == true).ToList();
             ViewBag.StudentCertificateTemplates = await _TemplateRepository.GetStudentCertificateTemplatesAsync("Student");
             ViewBag.ClassList = GetDataListItems("Class");
             ViewBag.SectionList = GetDataListItems("Section");
@@ -1340,6 +1720,30 @@ namespace Shikhsa.Controllers
 
 
             return View(model);
+        }
+        #endregion
+        #region UserNamePassword
+        [HttpGet]
+        public async Task<IActionResult> StudentsCredentials()
+        {
+            var pageVm = new StudentReportPageVM { Filter = new StudentListFilterVM() };
+            ViewBag.ClassList = GetDataListItems("Class");
+            ViewBag.StatusList = GetDataListItems("Status");
+            ViewBag.SectionList = GetDataListItems("Section");
+            ViewBag.BatchList = _context.Batches.Where(x => (x.ActiveForAdmission || x.ActiveForRegistration) && x.IsActive == true).ToList();
+            pageVm.Students = await _repo.GetStudentUserNamePasswordAsync(pageVm.Filter);
+            return View(pageVm);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> StudentsCredentials(StudentReportPageVM pageVm)
+        {
+            pageVm.Students = await _repo.GetStudentUserNamePasswordAsync(pageVm.Filter);
+            ViewBag.ClassList = GetDataListItems("Class");
+            ViewBag.StatusList = GetDataListItems("Status");
+            ViewBag.SectionList = GetDataListItems("Section");
+            ViewBag.BatchList = _context.Batches.Where(x => (x.ActiveForAdmission || x.ActiveForRegistration) && x.IsActive == true).ToList();
+            return View(pageVm);
         }
         #endregion
     }

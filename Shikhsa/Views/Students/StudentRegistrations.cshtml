@@ -211,8 +211,8 @@
                         <button type="submit" class="btn btn-primary btn-sm d-flex align-items-center gap-1">
                             <i class="ti ti-search"></i> @Localizer.Get("Search")
                         </button>
-                        <button type="submit" formaction="@Url.Action("ExportExcel")" class="btn btn-success btn-sm d-flex align-items-center gap-1">
-                            <i class="ti ti-excel ti ti-download"></i> @Localizer.Get("Export")
+                       <button type="submit" name="Page" value="Register" formaction="@Url.Action("ExportExcel")" class="btn btn-success btn-sm d-flex align-items-center gap-1">
+                            <i class="ti ti-file-spreadsheet"></i>@Localizer.Get("Export")
                         </button>
                          <permission controller="Students" action="StudentRegistrations" type="edit">
                             <a href="javascript:void(0);" class="btn btn-warning btn-sm d-flex align-items-center gap-1" id="btnBulkStatus">
@@ -267,66 +267,167 @@
         //$("#statusModal").modal("show");
         modal.show();
     });
-        $("#btnBulkStatus").click(function () {
+    //     $("#btnBulkStatus").click(function () {
 
-        var ids = [];
+    //     var ids = [];
 
-        $("input[name='selectedStudents']:checked")
-            .each(function () {
+    //     $("input[name='selectedStudents']:checked")
+    //         .each(function () {
 
-                ids.push($(this).val());
+    //             ids.push($(this).val());
 
-            });
+    //         });
 
-        if (ids.length == 0)
-        {
-            alert("Select student first");
-            return;
-        }
+    //     if (ids.length == 0)
+    //     {
+    //         alert("Select student first");
+    //         return;
+    //     }
 
-        $("#StudentIds").val(ids.join(','));
-           var modal =
-        new bootstrap.Modal(
-            document.getElementById('statusModal')
-        );
-       modal.show();
+    //     $("#StudentIds").val(ids.join(','));
+    //        var modal =
+    //     new bootstrap.Modal(
+    //         document.getElementById('statusModal')
+    //     );
+    //    modal.show();
 
-    });
-        $("#btnSaveStatus").click(function () {
+    // });
+    //     $("#btnSaveStatus").click(function () {
+    //    e.preventDefault();
 
-        $.ajax({
-            url: '/Students/UpdateStudentStatus',
-            type: 'POST',
-            data: {
-                StudentIds: $("#StudentIds").val(),
-                StatusId: $("#StatusId").val(),
-                ClassId: $("#ClassId").val(),
-                SectionId: $("#SectionId").val(),
-                BatchId: $("#BatchId").val()
-            },
-            success: function (res) {
+    // var btn = $(this);
 
-                if (res.success) {                                                                                                                                                                                            
-                    Swal.fire(
-                        'Success',
-                        res.message,
-                        'success'
-                    ).then(() => {
+    // // Prevent multiple clicks / duplicate requests
+    // if (btn.prop("disabled")) {
+    //     return;
+    // }
 
-                        location.reload();
+    // // Disable immediately
+    // btn.prop("disabled", true);
+    //  btn.html(
+    //     '<span class="spinner-border spinner-border-sm me-1" ' +
+    //     'role="status" aria-hidden="true"></span>' +
+    //     'Saving...'
+    // );
+    //     $.ajax({
+    //         url: '/Students/UpdateStudentStatus',
+    //         type: 'POST',
+    //         data: {
+    //             StudentIds: $("#StudentIds").val(),
+    //             StatusId: $("#StatusId").val(),
+    //             ClassId: $("#ClassId").val(),
+    //             SectionId: $("#SectionId").val(),
+    //             BatchId: $("#BatchId").val()
+    //         },
+    //         success: function (res) {
 
-                    });
-                }
-                else {
-                    alert(res.message);
-                    Swal.fire(
-                        'Error',
-                        res.message,
-                        'error');
-                }
+    //             if (res.success) {                                                                                                                                                                                            
+    //                 Swal.fire(
+    //                     'Success',
+    //                     res.message,
+    //                     'success'
+    //                 ).then(() => {
+
+    //                     location.reload();
+
+    //                 });
+    //             }
+    //             else {
+    //                  btn.prop("disabled", false);
+    //             btn.html("Save");
+    //                 alert(res.message);
+    //                 Swal.fire(
+    //                     'Error',
+    //                     res.message,
+    //                     'error');
+    //             }
+    //         }
+    //     });
+
+    // });
+    $("#btnSaveStatus").on("click", function (e) {
+
+    e.preventDefault();
+
+    var btn = $(this);
+
+    // Prevent multiple clicks / duplicate requests
+    if (btn.prop("disabled")) {
+        return;
+    }
+
+    // Disable immediately
+    btn.prop("disabled", true);
+
+    // Show saving state
+    btn.html(
+        '<span class="spinner-border spinner-border-sm me-1" ' +
+        'role="status" aria-hidden="true"></span>' +
+        'Saving...'
+    );
+
+    $.ajax({
+        url: '/Students/UpdateStudentStatus',
+        type: 'POST',
+
+        data: {
+            StudentIds: $("#StudentIds").val(),
+            StatusId: $("#StatusId").val(),
+            ClassId: $("#ClassId").val(),
+            SectionId: $("#SectionId").val(),
+            BatchId: $("#BatchId").val()
+        },
+
+        success: function (res) {
+
+            if (res.success) {
+
+                Swal.fire({
+                    icon: "success",
+                    title: "Success",
+                    text: res.message || "Saved Successfully!",
+                    timer: 2000,
+                    showConfirmButton: false,
+                    allowOutsideClick: false,
+                    allowEscapeKey: false
+                }).then(function () {
+
+                    location.reload();
+
+                });
+
             }
-        });
+            else {
 
+                // Enable button again on server-side failure
+                btn.prop("disabled", false);
+
+                btn.html("Save");
+
+                Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: res.message || "Something went wrong.",
+                    confirmButtonText: "OK"
+                });
+            }
+        },
+
+        error: function (xhr, status, error) {
+
+            // Enable button again on AJAX/server error
+            btn.prop("disabled", false);
+
+            btn.html("Save");
+
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: "An error occurred while saving.",
+                confirmButtonText: "OK"
+            });
+        }
     });
+});
 </script>
 }

@@ -10,7 +10,9 @@
         public string? MotherName { get; set; }
         public string? GuardianName { get; set; }
         public string? MobileNo { get; set; }
-
+        public string? UserName { get; set; }
+        public string? Password { get; set; }
+        public string? Email { get; set; }
         public int? CategoryId { get; set; }
 
         public int? GenderId { get; set; }
@@ -62,6 +64,10 @@
 
         public string? ClassName { get; set; }
         public string? SectionName { get; set; }
+        public string? MobileNo { get; set; }
+        public string? UserName { get; set; }
+        public string? Password { get; set; }
+       
     }
     public class StudentReportPageVM
     {

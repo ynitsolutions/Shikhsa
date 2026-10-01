@@ -220,9 +220,7 @@ namespace Shikhsa.Controllers
         }
         public List<Batches> GetBatchList()
         {
-            return  _context.Batches
-
-                .Where(x => x.IsActive)
+            return  _context.Batches.Where(x => (x.ActiveForAdmission || x.ActiveForRegistration) && x.IsActive == true)
 
                 .OrderByDescending(x => x.BatchId)
 

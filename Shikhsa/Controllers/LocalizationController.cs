@@ -88,7 +88,7 @@ namespace Shikhsa.Controllers
             return View(model);
         }
         [HttpPost]
-        public async Task<IActionResult> Save(List<TranslationGridVM> model)
+        public async Task<IActionResult> SaveIndex(List<TranslationGridVM> model)
         {
             var languages = await _context.Languages
                 .Where(x => x.IsActive)

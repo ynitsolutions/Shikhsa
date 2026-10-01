@@ -11,15 +11,15 @@
         <div class="d-flex justify-content-between align-items-center">
 
             <h5 class="mb-0">
-                Notification Templates
+                @Localizer.Get("Notification Templates")
             </h5>
 
             <a asp-action="SaveNotificationTemplate"
                class="btn btn-light">
 
-                <i class="bi bi-plus-circle"></i>
+                <i class="fa fa-plus-circle"></i>
 
-                Add Template
+                @Localizer.Get("Add Template")
 
             </a>
 
@@ -29,35 +29,34 @@
 
     <div class="card-body">
 
-        <table class="table table-bordered table-striped table-hover"
-               id="tblTemplate">
+        <table class="table table-bordered table-striped table-hover datatable" id="tblTemplate">
 
             <thead>
 
                 <tr>
 
                     <th width="70">
-                        Id
+                        @Localizer.Get("Id")
                     </th>
 
                     <th>
-                        Template
+                        @Localizer.Get("Template")
                     </th>
 
                     <th>
-                        Code
+                        @Localizer.Get("Code")
                     </th>
 
                     <th>
-                        Channel
+                        @Localizer.Get("Channel")
                     </th>
 
                     <th width="90">
-                        Status
+                        @Localizer.Get("Status")
                     </th>
 
                     <th width="120">
-                        Action
+                        @Localizer.Get("Action")
                     </th>
 
                 </tr>
@@ -99,13 +98,13 @@
                             @if (item.IsActive)
                             {
                                 <span class="badge bg-success">
-                                    Active
+                                    @Localizer.Get("Active")
                                 </span>
                             }
                             else
                             {
                                 <span class="badge bg-danger">
-                                    Inactive
+                                    @Localizer.Get("Inactive")
                                 </span>
                             }
 
@@ -117,14 +116,14 @@
                                asp-route-id="@item.NotificationTemplateId"
                                class="btn btn-warning btn-sm">
 
-                                <i class="bi bi-pencil-square"></i>
+                                <i class="fa fa-pencil-square"></i>
 
                             </a>
 
                             <button class="btn btn-danger btn-sm"
                                     onclick="Delete(@item.NotificationTemplateId)">
 
-                                <i class="bi bi-trash"></i>
+                                <i class="fa fa-trash"></i>
 
                             </button>
 
@@ -144,19 +143,19 @@
 
     <script>
 
-        $(function(){
+        // $(function(){
 
-            $("#tblTemplate").DataTable({
+        //     $("#tblTemplate").DataTable({
 
-                responsive:true,
+        //         responsive:true,
 
-                pageLength:10,
+        //         pageLength:10,
 
-                ordering:true
+        //         ordering:true
 
-            });
+        //     });
 
-        });
+        // });
 
         function Delete(id){
 

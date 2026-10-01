@@ -13,7 +13,7 @@
                         <h5 class="mb-0">@Localizer.Get("Data List")</h5>
                         <permission controller="Masters" action="DataLIst" type="create">
                             <a asp-action="SaveDataLIst" class="btn btn-primary btn-sm">
-                                <i class="bi bi-plus-circle"></i>
+                                <i class="fa fa-plus-circle"></i>
                                 @Localizer.Get("New Data List")
                             </a>
                         </permission>
@@ -58,7 +58,7 @@
                                                 <div class="d-flex flex-wrap gap-1">
                                                     <permission controller="Masters" action="DataList" type="Edit">
                                                         <a asp-action="SaveDataList" asp-route-id="@item.DataListId" class="btn btn-warning btn-sm">
-                                                            <i class="bi bi-pencil"></i> @Localizer.Get("Edit")
+                                                            <i class="fa fa-pencil"></i> @Localizer.Get("Edit")
                                                         </a>
                                                     </permission>
                                                     <permission controller="Masters" action="DataList" type="Edit">

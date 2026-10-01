@@ -95,8 +95,8 @@ namespace Shikhsa.Controllers
                 var oldMappings = _context.NotificationTemplateCategories
                     .Where(x => x.NotificationTemplateId == model.NotificationTemplateId);
 
-                _context.NotificationTemplateCategories.RemoveRange(oldMappings);
-
+               _context.NotificationTemplateCategories.RemoveRange(oldMappings);
+               
                 foreach (var categoryId in categoryIds)
                 {
                     _context.NotificationTemplateCategories.Add(

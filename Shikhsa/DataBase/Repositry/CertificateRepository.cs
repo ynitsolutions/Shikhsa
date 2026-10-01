@@ -46,9 +46,10 @@ namespace Shikhsa.DataBase.Repositry
         public async Task<bool> DeleteAsync(int id)
         {
             var existing = await _context.Certificates.FindAsync(id);
-            if (existing == null) return false;
-
-            _context.Certificates.Remove(existing);
+            if (existing == null) 
+                return false;
+            existing.IsActive = !existing.IsActive;
+            //_context.Certificates.Remove(existing);
             await _context.SaveChangesAsync();
             return true;
         }

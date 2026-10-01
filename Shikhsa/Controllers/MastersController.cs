@@ -1555,7 +1555,8 @@ namespace Shikhsa.Controllers
 
             if (batch != null)
             {
-                _context.Batches.Remove(batch);
+                batch.IsActive = !batch.IsActive;
+               // _context.Batches.Remove(batch);
                 _context.SaveChanges();
             }
 
@@ -1927,7 +1928,8 @@ namespace Shikhsa.Controllers
 
             if (subject != null)
             {
-                _context.SubjectMasters.Remove(subject);
+                subject.IsActive = !subject.IsActive;
+                //_context.SubjectMasters.Remove(subject);
                 _context.SaveChanges();
             }
 

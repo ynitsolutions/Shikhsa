@@ -46,7 +46,7 @@ namespace Shikhsa.Controllers
             vm.Classes = GetDataListItems("Class");
 
 
-            vm.Batches = _context.Batches.Where(s => s.IsActive == true && s.ActiveForAdmission == true)
+            vm.Batches = _context.Batches.Where(s => (s.IsActive == true && s.ActiveForAdmission == true) && s.IsActive == true)
                     .Select(x => new Batches
                     {
                         BatchId = x.BatchId,

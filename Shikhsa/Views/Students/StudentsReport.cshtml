@@ -112,7 +112,7 @@
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" name="Filter.SelectedColumns" value="StudentName"
                                    checked="@(Model.Filter.SelectedColumns?.Contains("StudentName") == true)" id="colStudent" />
-                            <label class="form-check-label small" for="colStudent">@Localizer.Get("Student") @Localizer.Get("Name")</label>
+                            <label class="form-check-label small" for="colStudent">@Localizer.Get("Student Name")</label>
                         </div>
                     </div>
 
@@ -120,7 +120,7 @@
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" name="Filter.SelectedColumns" value="FatherName"
                                    checked="@(Model.Filter.SelectedColumns?.Contains("FatherName") == true)" id="colFather" />
-                            <label class="form-check-label small" for="colFather">@Localizer.Get("Father") @Localizer.Get("Name")</label>
+                            <label class="form-check-label small" for="colFather">@Localizer.Get("Father Name")</label>
                         </div>
                     </div>
 
@@ -128,7 +128,7 @@
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" name="Filter.SelectedColumns" value="MotherName"
                                    checked="@(Model.Filter.SelectedColumns?.Contains("MotherName") == true)" id="colMother" />
-                            <label class="form-check-label small" for="colMother">@Localizer.Get("Mother") @Localizer.Get("Name")</label>
+                            <label class="form-check-label small" for="colMother">@Localizer.Get("Mother Name")</label>
                         </div>
                     </div>
 
@@ -136,7 +136,7 @@
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" name="Filter.SelectedColumns" value="GuardianName"
                                    checked="@(Model.Filter.SelectedColumns?.Contains("GuardianName") == true)" id="colGuardian" />
-                            <label class="form-check-label small" for="colGuardian">@Localizer.Get("Guardian") @Localizer.Get("Name")</label>
+                            <label class="form-check-label small" for="colGuardian">@Localizer.Get("Guardian Name")</label>
                         </div>
                     </div>
 
@@ -144,7 +144,7 @@
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" name="Filter.SelectedColumns" value="LocalAddress"
                                    checked="@(Model.Filter.SelectedColumns?.Contains("LocalAddress") == true)" id="colLocal" />
-                            <label class="form-check-label small" for="colLocal">@Localizer.Get("Local") @Localizer.Get("Address")</label>
+                            <label class="form-check-label small" for="colLocal">@Localizer.Get("Local Address")</label>
                         </div>
                     </div>
 
@@ -152,7 +152,7 @@
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" name="Filter.SelectedColumns" value="PermanentAddress"
                                    checked="@(Model.Filter.SelectedColumns?.Contains("PermanentAddress") == true)" id="colPermanent" />
-                            <label class="form-check-label small" for="colPermanent">@Localizer.Get("Permanent") @Localizer.Get("Address")</label>
+                            <label class="form-check-label small" for="colPermanent">@Localizer.Get("Permanent Address")</label>
                         </div>
                     </div>
 
@@ -202,8 +202,8 @@
                         <button type="submit" class="btn btn-primary btn-sm d-flex align-items-center gap-1">
                             <i class="ti ti-search"></i> @Localizer.Get("Search")
                         </button>
-                        <button type="submit" formaction="@Url.Action("ExportExcel")" class="btn btn-success btn-sm d-flex align-items-center gap-1">
-                            <i class="ti ti-excel ti ti-download"></i> @Localizer.Get("Export")
+                        <button type="submit" name="Page" value="Report" formaction="@Url.Action("ExportExcel")" class="btn btn-success btn-sm d-flex align-items-center gap-1">
+                            <i class="ti ti-file-spreadsheet"></i>@Localizer.Get("Export")
                         </button>
                         <a href="javascript:void(0);" class="btn btn-warning btn-sm d-flex align-items-center gap-1" id="btnBulkStatus">
                             <i class="ti ti-reload"></i> @Localizer.Get("Bulk Status Update")
@@ -525,7 +525,15 @@
         // Save status
         $("#btnSaveStatus").click(function() {
             var btn = $(this);
-            btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> @Localizer.Get("Saving...")');
+              if (btn.prop("disabled"))
+              {
+                return;
+              }
+
+            // Disable immediately
+            btn.prop("disabled", true);
+
+            btn.html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> @Localizer.Get("Saving...")');
 
             $.ajax({
                 url: '/Students/UpdateStudentStatus',
@@ -549,7 +557,11 @@
                         }).then(() => {
                             location.reload();
                         });
-                    } else {
+                    } 
+                    else
+                    {
+                         btn.prop("disabled", false);
+                            btn.html('@Localizer.Get("Save")');
                         Swal.fire({
                             icon: 'error',
                             title: '@Localizer.Get("Error")',
@@ -559,7 +571,8 @@
                     }
                 },
                 error: function() {
-                    btn.prop('disabled', false).html('@Localizer.Get("Save")');
+                    btn.prop('disabled', false);
+                    btn.html('@Localizer.Get("Save")');
                     Swal.fire({
                         icon: 'error',
                         title: '@Localizer.Get("Error")',

@@ -40,8 +40,11 @@ namespace Shikhsa.DataBase.Repositry
         public async Task Delete(int id)
         {
             var obj = await _context.GradingCriteria.FindAsync(id);
+            if (obj == null)
+                return;
 
-            _context.Remove(obj);
+            obj.IsActive = !obj.IsActive;
+            // _context.Remove(obj);
 
             await _context.SaveChangesAsync();
         }

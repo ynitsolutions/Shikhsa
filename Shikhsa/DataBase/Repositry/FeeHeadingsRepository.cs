@@ -912,14 +912,7 @@ namespace Shikhsa.Repository
             // Batch name
             if (student.AdmitBatchId.HasValue)
             {
-                result.BatchName =
-                    _context.Batches
-                        .Where(x =>
-                            x.BatchId ==
-                            student.AdmitBatchId.Value)
-                        .Select(x => x.AcademicYear)
-                        .FirstOrDefault()
-                    ?? string.Empty;
+                result.BatchName = _context.Batches.Where(x => x.BatchId == student.AdmitBatchId.Value).Select(x => x.AcademicYear).FirstOrDefault() ?? string.Empty;
             }
 
 
