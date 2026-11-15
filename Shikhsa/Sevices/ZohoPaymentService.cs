@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.DataProtection;
+using Microsoft.EntityFrameworkCore;
 using Shikhsa.Data;
 using Shikhsa.Models.Payment;
 using System.Globalization;
@@ -51,11 +52,12 @@ namespace Shikhsa.Services
         // Multi-instance hosting me IDistributedCache use karna.
         private static ZohoAccessToken? _cachedToken;
         private static readonly SemaphoreSlim TokenLock = new(1, 1);
-
-        public ZohoPaymentService(ApplicationDbContext context, ILogger<ZohoPaymentService> logger)
+        private readonly IDataProtector _pgProtector;
+        public ZohoPaymentService(ApplicationDbContext context, ILogger<ZohoPaymentService> logger, IDataProtectionProvider dataProtectionProvider)
         {
             _context = context;
             _logger = logger;
+            _pgProtector = dataProtectionProvider.CreateProtector("PaymentGatewaySettingValue");
         }
 
         // =========================================================
@@ -502,6 +504,46 @@ namespace Shikhsa.Services
             return CryptographicOperations.FixedTimeEquals(
                 Encoding.UTF8.GetBytes(computed),
                 Encoding.UTF8.GetBytes(v.ToLowerInvariant()));
+        }
+        private async Task<ZohoPaymentSettings?> GetZohoSettingsAsync()
+        {
+            var c = await GetGatewayConfigAsync("Zoho");
+            if (!c.Any()) return null;
+
+            string Get(string k) => c.TryGetValue(k, out var v) ? v : string.Empty;
+
+            return new ZohoPaymentSettings
+            {
+                AccountId = Get("AccountId"),
+                ClientId = Get("ClientId"),
+
+                ClientSecret = Get("ClientSecret"),
+                RefreshToken = Get("RefreshToken"),
+                SigningKey = Get("SigningKey"),
+                WebhookSigningKey = Get("WebhookSigningKey"),
+                AccountsBaseUrl = Get("AccountsBaseUrl"),
+                ApiBaseUrl = Get("ApiBaseUrl"),
+                CheckoutBaseUrl = Get("CheckoutBaseUrl"),
+                SuccessUrl = Get("SuccessUrl"),
+                FailureUrl = Get("FailureUrl"),
+                ApiKey = Get("ApiKey")
+            };
+        }
+        private async Task<Dictionary<string, string>> GetGatewayConfigAsync(string gatewayName)
+        {
+            var g = await _context.PaymentGatewaySettings
+                .Include(x => x.Values)
+                .FirstOrDefaultAsync(x => x.GatewayName == gatewayName && x.IsActive);
+
+            var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            if (g == null) return result;
+
+            foreach (var v in g.Values)
+                result[v.SettingKey] = v.IsSecret && !string.IsNullOrEmpty(v.SettingValue)
+                    ? _pgProtector.Unprotect(v.SettingValue)
+                    : v.SettingValue;
+
+            return result;
         }
     }
 }

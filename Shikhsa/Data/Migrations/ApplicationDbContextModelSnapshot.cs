@@ -128,6 +128,82 @@ namespace Shikhsa.Data.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("SchoolEmailSetting", b =>
+                {
+                    b.Property<long>("EmailSettingId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("EmailSettingId"));
+
+                    b.Property<string>("AddedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("AddedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("EnableSsl")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("FromEmail")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("FromName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Host")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsEmailActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Password")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Port")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Priority")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ProviderName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("SchoolId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("EmailSettingId");
+
+                    b.HasIndex("SchoolId", "Priority")
+                        .IsUnique()
+                        .HasFilter("[IsActive] = 1");
+
+                    b.ToTable("SchoolEmailSettings");
+                });
+
             modelBuilder.Entity("SchoolMaster", b =>
                 {
                     b.Property<int>("SchoolId")
@@ -857,6 +933,12 @@ namespace Shikhsa.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
+                    b.Property<string>("AddedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("AddedDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("AdmissionNo")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
@@ -916,6 +998,9 @@ namespace Shikhsa.Data.Migrations
                     b.Property<string>("GeneralConduct")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
 
                     b.Property<DateTime?>("IssueDate")
                         .HasColumnType("datetime2");
@@ -990,6 +1075,12 @@ namespace Shikhsa.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(2)
                         .HasColumnType("nvarchar(2)");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
@@ -1347,7 +1438,6 @@ namespace Shikhsa.Data.Migrations
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsActive")
@@ -1388,7 +1478,8 @@ namespace Shikhsa.Data.Migrations
 
                     b.Property<string>("DataListItemValue")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<int>("DisplayOrder")
                         .HasColumnType("int");
@@ -2490,6 +2581,9 @@ namespace Shikhsa.Data.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("bit");
+
                     b.Property<string>("MerchId")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -2539,7 +2633,41 @@ namespace Shikhsa.Data.Migrations
 
                     b.HasKey("PaymentGatewaySettingId");
 
+                    b.HasIndex("GatewayName")
+                        .IsUnique()
+                        .HasFilter("[IsDeleted] = 0");
+
                     b.ToTable("PaymentGatewaySettings");
+                });
+
+            modelBuilder.Entity("Shikhsa.Models.Payment.PaymentGatewaySettingValue", b =>
+                {
+                    b.Property<int>("PaymentGatewaySettingValueId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PaymentGatewaySettingValueId"));
+
+                    b.Property<bool>("IsSecret")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("PaymentGatewaySettingId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SettingKey")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("SettingValue")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("PaymentGatewaySettingValueId");
+
+                    b.HasIndex("PaymentGatewaySettingId", "SettingKey")
+                        .IsUnique();
+
+                    b.ToTable("PaymentGatewaySettingValues");
                 });
 
             modelBuilder.Entity("Shikhsa.Models.Payment.PaymentTransactionDetail", b =>
@@ -4800,6 +4928,17 @@ namespace Shikhsa.Data.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("SchoolEmailSetting", b =>
+                {
+                    b.HasOne("SchoolMaster", "School")
+                        .WithMany("EmailSettings")
+                        .HasForeignKey("SchoolId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("School");
+                });
+
             modelBuilder.Entity("Shikhsa.Data.Menu", b =>
                 {
                     b.HasOne("Shikhsa.Data.Menu", "Parent")
@@ -5110,6 +5249,17 @@ namespace Shikhsa.Data.Migrations
                     b.Navigation("FeeReceipt");
 
                     b.Navigation("StudentFee");
+                });
+
+            modelBuilder.Entity("Shikhsa.Models.Payment.PaymentGatewaySettingValue", b =>
+                {
+                    b.HasOne("Shikhsa.Models.Payment.PaymentGatewaySetting", "Gateway")
+                        .WithMany("Values")
+                        .HasForeignKey("PaymentGatewaySettingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Gateway");
                 });
 
             modelBuilder.Entity("Shikhsa.Models.Payment.PaymentTransactionDetail", b =>
@@ -5592,6 +5742,11 @@ namespace Shikhsa.Data.Migrations
                     b.Navigation("FeeHeading");
                 });
 
+            modelBuilder.Entity("SchoolMaster", b =>
+                {
+                    b.Navigation("EmailSettings");
+                });
+
             modelBuilder.Entity("Shikhsa.Data.Menu", b =>
                 {
                     b.Navigation("Children");
@@ -5631,6 +5786,11 @@ namespace Shikhsa.Data.Migrations
                     b.Navigation("Credits");
 
                     b.Navigation("Details");
+                });
+
+            modelBuilder.Entity("Shikhsa.Models.Payment.PaymentGatewaySetting", b =>
+                {
+                    b.Navigation("Values");
                 });
 
             modelBuilder.Entity("Shikhsa.Models.Payment.PaymentTransactionDetail", b =>

@@ -313,6 +313,7 @@
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Shikhsa.Data;
@@ -325,15 +326,16 @@ namespace Shikhsa.Services
         private readonly ApplicationDbContext _context;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILogger<AtomPaymentService> _logger;
-
+        private readonly IDataProtector _pgProtector;
         public AtomPaymentService(
             ApplicationDbContext context,
             IHttpClientFactory httpClientFactory,
-            ILogger<AtomPaymentService> logger)
+            ILogger<AtomPaymentService> logger, IDataProtectionProvider dataProtectionProvider)
         {
             _context = context;
             _httpClientFactory = httpClientFactory;
             _logger = logger;
+            _pgProtector = dataProtectionProvider.CreateProtector("PaymentGatewaySettingValue");
         }
 
         public async Task<PaymentGatewaySetting> GetActiveSettingAsync(
@@ -346,7 +348,7 @@ namespace Shikhsa.Services
 
             if (setting == null)
                 throw new InvalidOperationException(
-                    "Koi active ATOM PaymentGatewaySetting nahi mila. Pehle usse configure/DB me add karo.");
+                    "No active Atom payment gateway setting found. Please configure it or add it in the settings first.s");
 
             return setting;
         }
@@ -668,5 +670,6 @@ namespace Shikhsa.Services
             }
             return null;
         }
+        
     }
 }

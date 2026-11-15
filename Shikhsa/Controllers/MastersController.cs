@@ -1,5 +1,6 @@
 ﻿using DocumentFormat.OpenXml.Office2010.Excel;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -9,6 +10,7 @@ using Shikhsa.Data;
 using Shikhsa.Enums;
 using Shikhsa.Helpers;
 using Shikhsa.Models;
+using Shikhsa.Models.Payment;
 using Shikhsa.Services;
 using Shikhsa.ViewModels;
 
@@ -23,11 +25,13 @@ namespace Shikhsa.Controllers
         private readonly IWebHostEnvironment _env;
         private readonly EmailService _emailService;
         private readonly LookupService _lookup;
+        private readonly IDataProtector _emailProtector;
+        private readonly IDataProtector _pgProtector;
         public MastersController(
      ApplicationDbContext context,
      RoleManager<ApplicationRole> roleManager,
      UserManager<ApplicationUser> userManager,
-     PermissionService permissionService, IWebHostEnvironment env, EmailService email, LookupService lookup
+     PermissionService permissionService, IWebHostEnvironment env, EmailService email, LookupService lookup, IDataProtectionProvider dataProtectionProvider
  ) :
             base(userManager, permissionService, context, email, lookup)
         {
@@ -35,6 +39,8 @@ namespace Shikhsa.Controllers
             _roleManager = roleManager;
             _env = env;
             _lookup = lookup;
+            _emailProtector = dataProtectionProvider.CreateProtector("SchoolEmailSetting.Password");
+            _pgProtector = dataProtectionProvider.CreateProtector("PaymentGatewaySettingValue");
         }
         #region Menu
 
@@ -1601,22 +1607,27 @@ namespace Shikhsa.Controllers
         #region School Masters
         public async Task<IActionResult> SchoolMasters()
         {
-            var model = await _context.SchoolMasters
+            var model = await _context.SchoolMasters.Include(s=>s.EmailSettings)
                                       .FirstOrDefaultAsync();
 
             if (model == null)
             {
                 model = new SchoolMaster();
             }
-            var classid = _context.DataLists.Where(x => x.DataListName == "Class" || x.DataListName == "Classes").Select(x => x.DataListId);
-            ViewBag.ClassList = await _context.DataListItems.Where(x => classid.Contains(x.DataListId))
-                .Select(x => new SelectListItem
-                {
-                    Value = x.DataListItemId.ToString(),
-                    Text = x.DataListItemText
-                })
-                .ToListAsync();
-
+            //  var classid = _context.DataLists.Where(x => x.DataListName == "Class" || x.DataListName == "Classes").Select(x => x.DataListId);
+            //ViewBag.ClassList = await _context.DataListItems.Where(x => classid.Contains(x.DataListId))
+            //    .Select(x => new SelectListItem
+            //    {
+            //        Value = x.DataListItemId.ToString(),
+            //        Text = x.DataListItemText
+            //    })
+            //    .ToListAsync();
+            ViewBag.ClassList = GetDataListItems("Class").Select(x => new SelectListItem
+            {
+                Value = x.DataListItemId.ToString(),
+                Text = x.DataListItemText
+            }).ToList();
+            ViewBag.PaymentGateways = await _context.PaymentGatewaySettings.Include(g => g.Values).OrderByDescending(g => g.IsDefault).ThenBy(g => g.GatewayName).ToListAsync();
             return View(model);
         }
         [HttpPost]
@@ -1624,17 +1635,20 @@ namespace Shikhsa.Controllers
         {
             try
             {
-                var classid = _context.DataLists.Where(x => x.DataListName == "Class" || x.DataListName == "Classes").Select(x => x.DataListId);
-                ViewBag.ClassList = await _context.DataListItems.Where(x => classid.Contains(x.DataListId))
-                    .Select(x => new SelectListItem
-                    {
-                        Value = x.DataListItemId.ToString(),
-                        Text = x.DataListItemText
-                    })
-                    .ToListAsync();
+                //var classid = _context.DataLists.Where(x => x.DataListName == "Class" || x.DataListName == "Classes").Select(x => x.DataListId);
+                //ViewBag.ClassList = await _context.DataListItems.Where(x => classid.Contains(x.DataListId))
+                //    .Select(x => new SelectListItem
+                //    {
+                //        Value = x.DataListItemId.ToString(),
+                //        Text = x.DataListItemText
+                //    })
+                //    .ToListAsync();
 
-                //if (!ModelState.IsValid)
-                //    return View("SchoolMasters", model);
+                ViewBag.ClassList = GetDataListItems("Class").Select(x => new SelectListItem
+                {
+                    Value = x.DataListItemId.ToString(),
+                    Text = x.DataListItemText
+                }).ToList();
 
                 if (model.SchoolLogo != null)
                 {
@@ -1661,7 +1675,7 @@ namespace Shikhsa.Controllers
                 {
                     model.AddedDate = DateTime.Now;
                     model.AddedBy = User.Identity.Name;
-
+                    model.EmailSettings = new List<SchoolEmailSetting>();
                     _context.SchoolMasters.Add(model);
                 }
                 else
@@ -1732,11 +1746,297 @@ namespace Shikhsa.Controllers
             catch (Exception ex)
             {
                 ErrorMessage(ex.Message);
-
+                if (model.SchoolId > 0)
+                {
+                    model.EmailSettings = await _context.SchoolEmailSettings
+                                                        .Where(e => e.SchoolId == model.SchoolId)
+                                                        .ToListAsync();
+                }
+                else
+                {
+                    model.EmailSettings = new List<SchoolEmailSetting>();
+                }
                 return View("SchoolMasters", model);
             }
         }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SaveEmailSetting([FromForm] SchoolEmailSetting model)
+        {
+            try
+            {
+                if (model.SchoolId <= 0 || !await _context.SchoolMasters.AnyAsync(s => s.SchoolId == model.SchoolId))
+                    return Json(new { success = false, message = "Please save School Information first." });
 
+                if (string.IsNullOrWhiteSpace(model.ProviderName) || string.IsNullOrWhiteSpace(model.Host) ||
+                    string.IsNullOrWhiteSpace(model.UserName) || string.IsNullOrWhiteSpace(model.FromEmail))
+                    return Json(new { success = false, message = "Provider, Host, User Name and From Email are required." });
+
+                if (model.Port < 1 || model.Port > 65535)
+                    return Json(new { success = false, message = "Port must be between 1 and 65535." });
+
+                if (model.Priority < 1)
+                    return Json(new { success = false, message = "Priority must be 1 or more." });
+
+                bool priorityTaken = await _context.SchoolEmailSettings.AnyAsync(e =>
+                    e.SchoolId == model.SchoolId &&
+                    e.Priority == model.Priority &&
+                    e.EmailSettingId != model.EmailSettingId);
+
+                if (priorityTaken)
+                    return Json(new { success = false, message = $"Priority {model.Priority} is already used. Please choose another." });
+
+                if (model.EmailSettingId == 0)
+                {
+                    if (string.IsNullOrWhiteSpace(model.Password))
+                        return Json(new { success = false, message = "Password is required." });
+
+                    model.Password = _emailProtector.Protect(model.Password);   // store encrypted
+                    model.School = null;
+                    model.AddedDate = DateTime.Now;
+                    model.AddedBy = User.Identity?.Name;
+
+                    _context.SchoolEmailSettings.Add(model);
+                }
+                else
+                {
+                    var existing = await _context.SchoolEmailSettings.FindAsync(model.EmailSettingId);
+                    if (existing == null)
+                        return Json(new { success = false, message = "Email setting not found." });
+
+                    existing.ProviderName = model.ProviderName;
+                    existing.Priority = model.Priority;
+                    existing.Host = model.Host;
+                    existing.Port = model.Port;
+                    existing.UserName = model.UserName;
+                    existing.FromEmail = model.FromEmail;
+                    existing.FromName = model.FromName;
+                    existing.EnableSsl = model.EnableSsl;
+                    existing.IsEmailActive = model.IsEmailActive;
+                    existing.UpdatedDate = DateTime.Now;
+                    existing.UpdatedBy = User.Identity?.Name;
+
+                    // blank password on edit = keep the old one
+                    if (!string.IsNullOrWhiteSpace(model.Password))
+                        existing.Password = _emailProtector.Protect(model.Password);
+                }
+
+                await _context.SaveChangesAsync();
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+        // ---------- 3b) DELETE EMAIL SETTING ----------
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteEmailSetting(int id)
+        {
+            try
+            {
+                var item = await _context.SchoolEmailSettings
+                                         .FirstOrDefaultAsync(e => e.EmailSettingId == id);   // filter ke karan sirf active rows milti hain
+                if (item == null)
+                    return Json(new { success = false, message = "Email setting not found." });
+
+                item.IsActive = false;            // soft delete
+                //item.IsEmailActive = false;
+                item.UpdatedBy = User.Identity?.Name;
+                item.UpdatedDate = DateTime.Now;
+
+                await _context.SaveChangesAsync();
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+        [HttpGet]
+        public async Task<IActionResult> PaymentGateway(int id)
+        {
+            var g = await _context.PaymentGatewaySettings
+                .Include(x => x.Values)
+                .FirstOrDefaultAsync(x => x.PaymentGatewaySettingId == id);
+
+            if (g == null)
+                return Json(new { success = false, message = "Gateway not found." });
+
+            return Json(new
+            {
+                success = true,
+                id = g.PaymentGatewaySettingId,
+                gatewayName = g.GatewayName,
+                isActive = g.IsActive,
+                isDefault = g.IsDefault,
+                values = g.Values.OrderBy(v => v.SettingKey).Select(v => new
+                {
+                    key = v.SettingKey,
+                    value = v.IsSecret ? "" : v.SettingValue,
+                    isSecret = v.IsSecret,
+                    hasValue = !string.IsNullOrEmpty(v.SettingValue)
+                })
+            });
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SavePaymentGateway([FromForm] PaymentGatewaySaveDto dto)
+        {
+            try
+            {
+                var name = (dto.GatewayName ?? "").Trim();
+                if (name == "")
+                    return Json(new { success = false, message = "Gateway name is required." });
+
+                var values = dto.Values
+                    .Where(v => !string.IsNullOrWhiteSpace(v.SettingKey))
+                    .Select(v => { v.SettingKey = v.SettingKey.Trim(); return v; })
+                    .ToList();
+
+                if (!values.Any())
+                    return Json(new { success = false, message = "Add at least one setting." });
+
+                if (values.GroupBy(v => v.SettingKey, StringComparer.OrdinalIgnoreCase).Any(x => x.Count() > 1))
+                    return Json(new { success = false, message = "Duplicate setting keys are not allowed." });
+
+                bool nameTaken = await _context.PaymentGatewaySettings.AnyAsync(g =>
+                    g.GatewayName == name && g.PaymentGatewaySettingId != dto.PaymentGatewaySettingId);
+                if (nameTaken)
+                    return Json(new { success = false, message = $"{name} already exists." });
+
+                PaymentGatewaySetting gateway;
+
+                if (dto.PaymentGatewaySettingId == 0)
+                {
+                    gateway = new PaymentGatewaySetting
+                    {
+                        GatewayName = name,
+                        // typed ATOM columns are not used by key/value gateways
+                        MerchId = string.Empty,
+                        MerchPassword = string.Empty,
+                        ProductId = string.Empty,
+                        AuthUrl = string.Empty,
+                        CheckoutEnvironment = string.Empty,
+                        CheckoutCdn = string.Empty,
+                        RequestEncryptKey = string.Empty,
+                        RequestSalt = string.Empty,
+                        ResponseDecryptKey = string.Empty,
+                        ResponseSalt = string.Empty,
+                        ResponseHashKey = string.Empty,
+                        AddedDate = DateTime.UtcNow,
+                        AddedBy = User.Identity?.Name
+                    };
+                    _context.PaymentGatewaySettings.Add(gateway);
+                }
+                else
+                {
+                    gateway = await _context.PaymentGatewaySettings
+                        .Include(g => g.Values)
+                        .FirstOrDefaultAsync(g => g.PaymentGatewaySettingId == dto.PaymentGatewaySettingId);
+
+                    if (gateway == null)
+                        return Json(new { success = false, message = "Gateway not found." });
+
+                    if (!gateway.Values.Any())
+                        return Json(new { success = false, message = "This gateway uses the old fixed columns and cannot be edited here." });
+
+                    gateway.UpdatedDate = DateTime.UtcNow;
+                    gateway.UpdatedBy = User.Identity?.Name;
+                }
+
+                gateway.GatewayName = name;
+                gateway.IsActive = dto.IsActive;
+
+                if (dto.IsDefault)
+                {
+                    // only one default gateway
+                    var others = await _context.PaymentGatewaySettings
+                        .Where(g => g.IsDefault && g.PaymentGatewaySettingId != gateway.PaymentGatewaySettingId)
+                        .ToListAsync();
+                    foreach (var o in others) o.IsDefault = false;
+                }
+                gateway.IsDefault = dto.IsDefault;
+
+                // sync key/value rows
+                var existing = gateway.Values.ToDictionary(v => v.SettingKey, StringComparer.OrdinalIgnoreCase);
+
+                foreach (var v in values)
+                {
+                    if (existing.TryGetValue(v.SettingKey, out var row))
+                    {
+                        row.IsSecret = v.IsSecret;
+                        if (v.IsSecret)
+                        {
+                            // blank secret on edit = keep old value
+                            if (!string.IsNullOrEmpty(v.SettingValue))
+                                row.SettingValue = _pgProtector.Protect(v.SettingValue);
+                        }
+                        else
+                        {
+                            row.SettingValue = v.SettingValue ?? string.Empty;
+                        }
+                    }
+                    else
+                    {
+                        gateway.Values.Add(new PaymentGatewaySettingValue
+                        {
+                            SettingKey = v.SettingKey,
+                            IsSecret = v.IsSecret,
+                            SettingValue = v.IsSecret
+                                ? (string.IsNullOrEmpty(v.SettingValue) ? "" : _pgProtector.Protect(v.SettingValue))
+                                : (v.SettingValue ?? string.Empty)
+                        });
+                    }
+                }
+
+                // keys removed in the form
+                var keep = new HashSet<string>(values.Select(v => v.SettingKey), StringComparer.OrdinalIgnoreCase);
+                var removed = gateway.Values.Where(v => v.PaymentGatewaySettingValueId != 0 && !keep.Contains(v.SettingKey)).ToList();
+                _context.PaymentGatewaySettingValues.RemoveRange(removed);
+
+                await _context.SaveChangesAsync();
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+
+        // ---- soft delete ----
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeletePaymentGateway(int id)
+        {
+            try
+            {
+                var g = await _context.PaymentGatewaySettings
+                    .Include(x => x.Values)
+                    .FirstOrDefaultAsync(x => x.PaymentGatewaySettingId == id);
+
+                if (g == null)
+                    return Json(new { success = false, message = "Gateway not found." });
+
+                if (!g.Values.Any())
+                    return Json(new { success = false, message = "This gateway uses the old fixed columns and cannot be deleted here." });
+
+                //g.IsDeleted = true;
+                g.IsActive = false;
+                g.IsDefault = false;
+                g.UpdatedBy = User.Identity?.Name;
+                g.UpdatedDate = DateTime.UtcNow;
+
+                await _context.SaveChangesAsync();
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
         #endregion School Masters
         #region Roles
         public async Task<IActionResult> Roles(string id = null)

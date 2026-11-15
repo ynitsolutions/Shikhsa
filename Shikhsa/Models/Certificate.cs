@@ -1,9 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Shikhsa.Models.Common;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Shikhsa.Models
 {
-    public class Certificates
+    public class Certificates:BaseEntity
     {
         public long Id { get; set; }
 

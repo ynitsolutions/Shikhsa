@@ -1,9 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Shikhsa.Models.Common;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Shikhsa.Models.Payment
 {
-    public class PaymentGatewaySetting
+    public class PaymentGatewaySetting:BaseEntity
     {
         [Key]
         public int PaymentGatewaySettingId { get; set; }
@@ -49,19 +50,11 @@ namespace Shikhsa.Models.Payment
         public string ResponseHashKey { get; set; } = string.Empty;
 
         public string? ReturnUrl { get; set; }
+        public ICollection<PaymentGatewaySettingValue> Values { get; set; } = new List<PaymentGatewaySettingValue>();
 
-        public bool IsActive { get; set; } = true;
-
-
-        public DateTime AddedDate { get; set; } = DateTime.UtcNow;
-
-        public DateTime? UpdatedDate { get; set; }
-
-        public string? AddedBy { get; set; }
-
-        public string? UpdatedBy { get; set; }
         [NotMapped]
         public string? ZohoRefreshToken { get; set; }
+        public bool IsDefault { get; set; }
     }
     public sealed class ZohoPaymentSettings
     {
@@ -77,6 +70,40 @@ namespace Shikhsa.Models.Payment
         public string SuccessUrl { get; set; } = "";
         public string FailureUrl { get; set; } = "";
         public string ApiKey { get; set; } = "1003.606c287fdecc969fb8b374b61142d228.f30589966cdc497395b72ce7091525b4";
+    }
+    public class PaymentGatewaySettingValue
+    {
+        [Key]
+        public int PaymentGatewaySettingValueId { get; set; }
+
+        public int PaymentGatewaySettingId { get; set; }
+
+        [ForeignKey(nameof(PaymentGatewaySettingId))]
+        public PaymentGatewaySetting? Gateway { get; set; }
+
+        [Required]
+        public string SettingKey { get; set; } = string.Empty;      // e.g. ClientId, ClientSecret, RefreshToken
+
+        public string SettingValue { get; set; } = string.Empty;    // encrypted when IsSecret = true
+
+        public bool IsSecret { get; set; }
+    }
+
+    // DTOs used by the save action (bound with [FromForm])
+    public class PaymentGatewaySaveDto
+    {
+        public int PaymentGatewaySettingId { get; set; }
+        public string GatewayName { get; set; } = string.Empty;
+        public bool IsActive { get; set; } = true;
+        public bool IsDefault { get; set; }
+        public List<PaymentGatewayValueDto> Values { get; set; } = new();
+    }
+
+    public class PaymentGatewayValueDto
+    {
+        public string SettingKey { get; set; } = string.Empty;
+        public string? SettingValue { get; set; }
+        public bool IsSecret { get; set; }
     }
     //public sealed class ZohoOptions
     //{

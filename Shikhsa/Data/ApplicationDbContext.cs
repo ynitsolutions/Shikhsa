@@ -97,6 +97,8 @@ namespace Shikhsa.Data
         public DbSet<CertificateTemplateCategory> CertificateTemplateCategories { get; set; } = null!;
         public DbSet<GeneratedCertificate> GeneratedCertificates { get; set; } = null!;
         public DbSet<CertificateTypeMaster> CertificateTypes { get; set; } = null!;
+        public DbSet<SchoolEmailSetting> SchoolEmailSettings { get; set; } = null!;
+        public DbSet<PaymentGatewaySettingValue> PaymentGatewaySettingValues { get; set; }
         #endregion Fee
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -539,6 +541,17 @@ namespace Shikhsa.Data
             IsActive = true
         }
     );
+            //builder.Entity<SchoolEmailSetting>().HasQueryFilter(e => e.IsActive);         
+            builder.Entity<SchoolEmailSetting>().HasIndex(e => new { e.SchoolId, e.Priority }).IsUnique().HasFilter("[IsActive] = 1");
+            //builder.Entity<PaymentGatewaySetting>().HasQueryFilter(g => !g.IsDeleted);
+            builder.Entity<PaymentGatewaySetting>()
+                .HasIndex(g => g.GatewayName).IsUnique().HasFilter("[IsDeleted] = 0");
+            //
+            builder.Entity<PaymentGatewaySettingValue>()
+                .HasOne(v => v.Gateway).WithMany(g => g.Values)
+                .HasForeignKey(v => v.PaymentGatewaySettingId).OnDelete(DeleteBehavior.Cascade);
+            builder.Entity<PaymentGatewaySettingValue>()
+                .HasIndex(v => new { v.PaymentGatewaySettingId, v.SettingKey }).IsUnique();
         }
         public override int SaveChanges()
         {
