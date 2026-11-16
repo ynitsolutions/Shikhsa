@@ -23,16 +23,17 @@ namespace Shikhsa.Controllers
         private readonly RoleManager<ApplicationRole> _roleManager;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly LookupService _lookup;
-        public AttendanceController(StaffAttendanceRepository repository, UserManager<ApplicationUser> userManager, EmailService email, ApplicationDbContext context, PermissionService permissionService, StudentAttendanceRepository studentAttendanceRepository, LookupService lookup) : base(userManager, permissionService, context, email,lookup)
+        private readonly LeaveService _leaveService;
+        public AttendanceController(StaffAttendanceRepository repository, UserManager<ApplicationUser> userManager, EmailService email, ApplicationDbContext context, PermissionService permissionService, StudentAttendanceRepository studentAttendanceRepository, LookupService lookup, LeaveService leaveService) : base(userManager, permissionService, context, email,lookup)
         {
             _repository = repository;
             _context = context;
             _studentAttendanceRepository = studentAttendanceRepository;
             _lookup = lookup;
+            _leaveService = leaveService;
         }
 
-        private string CurrentUser =>
-            User.Identity?.Name ?? "System";
+        private string CurrentUser =>User.Identity?.Name ?? "System";
         public async Task<IActionResult>StaffAttendance(DateOnly? attendanceDate, string? search)
         {
             var date = attendanceDate ?? DateOnly.FromDateTime(DateTime.Today);
@@ -176,8 +177,6 @@ namespace Shikhsa.Controllers
 
             return View(vm);
         }
-
-      
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SaveAttendanceType(AttendanceTypeVM model)
@@ -194,7 +193,6 @@ namespace Shikhsa.Controllers
 
             return RedirectToAction(nameof(AttendanceType));
         }
-
         public async Task<IActionResult> DeleteAttendanceTypee(int id)
         {
             await _repository.DeleteAsync(id);
@@ -394,7 +392,6 @@ namespace Shikhsa.Controllers
         //    return vm;
         //}
         #endregion
-       
         public async Task<IActionResult> ViewAttendance(StudentAttendanceReportVM vm)
         {
            // await _lookup.BindAsync(vm, User);
@@ -426,6 +423,21 @@ namespace Shikhsa.Controllers
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 $"Attendance_{DateTime.Now:yyyyMMddHHmmss}.xlsx");
         }
+        #region Leave Management
+        //[HttpPost]
+        //[ValidateAntiForgeryToken]
+        //public async Task<IActionResult> ApplyLeave(LeavePageViewModel model)
+        //{
+        //    model.CurrentUserId = GetCurrentUserId();
+        //    model.CurrentUserType = GetCurrentUserType();
+        //    model.CurrentAcademicYear = GetAcademicYear();
+
+        //    var result = await _leaveService.ApplyLeaveAsync(model, GetStudentClassId());
+        //    TempData[result.Success ? "Success" : "Error"] = result.Message;
+
+        //    return RedirectToAction(nameof(Index));
+        //}
+        #endregion
     }
 
 }

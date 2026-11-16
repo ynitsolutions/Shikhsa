@@ -96,3 +96,10 @@ public class SchoolEmailSetting : BaseEntity
     // Named IsEmailActive so it does not clash with BaseEntity.IsActive
     public bool IsEmailActive { get; set; } = true;
 }
+public class AdminCredentialVm
+{
+    public string UserName { get; set; } = "";
+    public string Email { get; set; } = "";
+    public string? Password { get; set; }
+    public bool Exists { get; set; }
+}

@@ -9,21 +9,6 @@ using System.Text.Json;
 
 namespace Shikhsa.Services
 {
-    //public sealed class ZohoPaymentSettings
-    //{
-    //    public string AccountId { get; set; } = "";
-    //    public string ClientId { get; set; } = "";
-    //    public string ClientSecret { get; set; } = "";
-    //    public string RefreshToken { get; set; } = "";
-    //    public string SigningKey { get; set; } = "";
-    //    public string WebhookSigningKey { get; set; } = "";
-    //    public string AccountsBaseUrl { get; set; } = "https://accounts.zoho.in";
-    //    public string ApiBaseUrl { get; set; } = "https://payments.zoho.in/api/v1";
-    //    public string CheckoutBaseUrl { get; set; } = "https://payments.zoho.in";
-    //    public string SuccessUrl { get; set; } = "";
-    //    public string FailureUrl { get; set; } = "";
-    //}
-
     public sealed record ZohoAccessToken(string AccessToken, DateTime ExpiresOnUtc);
 
     public sealed record ZohoSessionResult(
@@ -44,6 +29,8 @@ namespace Shikhsa.Services
 
     public sealed class ZohoPaymentService
     {
+        private const string GatewayName = "Zoho";
+
         private readonly ApplicationDbContext _context;
         private readonly ILogger<ZohoPaymentService> _logger;
         private static readonly HttpClient Http = new();
@@ -52,7 +39,10 @@ namespace Shikhsa.Services
         // Multi-instance hosting me IDistributedCache use karna.
         private static ZohoAccessToken? _cachedToken;
         private static readonly SemaphoreSlim TokenLock = new(1, 1);
+
+        // same purpose string as MastersController (Payment Gateway tab)
         private readonly IDataProtector _pgProtector;
+
         public ZohoPaymentService(ApplicationDbContext context, ILogger<ZohoPaymentService> logger, IDataProtectionProvider dataProtectionProvider)
         {
             _context = context;
@@ -61,41 +51,121 @@ namespace Shikhsa.Services
         }
 
         // =========================================================
-        // DB Settings
+        // DB Settings  (School Master > Payment Gateway tab, key/value rows)
         // =========================================================
 
         public async Task<ZohoPaymentSettings> GetSettingsAsync(CancellationToken cancellationToken = default)
         {
-            var settings = await _context.PaymentGatewaySettings
-                .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.GatewayName == "ZOHO" && x.IsActive, cancellationToken);
+            var c = await GetGatewayConfigAsync(GatewayName, cancellationToken);
 
-            if (settings == null)
-                throw new InvalidOperationException("Zoho payment gateway configuration was not found in database.");
+            if (!c.Any())
+                throw new InvalidOperationException(
+                    "Zoho payment gateway configuration was not found. Add and activate it in School Master > Payment Gateway.");
 
-            if (string.IsNullOrWhiteSpace(settings.MerchId))
+            string Get(string key, string fallback = "") =>
+                c.TryGetValue(key, out var v) && !string.IsNullOrWhiteSpace(v) ? v.Trim() : fallback;
+
+            var settings = new ZohoPaymentSettings
+            {
+                AccountId = Get("AccountId"),
+                ClientId = Get("ClientId"),
+                ClientSecret = Get("ClientSecret"),
+                RefreshToken = Get("RefreshToken"),
+                SigningKey = Get("SigningKey"),
+                WebhookSigningKey = Get("WebhookSigningKey"),
+                AccountsBaseUrl = Get("AccountsBaseUrl", "https://accounts.zoho.in").TrimEnd('/'),
+                ApiBaseUrl = Get("ApiBaseUrl", "https://payments.zoho.in/api/v1").TrimEnd('/'),
+                CheckoutBaseUrl = Get("CheckoutBaseUrl", "https://payments.zoho.in").TrimEnd('/'),
+                SuccessUrl = Get("SuccessUrl"),
+                FailureUrl = Get("FailureUrl"),
+                ApiKey = Get("ApiKey")
+            };
+
+            if (string.IsNullOrWhiteSpace(settings.AccountId))
                 throw new InvalidOperationException("Zoho AccountId is not configured.");
 
-            if (string.IsNullOrWhiteSpace(settings.RequestEncryptKey))
+            if (string.IsNullOrWhiteSpace(settings.ClientId))
                 throw new InvalidOperationException("Zoho ClientId is not configured.");
 
-            if (string.IsNullOrWhiteSpace(settings.RequestSalt))
+            if (string.IsNullOrWhiteSpace(settings.ClientSecret))
                 throw new InvalidOperationException("Zoho ClientSecret is not configured.");
 
-            return new ZohoPaymentSettings
+            return settings;
+        }
+
+        /// <summary>Decrypted key/value settings of an active gateway (empty if not found).</summary>
+        private async Task<Dictionary<string, string>> GetGatewayConfigAsync(
+            string gatewayName, CancellationToken cancellationToken = default)
+        {
+            var g = await _context.PaymentGatewaySettings
+                .AsNoTracking()
+                .Include(x => x.Values)
+                .FirstOrDefaultAsync(x => x.GatewayName == gatewayName && x.IsActive, cancellationToken);
+
+            var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            if (g == null) return result;
+
+            foreach (var v in g.Values)
             {
-                AccountId = settings.MerchId,
-                ClientId = settings.RequestEncryptKey,
-                ClientSecret = settings.RequestSalt,
-                //RefreshToken = settings.ZohoRefreshToken ?? "",
-                SigningKey = settings.ResponseDecryptKey ?? "",
-                WebhookSigningKey = "",
-                AccountsBaseUrl = settings.AuthUrl,
-                ApiBaseUrl = settings.AuthUrl,
-                CheckoutBaseUrl = settings.AuthUrl,//settings.ZohoCheckoutBaseUrl,
-                SuccessUrl = "https://reunion-suing-arise.ngrok-free.dev/Payment/Success",
-                FailureUrl = "https://reunion-suing-arise.ngrok-free.dev/Payment/Failure"
-            };
+                var value = v.SettingValue ?? string.Empty;
+
+                if (v.IsSecret && value != string.Empty)
+                {
+                    try
+                    {
+                        value = _pgProtector.Unprotect(value);
+                    }
+                    catch (CryptographicException ex)
+                    {
+                        _logger.LogError(ex, "Zoho setting '{Key}' could not be decrypted.", v.SettingKey);
+                        throw new InvalidOperationException(
+                            $"Zoho setting '{v.SettingKey}' could not be decrypted. Please re-enter it in School Master > Payment Gateway.");
+                    }
+                }
+
+                result[v.SettingKey] = value;
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Saves (encrypted) the RefreshToken into the Zoho gateway settings.
+        /// Used after the one-time authorization code exchange.
+        /// </summary>
+        public async Task SaveRefreshTokenAsync(string refreshToken, CancellationToken cancellationToken = default)
+        {
+            var g = await _context.PaymentGatewaySettings
+                .Include(x => x.Values)
+                .FirstOrDefaultAsync(x => x.GatewayName == GatewayName && x.IsActive, cancellationToken);
+
+            if (g == null)
+                throw new InvalidOperationException("Zoho payment gateway configuration was not found.");
+
+            var row = g.Values.FirstOrDefault(v => v.SettingKey.Equals("RefreshToken", StringComparison.OrdinalIgnoreCase));
+            var encrypted = _pgProtector.Protect(refreshToken);
+
+            if (row == null)
+            {
+                g.Values.Add(new PaymentGatewaySettingValue
+                {
+                    SettingKey = "RefreshToken",
+                    SettingValue = encrypted,
+                    IsSecret = true
+                });
+            }
+            else
+            {
+                row.SettingValue = encrypted;
+                row.IsSecret = true;
+            }
+
+            g.UpdatedDate = DateTime.UtcNow;
+            g.UpdatedBy = "ZohoOAuth";
+
+            await _context.SaveChangesAsync(cancellationToken);
+
+            _cachedToken = null;   // next call uses the new refresh token
         }
 
         // =========================================================
@@ -152,6 +222,18 @@ namespace Shikhsa.Services
                     "Zoho response did not include access_token/refresh_token — authorization URL me access_type=offline confirm karo.");
             }
 
+            // save the refresh token (encrypted) in the DB so GetAccessTokenAsync can use it
+            try
+            {
+                await SaveRefreshTokenAsync(refreshToken, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Zoho refresh token could not be saved to the DB.");
+                throw new InvalidOperationException(
+                    "Zoho refresh token mil gaya, par DB me save nahi ho saka: " + ex.Message);
+            }
+
             _cachedToken = new ZohoAccessToken(accessToken, DateTime.UtcNow.AddSeconds(expiresIn));
 
             return (accessToken, refreshToken, expiresIn);
@@ -179,6 +261,7 @@ namespace Shikhsa.Services
                     throw new InvalidOperationException(
                         "Zoho RefreshToken DB me set nahi hai — pehle /Settings/ZohoOAuthSetup se one-time setup complete karo.");
                 }
+
                 var baseUrl = settings.AccountsBaseUrl.TrimEnd('/');
                 var url =
                     $"{baseUrl}/oauth/v2/token" +
@@ -220,82 +303,7 @@ namespace Shikhsa.Services
         // Create Payment Session (Hosted Page)
         // =========================================================
 
-        /* public async Task<ZohoSessionResult> CreatePaymentSessionAsync(decimal amount, string currency, string email, string mobile, string description,string udf1 = "", string udf2 = "", string udf3 = "", string udf4 = "", string udf5 = "",CancellationToken cancellationToken = default)
-         {
-             if (amount <= 0)
-                 throw new ArgumentException("Payment amount must be greater than zero.", nameof(amount));
-
-             try
-             {
-                 var settings = await GetSettingsAsync(cancellationToken);
-                 var accessToken = await GetAccessTokenAsync(cancellationToken);
-
-                 var payload = new
-                 {
-                     amount = amount.ToString("0.00", CultureInfo.InvariantCulture),
-                     currency,
-                     configurations = new
-                     {
-                         hosted_checkout_parameters = new
-                         {
-                             phone = mobile,
-                             description,
-                             email,
-                             success_url = settings.SuccessUrl,
-                             failure_url = settings.FailureUrl,
-                             udf1,
-                             udf2,
-                             udf3,
-                             udf4,
-                             udf5
-                         }
-                     }
-                 };
-
-                 var json = JsonSerializer.Serialize(payload);
-
-                 var url = $"{settings.ApiBaseUrl}/paymentsessions?account_id={Uri.EscapeDataString(settings.AccountId)}";
-
-                 using var request = new HttpRequestMessage(HttpMethod.Post, url);
-                 request.Headers.Add("Authorization", $"Zoho-oauthtoken {accessToken}");
-                 request.Content = new StringContent(json, Encoding.UTF8, "application/json");
-
-                 using var response = await Http.SendAsync(request, HttpCompletionOption.ResponseContentRead, cancellationToken);
-                 var body = await response.Content.ReadAsStringAsync(cancellationToken);
-
-                 if (!response.IsSuccessStatusCode)
-                 {
-                     _logger.LogWarning("Zoho create payment session failed. HTTP={StatusCode}, Response={Response}",
-                         (int)response.StatusCode, body);
-
-                     return new ZohoSessionResult(false, null, null, body,
-                         $"Zoho payment session API returned HTTP {(int)response.StatusCode}.");
-                 }
-
-                 using var doc = JsonDocument.Parse(body);
-                 var root = doc.RootElement;
-
-                 if (!root.TryGetProperty("payments_session", out var session))
-                     return new ZohoSessionResult(false, null, null, body, "Zoho response did not contain payments_session.");
-
-                 var sessionId = session.TryGetProperty("payments_session_id", out var sid) ? sid.GetString() : null;
-                 var accessKey = session.TryGetProperty("access_key", out var ak) ? ak.GetString() : null;
-
-                 if (string.IsNullOrWhiteSpace(sessionId) || string.IsNullOrWhiteSpace(accessKey))
-                 {
-                     return new ZohoSessionResult(false, sessionId, accessKey, body,
-                         "Zoho response missing payments_session_id or access_key.");
-                 }
-
-                 return new ZohoSessionResult(true, sessionId, accessKey, body, null);
-             }
-             catch (Exception ex)
-             {
-                 _logger.LogError(ex, "Unexpected error while creating Zoho payment session.");
-                 return new ZohoSessionResult(false, null, null, null, ex.Message);
-             }
-         }*/
-        public async Task<ZohoSessionResult> CreatePaymentSessionAsync(decimal amount,string currency,string email,string mobile,string description,string customerName = "",string phoneCountryCode = "IN",string udf1 = "",string udf2 = "",string udf3 = "",string udf4 = "",string udf5 = "",CancellationToken cancellationToken = default)
+        public async Task<ZohoSessionResult> CreatePaymentSessionAsync(decimal amount, string currency, string email, string mobile, string description, string customerName = "", string phoneCountryCode = "IN", string udf1 = "", string udf2 = "", string udf3 = "", string udf4 = "", string udf5 = "", CancellationToken cancellationToken = default)
         {
             if (amount <= 0)
                 throw new ArgumentException("Payment amount must be greater than zero.", nameof(amount));
@@ -303,6 +311,13 @@ namespace Shikhsa.Services
             try
             {
                 var settings = await GetSettingsAsync(cancellationToken);
+
+                if (string.IsNullOrWhiteSpace(settings.SuccessUrl) || string.IsNullOrWhiteSpace(settings.FailureUrl))
+                {
+                    return new ZohoSessionResult(false, null, null, null,
+                        "Zoho SuccessUrl / FailureUrl configure nahi hai. School Master > Payment Gateway me bharo.");
+                }
+
                 var accessToken = await GetAccessTokenAsync(cancellationToken);
 
                 var payload = new
@@ -504,46 +519,6 @@ namespace Shikhsa.Services
             return CryptographicOperations.FixedTimeEquals(
                 Encoding.UTF8.GetBytes(computed),
                 Encoding.UTF8.GetBytes(v.ToLowerInvariant()));
-        }
-        private async Task<ZohoPaymentSettings?> GetZohoSettingsAsync()
-        {
-            var c = await GetGatewayConfigAsync("Zoho");
-            if (!c.Any()) return null;
-
-            string Get(string k) => c.TryGetValue(k, out var v) ? v : string.Empty;
-
-            return new ZohoPaymentSettings
-            {
-                AccountId = Get("AccountId"),
-                ClientId = Get("ClientId"),
-
-                ClientSecret = Get("ClientSecret"),
-                RefreshToken = Get("RefreshToken"),
-                SigningKey = Get("SigningKey"),
-                WebhookSigningKey = Get("WebhookSigningKey"),
-                AccountsBaseUrl = Get("AccountsBaseUrl"),
-                ApiBaseUrl = Get("ApiBaseUrl"),
-                CheckoutBaseUrl = Get("CheckoutBaseUrl"),
-                SuccessUrl = Get("SuccessUrl"),
-                FailureUrl = Get("FailureUrl"),
-                ApiKey = Get("ApiKey")
-            };
-        }
-        private async Task<Dictionary<string, string>> GetGatewayConfigAsync(string gatewayName)
-        {
-            var g = await _context.PaymentGatewaySettings
-                .Include(x => x.Values)
-                .FirstOrDefaultAsync(x => x.GatewayName == gatewayName && x.IsActive);
-
-            var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            if (g == null) return result;
-
-            foreach (var v in g.Values)
-                result[v.SettingKey] = v.IsSecret && !string.IsNullOrEmpty(v.SettingValue)
-                    ? _pgProtector.Unprotect(v.SettingValue)
-                    : v.SettingValue;
-
-            return result;
         }
     }
 }

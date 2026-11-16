@@ -218,7 +218,7 @@
                                     <div style="font-size:0.75rem; color:var(--text-muted);">@currentUser?.Email</div>
                                 </div>
                               
-                                    @if (!isYnItSolutions)
+                                    @if (!isYnItSolutions && !isAdmin)
                                     {
                                         <button type="button"
                                         onclick="TriggerGlobalPasswordModal('@UserManager.GetUserId(User)')"
@@ -226,7 +226,7 @@
                                             <i class="ti ti-key" aria-hidden="true"></i> Change Password
                                         </button>
                                     }
-                                @if (!isYnItSolutions)
+                                @if (!isYnItSolutions && !isAdmin)
                                 {
                                    @if (User.IsInRole("Students"))
                                     {

@@ -1274,7 +1274,7 @@ namespace Shikhsa.Controllers
                     // ----------------------------------------------------
 
                     string password =
-                        registration.DOB.ToString("dd/MM/yyyy");
+                        registration.DOB.ToString("ddMMyyyy");
 
 
                     // ----------------------------------------------------

@@ -41,6 +41,7 @@ namespace Shikhsa.Controllers
             _lookup = lookup;
             _emailProtector = dataProtectionProvider.CreateProtector("SchoolEmailSetting.Password");
             _pgProtector = dataProtectionProvider.CreateProtector("PaymentGatewaySettingValue");
+            _userManager = userManager;
         }
         #region Menu
 
@@ -1628,7 +1629,29 @@ namespace Shikhsa.Controllers
                 Text = x.DataListItemText
             }).ToList();
             ViewBag.PaymentGateways = await _context.PaymentGatewaySettings.Include(g => g.Values).OrderByDescending(g => g.IsDefault).ThenBy(g => g.GatewayName).ToListAsync();
+            ViewBag.AdminCredential = await GetSchoolAdminUserAsync();
             return View(model);
+        }
+       
+
+        private const string SchoolAdminRole = "Admin";
+        private const string SuperRole = "YN IT Solutions";
+
+        private async Task<ApplicationUser?> FindSchoolAdminAsync()
+        {
+            var admins = await _userManager.GetUsersInRoleAsync(SchoolAdminRole);
+            foreach (var u in admins.OrderBy(x => x.CreatedAt))
+                if (!await _userManager.IsInRoleAsync(u, SuperRole))
+                    return u;
+            return null;
+        }
+
+        private async Task<AdminCredentialVm> GetSchoolAdminUserAsync()
+        {
+            var u = await FindSchoolAdminAsync();
+            return u == null
+                ? new AdminCredentialVm()
+                : new AdminCredentialVm { UserName = u.UserName ?? "", Email = u.Email ?? "", Password = u.NormalPassword, Exists = true };
         }
         [HttpPost]
         public async Task<IActionResult> SaveSchoolMasters(SchoolMaster model)
@@ -1854,6 +1877,7 @@ namespace Shikhsa.Controllers
                 return Json(new { success = false, message = ex.Message });
             }
         }
+        /* Payment Gateway */
         [HttpGet]
         public async Task<IActionResult> PaymentGateway(int id)
         {
@@ -2037,6 +2061,85 @@ namespace Shikhsa.Controllers
                 return Json(new { success = false, message = ex.Message });
             }
         }
+
+        /* Credentials*/
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AdminCredential(string userName, string email, string? password)
+        {
+            string fullName = (userName ?? "").Trim();
+            email = (email ?? "").Trim();
+
+            if (fullName == "" || email == "")
+                return Json(new { success = false, message = "Full Name and Email are required." });
+
+            var reserved = new[] { "admin", "ynitsolutions", "yn it solutions", "superadmin", "developer" };
+            if (reserved.Contains(fullName.ToLower()) || email.ToLower().EndsWith("@ynitsolutions.com"))
+                return Json(new { success = false, message = "This name / email is reserved." });
+
+            // 1. Existing School Admin check (Duplicate Admin rokne ke liye)
+            var adminUsers = await _userManager.GetUsersInRoleAsync(SchoolAdminRole);
+            var user = adminUsers.FirstOrDefault();
+
+            // 2. Duplicate Email / UserName check (Kisi aur user ke paas same email na ho)
+            var normalizedEmail = email.ToUpperInvariant();
+            bool isDuplicateEmail = await _userManager.Users.AnyAsync(u =>
+                (u.NormalizedEmail == normalizedEmail || u.NormalizedUserName == normalizedEmail) &&
+                (user == null || u.Id != user.Id));
+
+            if (isDuplicateEmail)
+                return Json(new { success = false, message = "Email already exists." });
+
+            // 3. CREATE: Agar koi Admin pehle se nahi hai tabhi naya banega
+            if (user == null)
+            {
+                if (string.IsNullOrWhiteSpace(password))
+                    return Json(new { success = false, message = "Password is required." });
+
+                if (!await _roleManager.RoleExistsAsync(SchoolAdminRole))
+                    return Json(new { success = false, message = $"Role '{SchoolAdminRole}' does not exist." });
+
+                user = new ApplicationUser
+                {
+                    UserName = email,
+                    Email = email,
+                    FullName = fullName,
+                    EmailConfirmed = true,
+                    CreatedAt = DateTime.Now,
+                    IsActive = true,
+                    NormalPassword = password
+                };
+
+                var created = await _userManager.CreateAsync(user, password);
+                if (!created.Succeeded)
+                    return Json(new { success = false, message = string.Join(", ", created.Errors.Select(e => e.Description)) });
+
+                await _userManager.AddToRoleAsync(user, SchoolAdminRole);
+                return Json(new { success = true, message = "Admin user created." });
+            }
+
+            // 4. UPDATE: Agar Admin pehle se hai, toh naya create karne ki jagah usi ko update karein
+            user.UserName = email;
+            user.Email = email;
+            user.FullName = fullName;
+
+            if (!string.IsNullOrWhiteSpace(password))
+            {
+                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+                var rp = await _userManager.ResetPasswordAsync(user, token, password);
+                if (!rp.Succeeded)
+                    return Json(new { success = false, message = string.Join(", ", rp.Errors.Select(e => e.Description)) });
+
+                user.NormalPassword = password;
+            }
+
+            var updated = await _userManager.UpdateAsync(user);
+            if (!updated.Succeeded)
+                return Json(new { success = false, message = string.Join(", ", updated.Errors.Select(e => e.Description)) });
+
+            return Json(new { success = true, message = "Admin user updated." });
+        }
+
         #endregion School Masters
         #region Roles
         public async Task<IActionResult> Roles(string id = null)

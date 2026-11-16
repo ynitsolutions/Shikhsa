@@ -302,7 +302,7 @@ namespace Shikhsa.Controllers
                }).ToListAsync();
 
 
-            ViewBag.RoleList = await _roleManager.Roles
+            ViewBag.RoleList = await _roleManager.Roles.Where(x=>x.Name!="Admin" && x.Name != "YN IT Solutions" && x.Name!= "Students")
 
                 .OrderBy(x => x.Name)
 

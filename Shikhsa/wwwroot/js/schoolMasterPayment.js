@@ -22,8 +22,8 @@
         { key: 'SigningKey', value: '', secret: true },
         { key: 'WebhookSigningKey', value: '', secret: true },
         { key: 'AccountsBaseUrl', value: 'https://accounts.zoho.in', secret: false },
-        { key: 'ApiBaseUrl', value: 'https://accounts.zoho.in', secret: false },
-        { key: 'CheckoutBaseUrl', value: 'https://accounts.zoho.in', secret: false },
+        { key: 'ApiBaseUrl', value: 'https://payments.zoho.in/api/v1', secret: false },
+        { key: 'CheckoutBaseUrl', value: 'https://payments.zoho.in', secret: false },
         { key: 'SuccessUrl', value: '', secret: false },
         { key: 'FailureUrl', value: '', secret: false }
     ];
