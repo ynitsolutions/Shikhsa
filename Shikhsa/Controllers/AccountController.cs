@@ -116,7 +116,7 @@ namespace Shikhsa.Controllers
             bool isYnItSolutions = User.IsInRole("YN IT Solutions");
             if (!isYnItSolutions)
             {
-                if (string.Equals(primaryRole, "Students", StringComparison.OrdinalIgnoreCase) && string.Equals(primaryRole, "Student", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(primaryRole, "Students", StringComparison.OrdinalIgnoreCase) || string.Equals(primaryRole, "Student", StringComparison.OrdinalIgnoreCase))
                 {
                     // Students table se record nikalein jahan UserId match karti ho
                     var student = await _context.Tbl_Students.FirstOrDefaultAsync(s => s.UserId == user.Id);

@@ -105,6 +105,7 @@ builder.Services.AddScoped<CertificateRepository>();
 builder.Services.AddScoped<CertificateTemplateRepository>();
 builder.Services.AddScoped<GeneratedCertificateRepository>();
 builder.Services.AddScoped<CertificateTypeRepository>();
+builder.Services.AddScoped<LeaveService>();
 //builder.Services.Configure<ZohoOptions>(
 //    builder.Configuration.GetSection(ZohoOptions.SectionName));
 

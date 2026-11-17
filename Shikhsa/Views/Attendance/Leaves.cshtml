@@ -1,0 +1,314 @@
+﻿@using Shikhsa.Models
+@using Shikhsa.ViewModels
+@model LeavePageViewModel
+
+@{
+    ViewData["Title"] = "Leave";
+
+    string StatusBadge(LeaveStatus s) => s switch
+    {
+        LeaveStatus.Approved => "bg-success",
+        LeaveStatus.Rejected => "bg-danger",
+        _ => "bg-warning text-dark"
+    };
+}
+
+<style>
+    .leave-body { white-space: pre-wrap; word-break: break-word; }
+    .row-priority { background: #fff8e1; }
+    .table th { white-space: nowrap; }
+</style>
+
+<div class="container-fluid">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="mb-0">Leave</h4>
+        <span class="badge bg-primary fs-6">Session: @Model.CurrentBatchName</span>
+    </div>
+
+    <div class="row">
+
+        @* ========================= APPLY FORM ========================= *@
+        <div class="col-lg-5 mb-3">
+            <div class="card shadow-sm">
+                <div class="card-header fw-bold">Apply for Leave</div>
+                <div class="card-body">
+
+                    <form asp-action="SaveLeaves" asp-controller="Attendance" method="post" id="leaveForm">
+                        @Html.AntiForgeryToken()
+
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+                        <input type="hidden" asp-for="CurrentBatchId" value="@Model.CurrentBatchId" />
+                        <input type="hidden" asp-for="LeaveId" value="@Model.LeaveId" />
+                        @if (Model.IsStudent)
+                        {
+                            <div class="mb-3">
+                                <label asp-for="LeaveSubject" class="form-label">Leave Subject</label>
+                                <input asp-for="LeaveSubject" class="form-control" maxlength="200" />
+                                <span asp-validation-for="LeaveSubject" class="text-danger"></span>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="mb-3">
+                                <label asp-for="LeaveTypeCode" class="form-label">Leave Type</label>
+                                <select asp-for="LeaveTypeCode" asp-items="Model.LeaveTypeDropdown" class="form-select">
+                                    <option value="">-- Select Leave Type --</option>
+                                </select>
+                                <span asp-validation-for="LeaveTypeCode" class="text-danger"></span>
+                            </div>
+
+                            <div class="form-check mb-3">
+                                <input asp-for="IsPaidLeave" class="form-check-input" />
+                                <label asp-for="IsPaidLeave" class="form-check-label">Paid Leave (uncheck = Un-Paid)</label>
+                            </div>
+                        }
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="FromDate" class="form-label">From</label>
+                                <input asp-for="FromDate" type="date" class="form-control" />
+                                <span asp-validation-for="FromDate" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="ToDate" class="form-label">To</label>
+                                <input asp-for="ToDate" type="date" class="form-control" />
+                                <span asp-validation-for="ToDate" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="NoOfDays" class="form-label">No. of Days</label>
+                                <input asp-for="NoOfDays" type="number" step="0.5" min="0.5" class="form-control" />
+                                <span asp-validation-for="NoOfDays" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="ApplicationBody" class="form-label">Application</label>
+                            <textarea asp-for="ApplicationBody" rows="8" class="form-control"
+                                      placeholder="Respected Sir/Madam,&#10;&#10;I request you to grant me leave ...&#10;&#10;Thank you."></textarea>
+                            <span asp-validation-for="ApplicationBody" class="text-danger"></span>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Submit Application</button>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+
+        @* ========================= MY HISTORY ========================= *@
+        <div class="col-lg-7 mb-3">
+            <div class="card shadow-sm">
+                <div class="card-header fw-bold">My Leave History (@Model.CurrentBatchName)</div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered table-hover mb-0 align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Applied</th>
+                                    <th>@(Model.IsStudent ? "Subject" : "Type")</th>
+                                    <th>From</th>
+                                    <th>To</th>
+                                    <th>Days</th>
+                                    <th>Status</th>
+                                    <th>Remarks</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (!Model.MyLeaveHistory.Any())
+                                {
+                                    <tr><td colspan="8" class="text-center text-muted py-3">No leave applications yet.</td></tr>
+                                }
+                                @foreach (var l in Model.MyLeaveHistory)
+                                {
+                                    <tr>
+                                        <td>@l.AppliedDate.ToString("dd-MMM-yyyy")</td>
+                                        <td>
+                                            @if (Model.IsStudent)
+                                            {
+                                                @l.LeaveSubject
+                                            }
+                                            else
+                                            {
+                                                @l.LeaveTypeName
+                                                <small class="text-muted">(@(l.IsPaidLeave ? "Paid" : "Un-Paid"))</small>
+                                            }
+                                        </td>
+                                        <td>@l.FromDate.ToString("dd-MMM-yyyy")</td>
+                                        <td>@l.ToDate.ToString("dd-MMM-yyyy")</td>
+                                        <td>@l.NoOfDays.ToString("0.#")</td>
+                                        <td><span class="badge @StatusBadge(l.Status)">@l.Status</span></td>
+                                        <td>@l.ApproverRemarks</td>
+                                        <td>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary btn-view"
+                                                    data-title="@(Model.IsStudent ? l.LeaveSubject : l.LeaveTypeName)"
+                                                    data-body="@l.ApplicationBody">
+                                                View
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* ========================= APPROVAL TABLE (Admin / Class Teacher) ========================= *@
+    @if (Model.CanApprove)
+    {
+        <div class="card shadow-sm mb-4">
+            <div class="card-header fw-bold">
+                Leave Requests @(Model.IsAdmin ? "(Students & Staff)" : "(My Class Students)")
+                <small class="text-muted ms-2">Pending / today's applications are shown first</small>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered table-hover mb-0 align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Applied</th>
+                                <th>Applicant</th>
+                                <th>Type</th>
+                                <th>Subject / Leave Type</th>
+                                <th>From</th>
+                                <th>To</th>
+                                <th>Days</th>
+                                <th>Status</th>
+                                <th style="width:150px">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (!Model.PendingApprovals.Any())
+                            {
+                                <tr><td colspan="9" class="text-center text-muted py-3">No leave requests.</td></tr>
+                            }
+                            @foreach (var a in Model.PendingApprovals)
+                            {
+                                <tr class="@(a.IsTodayOrPending ? "row-priority" : "")">
+                                    <td>@a.AppliedDate.ToString("dd-MMM-yyyy hh:mm tt")</td>
+                                    <td>@a.ApplicantName</td>
+                                    <td>@a.ApplicantType</td>
+                                    <td>
+                                        @if (a.ApplicantType.Equals("Student", StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            @a.LeaveSubject
+                                        }
+                                        else
+                                        {
+                                            @a.LeaveTypeName
+                                            <small class="text-muted">(@(a.IsPaidLeave ? "Paid" : "Un-Paid"))</small>
+                                        }
+                                    </td>
+                                    <td>@a.FromDate.ToString("dd-MMM-yyyy")</td>
+                                    <td>@a.ToDate.ToString("dd-MMM-yyyy")</td>
+                                    <td>@a.NoOfDays.ToString("0.#")</td>
+                                    <td><span class="badge @StatusBadge(a.Status)">@a.Status</span></td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary btn-view"
+                                                data-title="@a.ApplicantName - @(a.LeaveSubject ?? a.LeaveTypeName)"
+                                                data-body="@a.ApplicationBody">
+                                            View
+                                        </button>
+                                        @if (a.Status == LeaveStatus.Pending)
+                                        {
+                                            <button type="button" class="btn btn-sm btn-primary btn-action"
+                                                    data-id="@a.LeaveId"
+                                                    data-title="@a.ApplicantName - @(a.LeaveSubject ?? a.LeaveTypeName)"
+                                                    data-body="@a.ApplicationBody">
+                                                Action
+                                            </button>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@* ========================= VIEW MODAL ========================= *@
+<div class="modal fade" id="viewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewTitle"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body"><div id="viewBody" class="leave-body"></div></div>
+        </div>
+    </div>
+</div>
+
+@* ========================= APPROVE / REJECT MODAL ========================= *@
+<div class="modal fade" id="actionModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <form asp-action="UpdateLeaves" asp-controller="Attendance" method="post" class="modal-content" id="actionForm">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="leaveId" id="actionLeaveId" />
+            <div class="modal-header">
+                <h5 class="modal-title" id="actionTitle"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="actionBody" class="leave-body border rounded p-2 mb-3 bg-light"></div>
+                <label class="form-label">Remarks <small class="text-muted">(required for reject)</small></label>
+                <textarea name="remarks" id="actionRemarks" rows="3" class="form-control" maxlength="500"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="submit" name="isApproved" value="false" class="btn btn-danger" id="btnReject">Reject</button>
+                <button type="submit" name="isApproved" value="true" class="btn btn-success">Approve</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(function () {
+            // ----- Auto calculate No. of Days from dates (still editable for half day) -----
+            function calcDays() {
+                var f = new Date($('#FromDate').val());
+                var t = new Date($('#ToDate').val());
+                if (isNaN(f) || isNaN(t) || t < f) return;
+                var days = Math.round((t - f) / 86400000) + 1;
+                $('#NoOfDays').val(days);
+            }
+            $('#FromDate, #ToDate').on('change', function () {
+                if ($('#ToDate').val() < $('#FromDate').val()) $('#ToDate').val($('#FromDate').val());
+                calcDays();
+            });
+
+            // ----- View application text -----
+            $(document).on('click', '.btn-view', function () {
+                $('#viewTitle').text($(this).data('title'));
+                $('#viewBody').text($(this).data('body'));      // .text() => safe, keeps line breaks via CSS
+                new bootstrap.Modal(document.getElementById('viewModal')).show();
+            });
+
+            // ----- Approve / Reject -----
+            $(document).on('click', '.btn-action', function () {
+                $('#actionLeaveId').val($(this).data('id'));
+                $('#actionTitle').text($(this).data('title'));
+                $('#actionBody').text($(this).data('body'));
+                $('#actionRemarks').val('');
+                new bootstrap.Modal(document.getElementById('actionModal')).show();
+            });
+
+            $('#btnReject').on('click', function (e) {
+                if (!$('#actionRemarks').val().trim()) {
+                    e.preventDefault();
+                    ShowWarning('Please enter remarks for rejecting the leave.');
+                }
+            });
+        });
+    </script>
+}

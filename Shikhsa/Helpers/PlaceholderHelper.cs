@@ -14,7 +14,15 @@
             string prefix = GetPrefix(obj);
 
             AddObject(dict, obj, prefix);
-        }
+                // Common recipient placeholders for Staff and Student
+                if (prefix == "Staff" || prefix == "Student")
+                {
+                    var fullName = dict.GetValueOrDefault($"{{{{{prefix}.FullName}}}}");
+
+                    if (!string.IsNullOrWhiteSpace(fullName))
+                        dict["{{Recipient.FullName}}"] = fullName;
+                }
+            }
 
         return dict;
     }

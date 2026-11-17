@@ -1283,7 +1283,7 @@ namespace Shikhsa.Controllers
 
                     var user = new ApplicationUser
                     {
-                        UserName = userName,
+                        UserName = registration.Email,
                         FullName = fullName,
                         Email = registration.Email,
                         IsActive = true,

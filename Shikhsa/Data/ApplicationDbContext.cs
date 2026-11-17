@@ -99,6 +99,7 @@ namespace Shikhsa.Data
         public DbSet<CertificateTypeMaster> CertificateTypes { get; set; } = null!;
         public DbSet<SchoolEmailSetting> SchoolEmailSettings { get; set; } = null!;
         public DbSet<PaymentGatewaySettingValue> PaymentGatewaySettingValues { get; set; }
+        public DbSet<LeaveApplication> LeaveApplications { get; set; }
         #endregion Fee
         protected override void OnModelCreating(ModelBuilder builder)
         {

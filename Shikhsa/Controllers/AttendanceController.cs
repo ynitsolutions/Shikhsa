@@ -424,19 +424,197 @@ namespace Shikhsa.Controllers
                 $"Attendance_{DateTime.Now:yyyyMMddHHmmss}.xlsx");
         }
         #region Leave Management
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //public async Task<IActionResult> ApplyLeave(LeavePageViewModel model)
-        //{
-        //    model.CurrentUserId = GetCurrentUserId();
-        //    model.CurrentUserType = GetCurrentUserType();
-        //    model.CurrentAcademicYear = GetAcademicYear();
+        private (int Id, string Role) ResolveLeaveUser()
+        {
+            var sessionRole = GetCurrentUser()?.RoleName ?? "";
 
-        //    var result = await _leaveService.ApplyLeaveAsync(model, GetStudentClassId());
-        //    TempData[result.Success ? "Success" : "Error"] = result.Message;
+            // Normalise every role into exactly three leave user types
+            string role;
+            if (sessionRole.Equals("Student", StringComparison.OrdinalIgnoreCase) ||
+                sessionRole.Equals("Students", StringComparison.OrdinalIgnoreCase))
+                role = "Student";
+            else if (sessionRole.Equals("Admin", StringComparison.OrdinalIgnoreCase) ||
+                     sessionRole.Equals("SuperAdmin", StringComparison.OrdinalIgnoreCase))
+                role = "Admin";
+            else if (sessionRole.Equals("Teacher", StringComparison.OrdinalIgnoreCase) ||
+                sessionRole.Equals("Teachers", StringComparison.OrdinalIgnoreCase))
+                role = "Teacher";
+            else
+                role = "Staff";
 
-        //    return RedirectToAction(nameof(Index));
-        //}
+            var idText = role == "Student"
+                ? HttpContext.Session.GetString("StudentID")
+                : HttpContext.Session.GetString("StaffID");
+
+            int.TryParse(idText, out var id);
+            return (id, role);
+        }
+        [HttpGet]
+        public async Task<IActionResult> Leaves()
+        {
+            var (id, role) = ResolveLeaveUser();
+            if (id == 0 && role != "Admin")
+            {
+                ErrorMessage("Your profile is not linked with a Student/Staff record.");
+                return RedirectToAction("Index", "Dashboard");
+            }
+
+            var vm = await _leaveService.GetLeaveDashboardAsync(id, role);
+            return View(vm);
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SaveLeaves(LeavePageViewModel model)
+        {
+            var (id, role) = ResolveLeaveUser();
+            if (id == 0)
+            {
+                ErrorMessage("Your profile is not linked with a Student/Staff record.");
+                return RedirectToAction(nameof(Leaves));
+            }
+
+            model.CurrentUserId = id;
+            model.CurrentRoleName = role;
+
+            // ---- Role specific validation ----
+            if (role == "Student")
+            {
+                if (string.IsNullOrWhiteSpace(model.LeaveSubject))
+                    ModelState.AddModelError(nameof(model.LeaveSubject), "Leave subject is required");
+
+                // Student never sends leave type / paid flag
+                model.LeaveTypeCode = null;
+                model.LeaveTypeName = null;
+                model.IsPaidLeave = false;
+            }
+            else
+            {
+                if (string.IsNullOrWhiteSpace(model.LeaveTypeCode))
+                {
+                    ModelState.AddModelError(nameof(model.LeaveTypeCode), "Please select leave type");
+                }
+                else
+                {
+                    // Never trust the posted name: read it from AttendanceTypes
+                    var type = await _context.AttendanceTypes.AsNoTracking()
+                        .FirstOrDefaultAsync(a => a.Code == model.LeaveTypeCode && a.IsLeave && a.IsActive);
+
+                    if (type == null)
+                        ModelState.AddModelError(nameof(model.LeaveTypeCode), "Invalid leave type");
+                    else
+                        model.LeaveTypeName = type.Name;
+                }
+                model.LeaveSubject = null;
+            }
+
+            // ---- Date validation ----
+            model.FromDate = model.FromDate.Date;
+            model.ToDate = model.ToDate.Date;
+
+            if (model.ToDate < model.FromDate)
+            {
+                ModelState.AddModelError(nameof(model.ToDate), "To date cannot be before From date");
+            }
+            else
+            {
+                var maxDays = (model.ToDate - model.FromDate).Days + 1;
+                if (model.NoOfDays > maxDays)
+                    ModelState.AddModelError(nameof(model.NoOfDays), $"No. of days cannot be more than {maxDays} for the selected dates");
+            }
+
+            // ---- Overlap check (ignore rejected leaves) ----
+            if (ModelState.IsValid)
+            {
+                bool overlap = await _context.LeaveApplications.AnyAsync(l =>
+                    l.ApplicantId == id &&
+                    l.ApplicantType == role &&
+                    l.Status != LeaveStatus.Rejected &&
+                    l.FromDate <= model.ToDate &&
+                    l.ToDate >= model.FromDate);
+
+                if (overlap)
+                    ModelState.AddModelError("", "You already have a pending/approved leave in these dates.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                // Rebuild lists, keep what the user typed
+                var vm = await _leaveService.GetLeaveDashboardAsync(id, role);
+                vm.LeaveTypeCode = model.LeaveTypeCode;
+                vm.LeaveTypeName = model.LeaveTypeName;
+                vm.IsPaidLeave = model.IsPaidLeave;
+                vm.LeaveSubject = model.LeaveSubject;
+                vm.NoOfDays = model.NoOfDays;
+                vm.FromDate = model.FromDate;
+                vm.ToDate = model.ToDate;
+                vm.ApplicationBody = model.ApplicationBody;
+                return View("Leaves", vm);
+            }
+
+            var result = await _leaveService.ApplyLeaveAsync(model);
+            if (result.Success) SuccessMessage(result.Message); else ErrorMessage(result.Message);
+
+            return RedirectToAction(nameof(Leaves));
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateLeaves(int leaveId, bool isApproved, string? remarks)
+        {
+            var (id, role) = ResolveLeaveUser();
+            if ((id == 0 || role == "Student")&& role != "Admin")
+            {
+                ErrorMessage("Unauthorized action.");
+                return RedirectToAction(nameof(Leaves));
+            }
+
+            var leave = await _context.LeaveApplications.AsNoTracking()
+                .FirstOrDefaultAsync(l => l.LeaveId == leaveId);
+
+            if (leave == null)
+            {
+                ErrorMessage("Leave application not found.");
+                return RedirectToAction(nameof(Leaves));
+            }
+
+            if (leave.Status != LeaveStatus.Pending)
+            {
+                WarningMessage("This leave application is already processed.");
+                return RedirectToAction(nameof(Leaves));
+            }
+
+            // Class teacher may act only on students of his own classes (Admin: everything)
+            if (role != "Admin")
+            {
+                bool isMyClassStudent = leave.ApplicantType.Equals("Student", StringComparison.OrdinalIgnoreCase)
+                    && leave.ClassId.HasValue
+                    && await _context.ClassTeachers.AnyAsync(ct =>
+                           ct.StaffId == id && ct.ClassId == leave.ClassId.Value);
+
+                if (!isMyClassStudent)
+                {
+                    ErrorMessage("You are not allowed to process this leave application.");
+                    return RedirectToAction(nameof(Leaves));
+                }
+            }
+
+            if (!isApproved && string.IsNullOrWhiteSpace(remarks))
+            {
+                ErrorMessage("Please enter remarks while rejecting a leave.");
+                return RedirectToAction(nameof(Leaves));
+            }
+
+            try
+            {
+                var result = await _leaveService.ProcessLeaveActionAsync(leaveId, id, role, isApproved, remarks?.Trim());
+                if (result.Success) SuccessMessage(result.Message); else ErrorMessage(result.Message);
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage(ex.Message);
+            }
+
+            return RedirectToAction(nameof(Leaves));
+        }
         #endregion
     }
 
