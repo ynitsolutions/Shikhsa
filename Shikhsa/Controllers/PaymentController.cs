@@ -1,4 +1,4 @@
-﻿
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -22,6 +22,9 @@ namespace Shikhsa.Controllers
         private readonly ILogger<PaymentController> _logger;
         private readonly IConfiguration _configuration;
 
+        // Sandbox testing me false (log me "signature valid=true" dikhne ke baad true kar dein).
+        // Waise bhi asli faisla CompleteAsync me Zoho se server-side confirm hone par hota hai.
+        private const bool EnforceRedirectSignature = false;
         private const string SessionKey = "PendingOnlineFeeReceipt";
 
         public PaymentController(
@@ -65,6 +68,14 @@ namespace Shikhsa.Controllers
         [SkipPermission]
         public async Task<IActionResult> InitiateFromSession(CancellationToken cancellationToken)
         {
+            _logger.LogWarning(
+                    "InitiateFromSession CALLED | TraceId={TraceId} | Method={Method} | Path={Path} | Referer={Referer} | Time={Time}",
+                    HttpContext.TraceIdentifier,
+                    Request.Method,
+                    Request.Path,
+                    Request.Headers.Referer.ToString(),
+                    DateTime.Now
+                );
             var json = HttpContext.Session.GetString(SessionKey);
 
             if (string.IsNullOrWhiteSpace(json))
@@ -86,7 +97,7 @@ namespace Shikhsa.Controllers
 
             if (vm == null || vm.TotalAmount <= 0)
             {
-                ErrorMessage("Payment data invalid hai. Dobara try karo.");
+                ErrorMessage("Payment data is invalid. Please try again.");
                 return RedirectToAction("FeeReceipt", "FeeHeading");
             }
 
@@ -110,7 +121,13 @@ namespace Shikhsa.Controllers
                 TxnDate = DateTime.Now,
                 TransactionStatus = "Pending",
                 GatewayName = gatewayName,
-                IsActive = true
+                IsActive = true,
+                ApplicationNo=student?.ApplicationNo,
+                PaymentModeId=vm.PaymentModeId,
+                FatherName= $"{student?.Parent?.FatherFirstName} {student?.Parent?.FatherMiddleName} {student?.Parent?.FatherLastName}".Replace("  ", " ").Trim(),
+                // ZOHO: fee snapshot DB me (redirect/webhook ke time session par nirbhar nahi rehna).
+                // Column NVARCHAR(MAX) hona chahiye. ATOM rows ko chhua nahi gaya.
+                GatewaySignature = gatewayName == "ZOHO" ? json : null
             };
 
             _context.PaymentTransactionDetail.Add(transaction);
@@ -171,7 +188,7 @@ namespace Shikhsa.Controllers
             }
 
             checkoutVm.AtomTokenId = authResult.AtomTokenId ?? string.Empty;
-
+            await PopulateCheckoutDetailsAsync(checkoutVm, transaction, student, cancellationToken);
             return View("Checkout", checkoutVm);
         }
 
@@ -301,8 +318,91 @@ namespace Shikhsa.Controllers
 
         #region ZOHO flow
 
+        //private async Task<IActionResult> InitiateZohoAsync(
+        //    PaymentTransactionDetail transaction, StudentFeeReceiptVM vm, Tbl_Students? student,
+        //    CancellationToken cancellationToken)
+        //{
+        //    try
+        //    {
+        //        var email = student?.Email ?? string.Empty;
+        //        var mobile = student?.ContactNo ?? string.Empty;
+
+        //        // udf1 = StudentId, udf2 = PaymentTransactionId, udf3 = ClassId, udf4 = BatchId
+        //        var session = await _zohoPaymentService.CreatePaymentSessionAsync(
+        //                        transaction.Amount,
+        //                        "INR",
+        //                        email,
+        //                        mobile,
+        //                        $"Fee payment for {student?.ApplicationNo}",
+        //                        student != null ? $"{student.FirstName} {student.LastName}".Trim() : "",
+        //                        "IN",
+        //                        transaction.StudentId.ToString(),
+        //                        transaction.PaymentTransactionId.ToString(),
+        //                        vm.ClassId.ToString(),
+        //                        vm.BatchId.ToString(),
+        //                        "",
+        //                        cancellationToken);
+
+        //        transaction.TransactionStatus = session.Success ? "Pending" : "Failed";
+        //        transaction.TransactionError = session.Success ? null : session.ErrorMessage;
+        //        transaction.GatewayResponse = session.RawResponse;
+        //        transaction.GatewayOrderId = session.PaymentsSessionId;
+        //        transaction.TransactionId = session.PaymentsSessionId;
+
+        //        await _context.SaveChangesAsync(cancellationToken);
+
+        //        if (!session.Success || string.IsNullOrWhiteSpace(session.AccessKey))
+        //        {
+        //            ErrorMessage(session.ErrorMessage ?? "Unable to initiate online payment.");
+        //            return RedirectToAction("FeeReceipt", "FeeHeading");
+        //        }
+
+        //        var settings = await _zohoPaymentService.GetSettingsAsync(cancellationToken);
+
+        //        // Zoho hosted checkout docs: https://payments.zoho.in/hostedcheckout/<access_key>
+        //        // (sandbox me host paymentssandbox.zoho.in; settings me CheckoutBaseUrl wahi dega)
+        //        return View("Checkout", new AtomCheckoutVM
+        //        {
+        //            MerchantTransactionId = transaction.TransactionId,
+        //            Amount = transaction.Amount,
+
+        //            // Atom properties: existing values as they are
+        //            AtomTokenId = string.Empty,
+        //            MerchId = string.Empty,
+        //            CustomerEmail = email,
+        //            CustomerMobile = mobile,
+        //            ReturnUrl = string.Empty,
+        //            CheckoutCdn = string.Empty,
+        //            Environment = string.Empty,
+
+        //            // Zoho properties
+        //            ZohoAccountId = settings.AccountId,
+        //            ZohoApiKey = settings.ApiKey,
+        //            ZohoPaymentSessionId = session.PaymentsSessionId,
+        //            ZohoConfirmPaymentUrl = Url.Action(
+        //                "ConfirmZohoWidgetPayment",
+        //                "Payment"
+        //            ),
+        //            ZohoIsTestMode = true
+        //        });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, "Error while initiating Zoho fee payment for StudentId {StudentId}", vm.StudentId);
+
+        //        transaction.TransactionStatus = "Failed";
+        //        transaction.TransactionError = "Unable to initiate payment. Please try again.";
+        //        await _context.SaveChangesAsync(cancellationToken);
+
+        //        ErrorMessage(transaction.TransactionError);
+        //        return RedirectToAction("FeeReceipt", "FeeHeading");
+        //    }
+        //}
+
         private async Task<IActionResult> InitiateZohoAsync(
-            PaymentTransactionDetail transaction, StudentFeeReceiptVM vm, Tbl_Students? student,
+            PaymentTransactionDetail transaction,
+            StudentFeeReceiptVM vm,
+            Tbl_Students? student,
             CancellationToken cancellationToken)
         {
             try
@@ -310,255 +410,321 @@ namespace Shikhsa.Controllers
                 var email = student?.Email ?? string.Empty;
                 var mobile = student?.ContactNo ?? string.Empty;
 
-                //var session = await _zohoPaymentService.CreatePaymentSessionAsync(
-                //    transaction.Amount, "INR", email, mobile,
-                //    $"Fee payment for {student?.ApplicationNo}",
-                //    transaction.StudentId.ToString(),
-                //    transaction.PaymentTransactionId.ToString(),
-                //    vm.ClassId.ToString(), vm.BatchId.ToString(), "",
-                //    cancellationToken);
+                // UDF Mapping:
+                // udf1 = StudentId
+                // udf2 = PaymentTransactionId
+                // udf3 = ClassId
+                // udf4 = BatchId
+
                 var session = await _zohoPaymentService.CreatePaymentSessionAsync(
-                                transaction.Amount,
-                                "INR",
-                                email,
-                                mobile,
-                                $"Fee payment for {student?.ApplicationNo}",
-                                student != null ? $"{student.FirstName} {student.LastName}".Trim() : "",
-                                "IN",
-                                transaction.StudentId.ToString(),
-                                transaction.PaymentTransactionId.ToString(),
-                                vm.ClassId.ToString(),
-                                vm.BatchId.ToString(),
-                                "",
-                                cancellationToken);
-                transaction.TransactionStatus = session.Success ? "Pending" : "Failed";
-                transaction.TransactionError = session.Success ? null : session.ErrorMessage;
-                transaction.GatewayResponse = session.RawResponse;
+                    transaction.Amount,
+                    "INR",
+                    email,
+                    mobile,
+                    $"Fee payment for {student?.ApplicationNo}",
+                    student != null
+                        ? $"{student.FirstName} {student.LastName}".Trim()
+                        : string.Empty,
+                    "IN",
+                    transaction.StudentId.ToString(),
+                    transaction.PaymentTransactionId.ToString(),
+                    vm.ClassId.ToString(),
+                    vm.BatchId.ToString(),
+                    "",
+                    cancellationToken);
+
+                var isSessionCreated =
+                    session.Success &&
+                    !string.IsNullOrWhiteSpace(session.PaymentsSessionId);
+
+                // Common Gateway Information
+                transaction.GatewayName = "ZOHO";
                 transaction.GatewayOrderId = session.PaymentsSessionId;
+                transaction.GatewayPaymentId = null;
                 transaction.TransactionId = session.PaymentsSessionId;
+                transaction.PaymentId = null;
+
+                // Student Information
+                transaction.ApplicationNo = student?.ApplicationNo;
+                transaction.StudentName = student != null
+                    ? $"{student.FirstName} {student.LastName}".Trim()
+                    : transaction.StudentName;
+
+                transaction.ClassId = vm.ClassId;
+                transaction.BatchId = vm.BatchId;
+
+                // Transaction Information
+                transaction.TransactionStatus =
+                    isSessionCreated ? "Pending" : "Failed";
+
+                transaction.TransactionError =
+                    isSessionCreated
+                        ? null
+                        : session.ErrorMessage ??
+                          "Unable to create Zoho payment session.";
+
+                // Preserve Fee Snapshot:
+                // DO NOT clear GatewaySignature.
+                // It contains serialized StudentFeeReceiptVM.
+
+                // Payment is not completed yet
+                transaction.PaymentCompletedOn = null;
+                transaction.ReferenceNo = null;
+
+                // Gateway Response
+                transaction.GatewayResponse = session.RawResponse;
+
+                transaction.UpdatedDate = DateTime.Now;
 
                 await _context.SaveChangesAsync(cancellationToken);
 
-                if (!session.Success || string.IsNullOrWhiteSpace(session.AccessKey))
+                if (!isSessionCreated)
                 {
-                    ErrorMessage(session.ErrorMessage ?? "Unable to initiate online payment.");
+                    ErrorMessage(transaction.TransactionError);
                     return RedirectToAction("FeeReceipt", "FeeHeading");
                 }
 
-                var settings = await _zohoPaymentService.GetSettingsAsync(cancellationToken);
+                var settings = await _zohoPaymentService.GetSettingsAsync(
+                    cancellationToken);
+                var checkoutVm = new AtomCheckoutVM
+                {
+                    MerchantTransactionId = transaction.TransactionId,
+                    Amount = transaction.Amount,
+                    CustomerEmail = email,
+                    CustomerMobile = mobile,
+                    ZohoAccountId = settings.AccountId,
+                    ZohoApiKey = settings.ApiKey,
+                    ZohoPaymentSessionId = session.PaymentsSessionId,
+                    ZohoConfirmPaymentUrl = Url.Action("ConfirmZohoWidgetPayment", "Payment"),
+                    ZohoIsTestMode = true
+                };
 
-                // NOTE: /hostedpages/ verified Zoho docs se — apne account par
-                // ek test payment karke confirm kar lena
-                return Redirect($"{settings.CheckoutBaseUrl}/hostedpages/{session.AccessKey}");
+                // Yahan call karein
+                await PopulateCheckoutDetailsAsync(checkoutVm, transaction, student, cancellationToken);
+
+                return View("Checkout", checkoutVm);
+                //return View("Checkout", new AtomCheckoutVM
+                //{
+                //    MerchantTransactionId = transaction.TransactionId,
+                //    Amount = transaction.Amount,
+
+                //    // Atom properties
+                //    AtomTokenId = string.Empty,
+                //    MerchId = string.Empty,
+                //    CustomerEmail = email,
+                //    CustomerMobile = mobile,
+                //    ReturnUrl = string.Empty,
+                //    CheckoutCdn = string.Empty,
+                //    Environment = string.Empty,
+
+                //    // Zoho properties
+                //    ZohoAccountId = settings.AccountId,
+                //    ZohoApiKey = settings.ApiKey,
+                //    ZohoPaymentSessionId = session.PaymentsSessionId,
+                //    ZohoConfirmPaymentUrl = Url.Action(
+                //        "ConfirmZohoWidgetPayment",
+                //        "Payment"),
+                //    ZohoIsTestMode = true
+                //});
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error while initiating Zoho fee payment for StudentId {StudentId}", vm.StudentId);
+                _logger.LogError(
+                    ex,
+                    "Error initiating Zoho fee payment. StudentId: {StudentId}, TransactionId: {TransactionId}",
+                    transaction.StudentId,
+                    transaction.PaymentTransactionId);
 
                 transaction.TransactionStatus = "Failed";
-                transaction.TransactionError = "Unable to initiate payment. Please try again.";
+                transaction.TransactionError = ex.Message;
+                transaction.UpdatedDate = DateTime.Now;
+
                 await _context.SaveChangesAsync(cancellationToken);
 
-                ErrorMessage(transaction.TransactionError);
+                ErrorMessage("Unable to initiate Zoho payment.");
                 return RedirectToAction("FeeReceipt", "FeeHeading");
             }
         }
 
-        [HttpGet]
-        public async Task<IActionResult> Success(
-            string payments_session_id, string payment_session_status, string? payment_id,
-            string? payment_status, string? amount, string? mandate_id,
-            string? udf1, string? udf2, string? udf3, string? udf4, string? udf5,
-            string signature, CancellationToken cancellationToken)
-        {
-            return await HandleZohoRedirectAsync(
-                payments_session_id, payment_session_status, payment_id, payment_status,
-                amount, mandate_id, udf1, udf2, udf3, udf4, udf5, signature, cancellationToken);
-        }
 
-        [HttpGet]
-        public async Task<IActionResult> Failure(
-            string payments_session_id, string payment_session_status, string? payment_id,
-            string? payment_status, string? amount, string? mandate_id,
-            string? udf1, string? udf2, string? udf3, string? udf4, string? udf5,
-            string signature, CancellationToken cancellationToken)
-        {
-            return await HandleZohoRedirectAsync(
-                payments_session_id, payment_session_status, payment_id, payment_status,
-                amount, mandate_id, udf1, udf2, udf3, udf4, udf5, signature, cancellationToken);
-        }
 
-        private async Task<IActionResult> HandleZohoRedirectAsync(
-            string paymentsSessionId, string paymentSessionStatus, string? paymentId,
-            string? paymentStatus, string? amount, string? mandateId,
-            string? udf1, string? udf2, string? udf3, string? udf4, string? udf5,
-            string signature, CancellationToken cancellationToken)
-        {
-            var signatureValid = await _zohoPaymentService.VerifyRedirectSignatureAsync(
-                paymentsSessionId, paymentSessionStatus, paymentId, paymentStatus,
-                amount, mandateId, udf1, udf2, udf3, udf4, udf5, signature, cancellationToken);
+        // Zoho redirect: GET (docs me query string). POST bhi accept karte hain.'
+        [AcceptVerbs("GET", "POST")]
+        [SkipPermission]
+        public Task<IActionResult> Success() => HandleZohoReturnAsync(isSuccessUrl: true);
 
-            if (!signatureValid)
+        [AcceptVerbs("GET", "POST")]
+        [SkipPermission]
+        public Task<IActionResult> Failure() => HandleZohoReturnAsync(isSuccessUrl: false);
+
+        private async Task<IActionResult> HandleZohoReturnAsync(bool isSuccessUrl)
+        {
+            var ct = HttpContext.RequestAborted;
+
+            string Get(string key) =>
+                Request.HasFormContentType && Request.Form.ContainsKey(key)
+                    ? Request.Form[key].ToString()
+                    : Request.Query[key].ToString();
+
+            _logger.LogInformation("Zoho {Kind} redirect. Method={Method} Query={Query}",
+                isSuccessUrl ? "SUCCESS" : "FAILURE", Request.Method, Request.QueryString);
+
+            string sessionId = Get("payments_session_id");
+
+            // Fallback: udf2 me PaymentTransactionId bheja tha
+            if (string.IsNullOrWhiteSpace(sessionId) && long.TryParse(Get("udf2"), out var ptId))
             {
-                _logger.LogWarning("Invalid Zoho redirect signature. SessionId={SessionId}", paymentsSessionId);
-                return View("Result", AtomPaymentResultVM.Failed("Invalid redirect signature."));
+                sessionId = await _context.PaymentTransactionDetail.AsNoTracking()
+                    .Where(x => x.GatewayName == "ZOHO" && x.PaymentTransactionId == ptId)
+                    .Select(x => x.GatewayOrderId)
+                    .FirstOrDefaultAsync(ct) ?? "";
             }
 
-            var transaction = await _context.PaymentTransactionDetail
-                .Include(x => x.FeeDetails)
-                .Include(x => x.Receipts)
-                .FirstOrDefaultAsync(x => x.GatewayOrderId == paymentsSessionId, cancellationToken);
-
-            if (transaction == null)
-                return View("Result", AtomPaymentResultVM.Failed("Transaction not found."));
-
-            if (transaction.TransactionStatus == "Success")
+            if (string.IsNullOrWhiteSpace(sessionId))
             {
-                return View("Result", new AtomPaymentResultVM(
-                    true, "Payment already processed.",
-                    transaction.PaymentTransactionId, transaction.ReferenceNo, transaction.Amount));
-            }
-
-            if (paymentSessionStatus == "in_progress")
-            {
-                transaction.TransactionStatus = "Pending";
-                transaction.TransactionError = "Bank transfer in progress.";
-                await _context.SaveChangesAsync(cancellationToken);
-
                 return View("Result", AtomPaymentResultVM.Failed(
-                    "Payment is being processed. You will be notified once confirmed."));
+                    "Payment ki details nahi mil payi. Agar paisa kat gaya ho to school office se sampark karein."));
             }
 
-            if (paymentSessionStatus != "succeeded" || paymentStatus != "succeeded")
+            // Redirect signature: log hota hai; EnforceRedirectSignature true ho to reject
+            var signature = Get("signature");
+            if (!string.IsNullOrWhiteSpace(signature))
             {
-                transaction.TransactionStatus = "Failed";
-                transaction.TransactionError = "Payment failed at gateway.";
-                transaction.GatewayPaymentId = paymentId;
-                transaction.ReferenceNo = paymentId;
-                await _context.SaveChangesAsync(cancellationToken);
+                bool sigOk = await _zohoPaymentService.VerifyRedirectSignatureAsync(
+                    sessionId, Get("payment_session_status"), Get("payment_id"), Get("payment_status"),
+                    Get("amount"), Get("mandate_id"), Get("udf1"), Get("udf2"), Get("udf3"), Get("udf4"), Get("udf5"),
+                    signature, ct);
 
+                _logger.LogInformation("Zoho redirect signature valid={Valid} session={S}", sigOk, sessionId);
+
+                if (!sigOk && EnforceRedirectSignature)
+                    return View("Result", AtomPaymentResultVM.Failed("Invalid redirect signature."));
+            }
+
+            // Asli faisla: Zoho se server-side confirm + receipt (idempotent)
+            var result = await _zohoPaymentService.CompleteAsync(sessionId, ct);
+
+            var row = await _context.PaymentTransactionDetail.AsNoTracking()
+                .Where(x => x.GatewayName == "ZOHO" && x.GatewayOrderId == sessionId)
+                .Select(x => new { x.PaymentTransactionId, x.Amount, x.GatewayPaymentId })
+                .FirstOrDefaultAsync(ct);
+
+            if (result.Success)
+            {
                 return View("Result", new AtomPaymentResultVM(
-                    false, transaction.TransactionError, transaction.PaymentTransactionId,
-                    paymentId, transaction.Amount));
+                    true, "Payment completed successfully.",
+                    row?.PaymentTransactionId, row?.GatewayPaymentId, row?.Amount ?? 0, result.ReceiptId));
             }
 
-            if (decimal.TryParse(amount, out var redirectAmount) &&
-                Math.Abs(transaction.Amount - redirectAmount) > 0.01m)
-            {
-                transaction.TransactionStatus = "Failed";
-                transaction.TransactionError = "Gateway amount mismatch.";
-                await _context.SaveChangesAsync(cancellationToken);
-
-                _logger.LogWarning(
-                    "Zoho amount mismatch. Local={LocalAmount}, Gateway={GatewayAmount}, SessionId={SessionId}",
-                    transaction.Amount, redirectAmount, paymentsSessionId);
-
-                return View("Result", AtomPaymentResultVM.Failed("Payment amount verification failed."));
-            }
-
-            transaction.TransactionStatus = "Success";
-            transaction.GatewayPaymentId = paymentId;
-            transaction.ReferenceNo = paymentId;
-            transaction.PaymentCompletedOn = DateTime.Now;
-
-            await _context.SaveChangesAsync(cancellationToken);
-
-            var receiptId = await FinalizeReceiptAsync(transaction, cancellationToken);
+            var message = isSuccessUrl
+                ? result.Message + " Agar paisa kat gaya hai to thodi der me receipt ban jayegi, ya school office se sampark karein."
+                : "Payment complete nahi hui. Aap dobara try kar sakte hain.";
 
             return View("Result", new AtomPaymentResultVM(
-                true, "Payment completed successfully.",
-                transaction.PaymentTransactionId, paymentId, transaction.Amount, receiptId));
+                false, message,
+                row?.PaymentTransactionId, row?.GatewayPaymentId, row?.Amount ?? 0));
         }
 
+        // Zoho webhook (server-to-server): signature verify -> session id nikalo -> CompleteAsync.
+        // Webhook URL Zoho portal > Settings > Webhooks me: https://<domain>/Payment/Webhook
         [HttpPost]
+        [AllowAnonymous]
         [IgnoreAntiforgeryToken]
         [SkipPermission]
-        public async Task<IActionResult> Webhook(CancellationToken cancellationToken)
+        public async Task<IActionResult> Webhook()
         {
-            Request.EnableBuffering();
+            var ct = HttpContext.RequestAborted;
 
-            using var reader = new StreamReader(Request.Body, leaveOpen: true);
-            var rawPayload = await reader.ReadToEndAsync(cancellationToken);
-            Request.Body.Position = 0;
+            string raw;
+            using (var reader = new StreamReader(Request.Body))
+                raw = await reader.ReadToEndAsync(ct);
 
-            if (!Request.Headers.TryGetValue("X-Zoho-Webhook-Signature", out var signatureHeader))
+            var header = Request.Headers["X-Zoho-Webhook-Signature"].ToString();
+            _logger.LogInformation("Zoho webhook received. Header={H} Body={B}", header, raw);
+
+            if (string.IsNullOrWhiteSpace(header) ||
+                !await _zohoPaymentService.VerifyWebhookSignatureAsync(header, raw, ct))
             {
-                _logger.LogWarning("Zoho webhook missing signature header.");
-                return BadRequest();
+                _logger.LogWarning("Zoho webhook signature invalid.");
+                return Unauthorized();
             }
 
-            var valid = await _zohoPaymentService.VerifyWebhookSignatureAsync(
-                signatureHeader.ToString(), rawPayload, cancellationToken);
+            // Replay protection: timestamp 5 minute se purana ho to reject
+            var t = header.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(p => p.Split('=', 2))
+                .Where(kv => kv.Length == 2 && kv[0].Trim().Equals("t", StringComparison.OrdinalIgnoreCase))
+                .Select(kv => kv[1].Trim())
+                .FirstOrDefault();
 
-            if (!valid)
+            if (long.TryParse(t, out var ts))
             {
-                _logger.LogWarning("Invalid Zoho webhook signature.");
-                return Unauthorized();
+                // timestamp seconds ya milliseconds ho sakta hai
+                var when = ts > 100_000_000_000 ? DateTimeOffset.FromUnixTimeMilliseconds(ts)
+                                                : DateTimeOffset.FromUnixTimeSeconds(ts);
+                if (Math.Abs((DateTimeOffset.UtcNow - when).TotalMinutes) > 5)
+                {
+                    _logger.LogWarning("Zoho webhook timestamp too old: {When}", when);
+                    return Unauthorized();
+                }
+            }
+
+            string? sessionId = null;
+            try
+            {
+                using var doc = JsonDocument.Parse(raw);
+                sessionId = FindString(doc.RootElement, "payments_session_id");
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogWarning(ex, "Zoho webhook body JSON nahi hai.");
+            }
+
+            if (string.IsNullOrWhiteSpace(sessionId))
+            {
+                // 200 dete hain taaki Zoho baar-baar retry na kare; payload log me hai
+                _logger.LogWarning("Zoho webhook me payments_session_id nahi mila.");
+                return Ok();
             }
 
             try
             {
-                using var doc = JsonDocument.Parse(rawPayload);
-                var root = doc.RootElement;
-
-                var eventType = root.TryGetProperty("event_type", out var et) ? et.GetString() : null;
-
-                if (!root.TryGetProperty("payload", out var payload) &&
-                    !root.TryGetProperty("data", out payload))
-                {
-                    payload = root;
-                }
-
-                var sessionId = payload.TryGetProperty("payments_session_id", out var sid) ? sid.GetString() : null;
-
-                if (string.IsNullOrWhiteSpace(sessionId))
-                {
-                    _logger.LogWarning("Zoho webhook missing payments_session_id.");
-                    return Ok();
-                }
-
-                var transaction = await _context.PaymentTransactionDetail
-                    .Include(x => x.FeeDetails)
-                    .Include(x => x.Receipts)
-                    .FirstOrDefaultAsync(x => x.GatewayOrderId == sessionId, cancellationToken);
-
-                if (transaction == null)
-                {
-                    _logger.LogWarning("Zoho webhook: transaction not found. SessionId={SessionId}", sessionId);
-                    return Ok();
-                }
-
-                if (transaction.TransactionStatus == "Success")
-                    return Ok();
-
-                var paymentId = payload.TryGetProperty("payment_id", out var pid) ? pid.GetString() : null;
-
-                transaction.GatewayResponse = rawPayload;
-
-                if (eventType == "payment.success")
-                {
-                    transaction.TransactionStatus = "Success";
-                    transaction.GatewayPaymentId = paymentId;
-                    transaction.ReferenceNo = paymentId;
-                    transaction.PaymentCompletedOn = DateTime.Now;
-
-                    await _context.SaveChangesAsync(cancellationToken);
-                    await FinalizeReceiptAsync(transaction, cancellationToken);
-                }
-                else if (eventType == "payment.failed")
-                {
-                    transaction.TransactionStatus = "Failed";
-                    transaction.TransactionError = "Payment failed (via webhook).";
-                    await _context.SaveChangesAsync(cancellationToken);
-                }
-
-                return Ok();
+                var result = await _zohoPaymentService.CompleteAsync(sessionId, ct);
+                _logger.LogInformation("Zoho webhook processed. Session={S} Success={Ok} Msg={M}",
+                    sessionId, result.Success, result.Message);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Zoho webhook processing failed.");
-                return Ok();
+                _logger.LogError(ex, "Zoho webhook processing failed. Session={S}", sessionId);
             }
+
+            return Ok();
+        }
+
+        // JSON me kahin bhi nested "name" property dhundta hai (webhook payload structure ke liye)
+        private static string? FindString(JsonElement el, string name)
+        {
+            switch (el.ValueKind)
+            {
+                case JsonValueKind.Object:
+                    foreach (var p in el.EnumerateObject())
+                    {
+                        if (p.Name.Equals(name, StringComparison.OrdinalIgnoreCase) &&
+                            p.Value.ValueKind == JsonValueKind.String)
+                            return p.Value.GetString();
+
+                        var found = FindString(p.Value, name);
+                        if (found != null) return found;
+                    }
+                    break;
+                case JsonValueKind.Array:
+                    foreach (var item in el.EnumerateArray())
+                    {
+                        var found = FindString(item, name);
+                        if (found != null) return found;
+                    }
+                    break;
+            }
+            return null;
         }
 
         #endregion
@@ -575,11 +741,16 @@ namespace Shikhsa.Controllers
 
                 var redirectUri = Url.Action(nameof(ZohoOAuthSetup), "Payment", null, Request.Scheme) ?? "";
 
+                // Sandbox: scope prefix ZohoPaySandbox aur soid zohopaysandbox.<account_id>
+                var sandbox = settings.ApiBaseUrl.Contains("sandbox", StringComparison.OrdinalIgnoreCase);
+                var scope = sandbox ? "ZohoPaySandbox" : "ZohoPay";
+                var soid = sandbox ? "zohopaysandbox" : "zohopay";
+
                 var authUrl =
-                    $"{settings.AccountsBaseUrl}/oauth/v2/auth" +
-                    $"?scope=ZohoPay.payments.CREATE,ZohoPay.payments.READ,ZohoPay.payments.UPDATE" +
+                    $"{settings.AccountsBaseUrl}/oauth/v2/org/auth" +
+                    $"?scope={scope}.payments.CREATE,{scope}.payments.READ,{scope}.payments.UPDATE" +
                     $"&client_id={Uri.EscapeDataString(settings.ClientId)}" +
-                    $"&soid=zohopay.{Uri.EscapeDataString(settings.AccountId)}" +
+                    $"&soid={soid}.{Uri.EscapeDataString(settings.AccountId)}" +
                     $"&state=zoho-oauth-setup" +
                     $"&response_type=code" +
                     $"&redirect_uri={Uri.EscapeDataString(redirectUri)}" +
@@ -592,21 +763,8 @@ namespace Shikhsa.Controllers
             {
                 var redirectUri = Url.Action(nameof(ZohoOAuthSetup), "Payment", null, Request.Scheme) ?? "";
 
-                var result = await _zohoPaymentService.ExchangeAuthorizationCodeAsync(code, redirectUri, cancellationToken);
-
-                var setting = await _context.PaymentGatewaySettings
-                    .FirstOrDefaultAsync(x => x.GatewayName == "ZOHO", cancellationToken);
-
-                if (setting == null)
-                {
-                    TempData["Error"] = "ZOHO gateway row DB me nahi mili — pehle wo create karo.";
-                    return RedirectToAction("Index", "Settings");
-                }
-
-                setting.ZohoRefreshToken = result.RefreshToken;
-                setting.UpdatedDate = DateTime.UtcNow;
-
-                await _context.SaveChangesAsync(cancellationToken);
+                // Refresh token yahin encrypted (key/value "RefreshToken") save ho jata hai
+                await _zohoPaymentService.ExchangeAuthorizationCodeAsync(code, redirectUri, cancellationToken);
 
                 TempData["Success"] = "Zoho refresh token successfully generate aur save ho gaya.";
                 return RedirectToAction("Index", "Settings");
@@ -618,107 +776,147 @@ namespace Shikhsa.Controllers
             }
         }
 
-        #endregion
-
-        #region Shared: Receipt finalization (dono gateways use karte hain)
-
-        private async Task<long> FinalizeReceiptAsync(PaymentTransactionDetail transaction, CancellationToken cancellationToken)
+        public class ZohoWidgetConfirmRequest
         {
-            var existingReceipt = await _context.FeeReceipt
-                .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.PaymentTransactionId == transaction.PaymentTransactionId, cancellationToken);
+            public string? PaymentSessionId { get; set; } = string.Empty;
+            public string? PaymentId { get; set; } = string.Empty;
+        }
 
-            if (existingReceipt != null)
-                return existingReceipt.FeeReceiptId;
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [SkipPermission]
+        public async Task<IActionResult> ConfirmZohoWidgetPayment(
+            [FromBody] ZohoWidgetConfirmRequest request)
+        {
+            var ct = HttpContext.RequestAborted;
 
-            if (transaction.Receipts.Any())
-                return transaction.Receipts.First().FeeReceiptId;
-
-            decimal lateFee = 0m, concessionAmount = 0m;
-            string? concession = null, remark = null;
-
-            if (!string.IsNullOrWhiteSpace(transaction.GatewaySignature))
+            //if (string.IsNullOrWhiteSpace(request.PaymentSessionId) ||
+            //    string.IsNullOrWhiteSpace(request.PaymentId))
+            //{
+            //    return BadRequest(new
+            //    {
+            //        success = false,
+            //        message = "Invalid payment response."
+            //    });
+            //}
+            if (string.IsNullOrWhiteSpace(request.PaymentSessionId))
             {
-                try
+                return BadRequest(new
                 {
-                    using var meta = JsonDocument.Parse(transaction.GatewaySignature);
-                    var root = meta.RootElement;
+                    success = false,
+                    message = "Invalid payment session."
+                });
+            }
+            var transaction = await _context.PaymentTransactionDetail
+                .FirstOrDefaultAsync(x =>
+                    x.GatewayName == "ZOHO" &&
+                    x.GatewayOrderId == request.PaymentSessionId, ct);
 
-                    lateFee = root.TryGetProperty("LateFee", out var late) ? late.GetDecimal() : 0m;
-                    concessionAmount = root.TryGetProperty("ConcessionAmount", out var ca) ? ca.GetDecimal() : 0m;
-                    concession = root.TryGetProperty("Concession", out var c) ? c.GetString() : null;
-                    remark = root.TryGetProperty("Remark", out var r) ? r.GetString() : null;
-                }
-                catch (JsonException ex)
+            if (transaction == null)
+            {
+                return NotFound(new
                 {
-                    _logger.LogWarning(ex,
-                        "Unable to read payment metadata for PaymentTransactionId {Id}", transaction.PaymentTransactionId);
-                }
+                    success = false,
+                    message = "Payment transaction not found."
+                });
             }
 
-            var items = transaction.FeeDetails
-                .Select(x => new StudentFeeReceiptItemVM
-                {
-                    FeeId = x.FeeId,
-                    FeePlanId = x.StudentFeeId,
-                    FeeType = x.FeeType,
-                    FeeDescription = x.FeeType,
-                    Month = x.Month,
-                    Year = x.Year,
-                    Amount = x.FeeAmount,
-                    CollectAmount = x.PaidAmount,
-                    IsSelected = true
-                }).ToList();
-
-            var vm = new StudentFeeReceiptVM
-            {
-                StudentId = transaction.StudentId,
-                PaymentModeId = transaction.PaymentModeId,
-                ReceiptDate = DateTime.Now,
-                LateFee = lateFee,
-                Concession = concession ?? "",
-                ConcessionAmount = concessionAmount,
-                Remark = remark
-            };
-
-            var student = await _context.Tbl_Students
-                .AsNoTracking()
-                .FirstAsync(x => x.StudentId == transaction.StudentId, cancellationToken);
-
-            vm.ClassId = student.AdmitClassId ?? 0;
-            vm.BatchId = student.AdmitBatchId ?? 0;
-
-            vm.TuitionFees = items.Where(x => x.FeeType.Equals("Tuition", StringComparison.OrdinalIgnoreCase)).ToList();
-            vm.TransportFees = items.Where(x => x.FeeType.Equals("Transport", StringComparison.OrdinalIgnoreCase)).ToList();
-            vm.HostelFees = items.Where(x => x.FeeType.Equals("Hostel", StringComparison.OrdinalIgnoreCase)).ToList();
-
-            long receiptId;
             try
             {
-                receiptId = _repository.SaveCashFeeReceipt(vm);
+                // Server-side verification through Zoho.
+                // Do not trust the browser's success response.
+                //var result = await _zohoPaymentService.CompleteAsync(
+                //    request.PaymentSessionId, ct);
+                var result = await _zohoPaymentService.CompleteAsync(request.PaymentSessionId,request.PaymentId,ct);
+
+                if (!result.Success)
+                {
+                    return Ok(new
+                    {
+                        success = false,
+                        message = result.Message ??
+                                  "Payment could not be verified."
+                    });
+                }
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Payment completed successfully.",
+                    redirectUrl = Url.Action(nameof(PaymentResult),"Payment",new { id = transaction.PaymentTransactionId })
+                });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex,
-                    "Failed to save receipt for PaymentTransactionId {Id}. Manual reconciliation required.",
-                    transaction.PaymentTransactionId);
+                    "Zoho widget payment confirmation failed. Session={SessionId}",
+                    request.PaymentSessionId);
 
-                transaction.TransactionError = "Payment success but receipt save failed. Admin will reconcile.";
-                await _context.SaveChangesAsync(cancellationToken);
-
-                throw;
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Payment verification is pending. Please check again."
+                });
             }
+        }
+        [HttpGet]
+        [SkipPermission]
+        public async Task<IActionResult> PaymentResult(long id)
+        {
+            var transaction = await _context.PaymentTransactionDetail
+                .FirstOrDefaultAsync(x => x.PaymentTransactionId == id);
 
-            var receipt = await _context.FeeReceipt.FirstAsync(x => x.FeeReceiptId == receiptId, cancellationToken);
-            receipt.PaymentTransactionId = transaction.PaymentTransactionId;
-            await _context.SaveChangesAsync(cancellationToken);
+            if (transaction == null)
+                return View("Result",
+                    AtomPaymentResultVM.Failed("Transaction not found."));
 
-            return receiptId;
+            return View("Result", new AtomPaymentResultVM
+            {
+                Success = transaction.TransactionStatus == "Success",
+                //Message = transaction.TransactionStatus == "Success"
+                //    ? "Payment completed successfully."
+                //    : transaction.TransactionError ?? "Payment is being verified.",
+                Message = transaction.TransactionStatus switch
+                {
+                    "Success" => "Payment completed successfully.",
+                    "Failed" => "Payment failed. Please try again.",
+                    "Canceled" => "Payment was canceled.",
+                    "Pending" => "Payment is being verified with Zoho.",
+                    _ => transaction.TransactionError ?? "Payment status is unavailable."
+                },
+                PaymentTransactionId = transaction.PaymentTransactionId,
+                ReferenceNo = transaction.GatewayPaymentId,
+                Amount = transaction.Amount
+            });
+        }
+        // PaymentController ke andar ye helper method add karein
+        private async Task PopulateCheckoutDetailsAsync(
+            AtomCheckoutVM checkoutVm,
+            PaymentTransactionDetail transaction,
+            Tbl_Students? student,
+            CancellationToken cancellationToken)
+        {
+            // 1. Session se School Name & Address nikalna (Apni exact Session Keys check kar lein)
+            checkoutVm.SchoolName = HttpContext.Session.GetString("SchoolName") ?? "Shiksha School";
+            checkoutVm.SchoolAddress = HttpContext.Session.GetString("SchoolAddress") ?? "";
+            checkoutVm.SchoolContactNO = HttpContext.Session.GetString("SchoolMobile") ?? "";
+
+            // 2. Student Basic Details
+            checkoutVm.StudentName = transaction.StudentName ?? string.Empty;
+            checkoutVm.ApplicationNo = transaction.ApplicationNo ?? student?.ApplicationNo ?? "N/A";
+            checkoutVm.FatherName = transaction.FatherName ?? "N/A";
+            
+            // Optional: Agar Class ka naam dikhana ho (Apni Class table ke hisab se check karein)
+             var classObj = await _context.DataListItems.FirstOrDefaultAsync(c => c.DataListItemId == transaction.ClassId, cancellationToken);
+            // checkoutVm.ClassName = classObj?.ClassName ?? "";
+            checkoutVm.ClassName = classObj.DataListItemText ?? "N/A";
         }
 
         #endregion
     }
 
+    // Views (Checkout.cshtml / Result.cshtml) in ko Shikhsa.Controllers.AtomCheckoutVM / AtomPaymentResultVM
+    // naam se use karte hain, isliye ye PaymentController ke andar nahi, namespace level par hone chahiye.
     public class AtomCheckoutVM
     {
         public string MerchantTransactionId { get; set; } = string.Empty;
@@ -734,6 +932,26 @@ namespace Shikhsa.Controllers
         public string ProductId { get; set; } = string.Empty;
         public string RequestEncryptKey { get; set; } = string.Empty;
         public string RequestSalt { get; set; } = string.Empty;
+        public string ZohoAccountId { get; set; } = string.Empty;
+
+        public string ZohoApiKey { get; set; } = string.Empty;
+
+        public string ZohoCreateSessionUrl { get; set; } = string.Empty;
+
+        public string ZohoVerifyPaymentUrl { get; set; } = string.Empty;
+        public string? ZohoPaymentSessionId { get; set; }
+
+        public bool ZohoIsTestMode { get; set; }
+
+        public string? ZohoConfirmPaymentUrl { get; set; }
+
+        public string SchoolName { get; set; } = string.Empty;
+        public string SchoolAddress { get; set; } = string.Empty;
+        public string StudentName { get; set; } = string.Empty;
+        public string ApplicationNo { get; set; } = string.Empty;
+        public string FatherName { get; set; } = string.Empty;
+        public string ClassName { get; set; } = string.Empty;
+        public string SchoolContactNO { get; set; } = string.Empty;
     }
 
     public class AtomPaymentResultVM
@@ -760,5 +978,9 @@ namespace Shikhsa.Controllers
 
         public static AtomPaymentResultVM Failed(string message)
             => new AtomPaymentResultVM { Success = false, Message = message };
+        public string ZohoPaymentSessionId { get; set; } = string.Empty;
+        public bool ZohoIsTestMode { get; set; }
+
+        public string ZohoConfirmPaymentUrl { get; set; } = string.Empty;
     }
 }

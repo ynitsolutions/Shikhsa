@@ -142,6 +142,9 @@ namespace Shikhsa.Controllers
             HttpContext.Session.SetString("SchoolName", school.SchoolName);
             HttpContext.Session.SetString("SchoolLogo", school.LogoPath);
             HttpContext.Session.SetString("SchoolTagLine", school.TagLine);
+            HttpContext.Session.SetString("SchoolAddress", school.SchoolAddress);
+            HttpContext.Session.SetString("SchoolMobile", school.MobileContactNo);
+
             await _permissionService.CacheUserPermissions(user.Id);
 
             await _permissionService.CacheUserPermissions(user.Id);

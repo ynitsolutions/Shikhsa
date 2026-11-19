@@ -1,127 +1,465 @@
-@* @model Shikhsa.Controllers.AtomCheckoutVM
-@{
-    ViewData["Title"] = "Online Fee Payment";
-}
-
-<div class="container py-5">
-    <div class="card shadow-sm mx-auto" style="max-width:520px;">
-        <div class="card-body text-center">
-            <h5 class="mb-3">Online Fee Payment</h5>
-            <div class="small text-muted mb-2">Transaction ID: @Model.MerchantTransactionId</div>
-            <div class="fs-4 fw-bold mb-4">₹@Model.Amount.ToString("N2")</div>
-            <button type="button" class="btn btn-primary px-4" id="payNow">Pay Now</button>
-        </div>
-    </div>
-</div>
-
-<script src="@Model.CheckoutCdn?v=@DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()"></script>
-<script>
-    document.getElementById('payNow').addEventListener('click', function () {
-        const options = {
-            atomTokenId: '@Model.AtomTokenId',
-            merchId: '@Model.MerchId',
-            custEmail: '@Model.CustomerEmail',
-            custMobile: '@Model.CustomerMobile',
-            returnUrl: '@Model.ReturnUrl'
-        };
-
-        if (typeof AtomPaynetz === 'undefined') {
-            alert('Payment gateway could not be loaded. Please try again.');
-            return;
-        }
-
-        new AtomPaynetz(options, '@Model.Environment');
-    });
-</script>
- *@
 @model Shikhsa.Controllers.AtomCheckoutVM
+
+@using System.Globalization
+
 @{
     ViewData["Title"] = "Online Fee Payment";
+
+    var amount = Model.Amount.ToString(
+        "0.00",
+        CultureInfo.InvariantCulture
+    );
 }
 
 <div class="container py-5">
     <div class="card shadow-sm mx-auto" style="max-width:520px;">
-        <div class="card-body text-center">
-            <h5 class="mb-3">Online Fee Payment</h5>
-            <div class="small text-muted mb-2">Transaction ID: @Model.MerchantTransactionId</div>
-            <div class="fs-4 fw-bold mb-4">₹@Model.Amount.ToString("N2")</div>
+        
+        <!-- SCHOOL HEADER -->
+        <div class="card-header bg-light text-center py-3">
+            <h5 class="mb-1 fw-bold text-primary">@Model.SchoolName</h5>
+            @if (!string.IsNullOrWhiteSpace(Model.SchoolAddress))
+            {
+                <div class="small text-muted">@Model.SchoolAddress  @Model.SchoolContactNO</div>
+            }
+        </div>
 
-            <div class="d-grid gap-2">
-                <!-- Atom Payment Button -->
-                <button type="button" class="btn btn-primary px-4 mb-2" id="payNowAtom">Pay with Atom (NTT Data)</button>
+        <div class="card-body">
+            <h6 class="text-center text-uppercase text-muted mb-3">Online Fee Payment</h6>
 
-                <!-- Zoho Payment Button -->
-                <button type="button" class="btn btn-outline-dark px-4" id="payNowZoho">Pay with Zoho Payments</button>
+            <!-- STUDENT & TRANSACTION DETAILS -->
+            <div class="bg-light rounded p-3 mb-3 small">
+                <div class="d-flex justify-content-between mb-1">
+                    <span class="text-muted">Student Name:</span>
+                    <span class="fw-semibold text-dark">@Model.StudentName</span>
+                </div>
+                <div class="d-flex justify-content-between mb-1">
+                    <span class="text-muted">Application / Adm No:</span>
+                    <span class="fw-semibold text-dark">@Model.ApplicationNo</span>
+                </div>
+                <div class="d-flex justify-content-between mb-1">
+                    <span class="text-muted">Class:</span>
+                    <span class="fw-semibold text-dark">@Model.ClassName</span>
+                </div>
+                @if (!string.IsNullOrWhiteSpace(Model.FatherName))
+                {
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="text-muted">Father's Name:</span>
+                        <span class="fw-semibold text-dark">@Model.FatherName</span>
+                    </div>
+                }
+                @if (!string.IsNullOrWhiteSpace(Model.CustomerMobile))
+                {
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="text-muted">Mobile No:</span>
+                        <span class="fw-semibold text-dark">@Model.CustomerMobile</span>
+                    </div>
+                }
+                <div class="d-flex justify-content-between border-top pt-1 mt-1">
+                    <span class="text-muted">Transaction ID:</span>
+                    <span class="text-dark">@Model.MerchantTransactionId</span>
+                </div>
             </div>
+
+            <!-- PAYABLE AMOUNT -->
+            <div class="text-center border rounded py-2 mb-4 bg-white">
+                <div class="small text-muted">Total Payable Amount</div>
+                <div class="fs-3 fw-bold text-success">
+                    ₹@Model.Amount.ToString("N2")
+                </div>
+            </div>
+
+            <!-- PAYMENT BUTTONS -->
+            <div class="d-grid gap-2">
+                <!-- ATOM PAYMENT -->
+                <button type="button"
+                        class="btn btn-primary px-4"
+                        id="payNowAtom">
+                    Pay with Atom (NTT Data)
+                </button>
+
+                <!-- ZOHO PAYMENT -->
+                <button type="button"
+                        class="btn btn-outline-dark px-4"
+                        id="payNowZoho">
+                    Pay with Zoho Payments
+                </button>
+            </div>
+
+            <div id="paymentMessage"
+                 class="small mt-3 text-muted text-center"
+                 role="status"
+                 aria-live="polite">
+            </div>
+
         </div>
     </div>
 </div>
 
-<!-- =================--- Payment Gateway CDNs ---================= -->
-<!-- Atom Checkout CDN -->
+
+<!-- ========================================= -->
+<!-- ANTI FORGERY TOKEN                        -->
+<!-- ========================================= -->
+
+<form id="zohoAntiForgeryForm" method="post">
+    @Html.AntiForgeryToken()
+</form>
+
+<!-- ========================================= -->
+<!-- PAYMENT GATEWAY SDKs                      -->
+<!-- ========================================= -->
+<!-- ATOM SDK -->
 <script src="@Model.CheckoutCdn?v=@DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()"></script>
 
-<!-- Zoho Checkout CDN (Yahan dynamic CDN url backend class me add kar ke inject karein) -->
-<!-- Standard script typically looks like: https://zoho.in -->
-<script src="@(Model.GetType().GetProperty("ZohoCheckoutCdn") != null ? Model.GetType().GetProperty("ZohoCheckoutCdn").GetValue(Model, null) : "https://zoho.in")"></script>
+<!-- ZOHO PAYMENTS WIDGET SDK -->
+<script src="https://static.zohocdn.com/zpay/zpay-js/v1/zpayments.js"></script>
 
 <script>
-    // ============================================
-    // 1. ATOM PAYNETZ INTEGRATION
-    // ============================================
-    document.getElementById('payNowAtom').addEventListener('click', function () {
-        const options = {
-            atomTokenId: '@Model.AtomTokenId',
-            merchId: '@Model.MerchId',
-            custEmail: '@Model.CustomerEmail',
-            custMobile: '@Model.CustomerMobile',
-            returnUrl: '@Model.ReturnUrl'
-        };
+    (function () {
 
-        if (typeof AtomPaynetz === 'undefined') {
-            alert('Atom Payment gateway could not be loaded. Please try again.');
-            return;
+        "use strict";
+
+        // =========================================
+        // COMMON ELEMENTS
+        // =========================================
+
+        const atomButton = document.getElementById("payNowAtom");
+        const zohoButton = document.getElementById("payNowZoho");
+        const paymentMessage = document.getElementById("paymentMessage");
+
+        function showMessage(message, isError) {
+            if (!paymentMessage) return;
+
+            paymentMessage.textContent = message || "";
+
+            paymentMessage.className = isError
+                ? "small mt-3 text-danger"
+                : "small mt-3 text-muted";
         }
 
-        new AtomPaynetz(options, '@Model.Environment');
-    });
 
-    // ============================================
-    // 2. ZOHO PAYMENTS INTEGRATION
-    // ============================================
-    document.getElementById('payNowZoho').addEventListener('click', function () {
-        if (typeof ZohoPayments === 'undefined') {
-            alert('Zoho Payment gateway could not be loaded. Please try again.');
-            return;
-        }
+        // =========================================
+        // 1. ATOM PAYMENT - EXISTING FLOW
+        // =========================================
 
-        // Backend Controller me standard checkout API response generate karke ClientConfiguration nikalen
-        // Zoho handler setup example:
-        const zohoOptions = {
-            // Note: In parameters ko secure backend controller API payload response se fill karna sabse safe hota hai.
-            clientConfiguration: '@(Model.GetType().GetProperty("ZohoClientJson") != null ? Model.GetType().GetProperty("ZohoClientJson").GetValue(Model, null) : "")',
+        if (atomButton) {
 
-            handler: function (response) {
-                // Success Callback: Jab payment submit ya success ho jaye
-                console.log("Zoho Payment Initiated/Completed:", response);
-                if (response.payment_id) {
-                    window.location.href = '@Model.ReturnUrl?paymentId=' + response.payment_id + '&status=success';
+            atomButton.addEventListener("click", function () {
+
+                const options = {
+                    atomTokenId: '@Model.AtomTokenId',
+                    merchId: '@Model.MerchId',
+                    custEmail: '@Model.CustomerEmail',
+                    custMobile: '@Model.CustomerMobile',
+                    returnUrl: '@Model.ReturnUrl'
+                };
+
+                // Atom SDK constructor
+                const AtomConstructor = Reflect.get(
+                    window,
+                    "AtomPaynetz"
+                );
+
+                if (typeof AtomConstructor !== "function") {
+                    showMessage(
+                        "Atom Payment gateway could not be loaded. Please try again.",
+                        true
+                    );
+                    return;
                 }
-            },
-            modal: {
-                ondismiss: function () {
-                    console.log('Zoho checkout modal closed by user.');
-                }
-            }
-        };
 
-        // Initialize Zoho Payments Checkout Popup
-        try {
-            const zohoCheckout = new ZohoPayments(zohoOptions);
-            zohoCheckout.open();
-        } catch (err) {
-            console.error("Zoho checkout initialization error: ", err);
-            alert("Error launching Zoho Payments.");
+                try {
+                    new AtomConstructor(
+                        options,
+                        '@Model.Environment'
+                    );
+                }
+                catch (error) {
+                    console.error("Atom payment error:", error);
+
+                    showMessage(
+                        "Unable to open Atom payment gateway.",
+                        true
+                    );
+                }
+
+            });
+
         }
-    });
+
+
+        // =========================================
+        // 2. ZOHO PAYMENTS - CHECKOUT WIDGET
+        // =========================================
+
+        let zohoPaymentsInstance = null;
+
+        if (zohoButton) {
+            debugger
+            zohoButton.addEventListener("click", async function () {
+
+                const button = this;
+
+                if (button.disabled) return;
+
+                button.disabled = true;
+                debugger
+                try {
+
+                    showMessage("Opening Zoho payment gateway...", false);
+
+                    button.textContent = "Opening payment...";
+
+                    // ---------------------------------
+                    // Validate payment session
+                    // ---------------------------------
+
+                    const paymentSessionId =
+                        '@Model.ZohoPaymentSessionId';
+
+                    if (!paymentSessionId) {
+                        throw new Error(
+                            "Zoho payment session is missing. Please try again."
+                        );
+                    }
+
+                    // ---------------------------------
+                    // Load Zoho SDK
+                    // ---------------------------------
+
+                    const ZPayments = Reflect.get(
+                        window,
+                        "ZPayments"
+                    );
+
+                    if (typeof ZPayments !== "function") {
+                        throw new Error(
+                            "Zoho Checkout SDK could not be loaded."
+                        );
+                    }
+
+                    // ---------------------------------
+                    // Initialize Zoho SDK
+                    // ---------------------------------
+
+                    if (!zohoPaymentsInstance) {
+
+                        zohoPaymentsInstance = new ZPayments({
+
+                            account_id: '@Model.ZohoAccountId',
+
+                            domain: "IN",
+
+                            otherOptions: {
+                                api_key: '@Model.ZohoApiKey',
+                                 is_test_mode: @(Model.ZohoIsTestMode ? "true" : "false")
+                            }
+
+                        });
+
+                    }
+
+                    // ---------------------------------
+                    // Open Zoho Widget
+                    // ---------------------------------
+
+                    button.textContent = "Complete payment...";
+
+                    const response =
+                        await zohoPaymentsInstance.requestPaymentMethod({
+
+                            amount: '@amount',
+
+                            currency_code: "INR",
+
+                            payments_session_id: paymentSessionId,
+
+                            currency_symbol: "₹",
+
+                            business: "@Model.SchoolName",
+
+                            description: "@Model.SchoolAddress",
+
+                            //invoice_number: '@Model.MerchantTransactionId',
+
+                            address: {
+                                name: "Student",
+                                email: '@Model.CustomerEmail',
+                                phone: '@Model.CustomerMobile'
+                            }
+
+                        });
+
+                    // ---------------------------------
+                    // Validate widget response
+                    // ---------------------------------
+
+                    if (!response || !response.payment_id) {
+                        throw new Error(
+                            "Payment ID was not received from Zoho."
+                        );
+                    }
+                    console.log("Zoho Widget Response:", response);
+                    // ---------------------------------
+                    // Server-side verification
+                    // ---------------------------------
+
+                    button.textContent = "Verifying payment...";
+
+                    showMessage(
+                        "Payment response received. Verifying with Zoho...",
+                        false
+                    );
+
+                    const tokenElement = document.querySelector(
+                        '#zohoAntiForgeryForm input[name="__RequestVerificationToken"]'
+                    );
+
+                    const token = tokenElement instanceof HTMLInputElement
+                        ? tokenElement.value
+                        : "";
+
+                    if (!token) {
+                        throw new Error(
+                            "Security token missing. Please refresh the page."
+                        );
+                    }
+
+                    const verifyResponse = await fetch(
+                        '@Model.ZohoConfirmPaymentUrl',
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type": "application/json",
+                                "RequestVerificationToken": token
+                            },
+
+                            body: JSON.stringify({
+
+                                paymentSessionId: paymentSessionId,
+
+                                paymentId: response.payment_id
+
+                            })
+                        }
+                    );
+
+                    const result = await verifyResponse.json();
+
+                    if (!verifyResponse.ok || !result.success) {
+                        throw new Error(
+                            result.message ||
+                            "Payment verification failed."
+                        );
+                    }
+
+                    // ---------------------------------
+                    // Payment successfully verified
+                    // ---------------------------------
+
+                    showMessage(
+                        "Payment verified successfully. Redirecting...",
+                        false
+                    );
+
+                    if (result.redirectUrl) {
+                        window.location.href = result.redirectUrl;
+                        return;
+                    }
+
+                    throw new Error(
+                        "Payment verified but result URL was not received."
+                    );
+
+                }
+                // catch (error) {
+
+                //     console.error(
+                //         "Zoho payment error:",
+                //         error
+                //     );
+
+                //     const errorMessage = error instanceof Error
+                //         ? error.message
+                //         : "Unable to process payment.";
+
+                //     if (
+                //         errorMessage.toLowerCase().includes("widget_closed")
+                //     ) {
+                //         showMessage(
+                //             "Payment window closed. You can try again.",
+                //             true
+                //         );
+                //     }
+                //     else {
+                //         showMessage(errorMessage, true);
+                //         alert(errorMessage);
+                //     }
+
+                // }
+                
+                catch (error) {
+
+                    console.error("Zoho payment error:", error);
+
+                    // Zoho SDK returns widget_closed as error.code
+                    const errorCode = error?.code || "";
+                    const errorMessage = error?.message || "Unable to process payment.";
+
+                    if (errorCode === "widget_closed") {
+
+                        showMessage(
+                            "Payment cancelled. You closed the payment window. No successful payment was confirmed.",
+                            true
+                        );
+
+                        console.info("Zoho payment cancelled by customer.");
+
+                    }
+                    else {
+
+                        showMessage(
+                            errorMessage,
+                            true
+                        );
+
+                        console.error("Zoho error code:", errorCode);
+
+                        alert(errorMessage);
+                    }
+                }
+
+                finally {
+
+                    // ---------------------------------
+                    // Close widget instance
+                    // ---------------------------------
+
+                    if (zohoPaymentsInstance &&
+                        typeof zohoPaymentsInstance.close === "function") {
+
+                        try {
+                            await zohoPaymentsInstance.close();
+                        }
+                        catch (closeError) {
+                            console.warn(
+                                "Zoho widget close error:",
+                                closeError
+                            );
+                        }
+
+                        zohoPaymentsInstance = null;
+                    }
+
+                    button.disabled = false;
+
+                    button.textContent = "Pay with Zoho Payments";
+
+                }
+
+            });
+
+        }
+
+    })();
 </script>

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -13,12 +14,13 @@ using Shikhsa.Repository;
 using Shikhsa.Services;
 using Shikhsa.ViewModels;
 using System.Text;
+using System.Text.Json;
 
 namespace Shikhsa.Controllers
 {
     public class FeeHeadingController : BaseController
     {
-        private readonly FeeHeadingRepository  _repository;
+        private readonly FeeHeadingRepository _repository;
         private readonly ApplicationDbContext _context;
         private readonly RoleManager<ApplicationRole> _roleManager;
         private readonly UserManager<ApplicationUser> _userManager;
@@ -31,7 +33,7 @@ namespace Shikhsa.Controllers
         private readonly FeeReceiptRecordRepository _feeReceiptRecordRepository;
         public FeeHeadingController(FeeHeadingRepository repository, RoleManager<ApplicationRole> roleManager, ApplicationDbContext context,
      UserManager<ApplicationUser> userManager,
-     PermissionService permissionService, IWebHostEnvironment env, EmailService email, LookupService lookup,NotificationService notificationService, IRazorViewToStringRenderer viewRenderer,      // 👈 constructor param
+     PermissionService permissionService, IWebHostEnvironment env, EmailService email, LookupService lookup, NotificationService notificationService, IRazorViewToStringRenderer viewRenderer,      // 👈 constructor param
         PdfGeneratorService pdfGenerator, FeeReceiptRecordRepository feeReceiptRecordRepository) : base(userManager, permissionService, context, email, lookup)
         {
             _repository = repository;
@@ -98,7 +100,7 @@ namespace Shikhsa.Controllers
         {
             var currentUser = HttpContext.Session.GetCurrentUser();
             string userName = currentUser?.UserName ?? User.Identity?.Name ?? "";
-            var response = await _repository.DeleteFrequencyAsync(id,userName);
+            var response = await _repository.DeleteFrequencyAsync(id, userName);
 
             TempData[response.Status == 1 ? "Success" : "Error"] = response.Message;
 
@@ -160,7 +162,7 @@ namespace Shikhsa.Controllers
                     foreach (var error in modelState.Errors)
                     {
                         System.Diagnostics.Debug.WriteLine($"Model Error: {error.ErrorMessage}");
-                   
+
                     }
                 }
                 return View("FeeHeadings", model);
@@ -198,7 +200,7 @@ namespace Shikhsa.Controllers
         {
             var currentUser = HttpContext.Session.GetCurrentUser();
             string userName = currentUser?.UserName ?? User.Identity?.Name ?? "";
-            var response = await _repository.DeleteFeeHeadingAsync(id,userName);
+            var response = await _repository.DeleteFeeHeadingAsync(id, userName);
 
             TempData[response.Status == 1 ? "Success" : "Error"] = response.Message;
 
@@ -206,21 +208,21 @@ namespace Shikhsa.Controllers
         }
         #endregion
         #region FeePlan
-            #region TuitionFeePlan
-            public async Task<IActionResult> FeePlans()
-            {
+        #region TuitionFeePlan
+        public async Task<IActionResult> FeePlans()
+        {
             await TaskBindFeePlansDropdown();
 
 
             var vm = new FeePlanIndexViewModel
-                    { 
-                        TuitionPlans = await _repository.GetAllTuitionFeePlanAsync(),
-                        TransportPlans = await _repository.GetAllTransportFeePlanAsync(),
-                        HostelPlans = await _repository.GetAllHostelFeePlanAsync()
-                    };
-                    return View(vm);
-            }
-     
+            {
+                TuitionPlans = await _repository.GetAllTuitionFeePlanAsync(),
+                TransportPlans = await _repository.GetAllTransportFeePlanAsync(),
+                HostelPlans = await _repository.GetAllHostelFeePlanAsync()
+            };
+            return View(vm);
+        }
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -250,26 +252,26 @@ namespace Shikhsa.Controllers
             }
         }
         public async Task<IActionResult> SaveTuitionFee(int id)
+        {
+            await TaskBindFeePlansDropdown();
+            var vm = new FeePlanIndexViewModel
             {
-                await TaskBindFeePlansDropdown();
-                var vm = new FeePlanIndexViewModel
-                {
-                    NewTuition = await _repository.GetTuitionFeePlanByIdAsync(id) ?? new TuitionFeePlan(),
-                    TuitionPlans = await _repository.GetAllTuitionFeePlanAsync(),
-                    TransportPlans = await _repository.GetAllTransportFeePlanAsync(),
-                    HostelPlans = await _repository.GetAllHostelFeePlanAsync()
-                };
-                return View("FeePLans", vm);
-            }
-            [HttpPost]
-            public async Task<IActionResult> DeleteTuitionFee(long id)
-            {
-                var currentUser = HttpContext.Session.GetCurrentUser();
-                string userName = currentUser?.UserName ?? User.Identity?.Name ?? "";
-                ResponseModel response = await _repository.DeleteTuitionFeePlanAsync(id, userName);
-                TempData[response.Status == 1 ? "Success" : "Error"] = response.Message;
-                return RedirectToAction(nameof(FeePlans));
-            }
+                NewTuition = await _repository.GetTuitionFeePlanByIdAsync(id) ?? new TuitionFeePlan(),
+                TuitionPlans = await _repository.GetAllTuitionFeePlanAsync(),
+                TransportPlans = await _repository.GetAllTransportFeePlanAsync(),
+                HostelPlans = await _repository.GetAllHostelFeePlanAsync()
+            };
+            return View("FeePLans", vm);
+        }
+        [HttpPost]
+        public async Task<IActionResult> DeleteTuitionFee(long id)
+        {
+            var currentUser = HttpContext.Session.GetCurrentUser();
+            string userName = currentUser?.UserName ?? User.Identity?.Name ?? "";
+            ResponseModel response = await _repository.DeleteTuitionFeePlanAsync(id, userName);
+            TempData[response.Status == 1 ? "Success" : "Error"] = response.Message;
+            return RedirectToAction(nameof(FeePlans));
+        }
         #endregion
         #region TransportFeePlan
         public async Task<IActionResult> SaveTransportFee(int id)
@@ -277,7 +279,7 @@ namespace Shikhsa.Controllers
             await TaskBindFeePlansDropdown();
             var vm = new FeePlanIndexViewModel
             {
-                NewTransport= await _repository.GetTransportFeePlanByIdAsync(id) ?? new TransportFeePlan(),
+                NewTransport = await _repository.GetTransportFeePlanByIdAsync(id) ?? new TransportFeePlan(),
                 TuitionPlans = await _repository.GetAllTuitionFeePlanAsync(),
                 TransportPlans = await _repository.GetAllTransportFeePlanAsync(),
                 HostelPlans = await _repository.GetAllHostelFeePlanAsync()
@@ -311,7 +313,7 @@ namespace Shikhsa.Controllers
                 return RedirectToAction(nameof(FeePlans));
             }
         }
-    
+
         [HttpPost]
         public async Task<IActionResult> DeleteTransportFee(int id)
         {
@@ -350,7 +352,7 @@ namespace Shikhsa.Controllers
                 var currentUser = HttpContext.Session.GetCurrentUser();
                 string userName = currentUser?.UserName ?? User.Identity?.Name ?? "";
 
-                ResponseModel response = await _repository.SaveUpdateHostelFeePlanAsync(vm.NewHostel,userName);
+                ResponseModel response = await _repository.SaveUpdateHostelFeePlanAsync(vm.NewHostel, userName);
 
                 TempData[response.Status == 1 ? "Success" : "Error"] = response.Message;
 
@@ -375,12 +377,12 @@ namespace Shikhsa.Controllers
         #endregion
         #region Fee Receipt
         [HttpGet]
-        public async Task<IActionResult> FeeReceipt(int? classId = null,int? batchId = null,long? studentId = null)
+        public async Task<IActionResult> FeeReceipt(int? classId = null, int? batchId = null, long? studentId = null)
         {
             var vm = new StudentFeePageVM
             {
                 SelectedClassId = classId,
-              
+
                 SelectedBatchId = batchId,
                 SelectedStudentId = studentId,
 
@@ -429,7 +431,7 @@ namespace Shikhsa.Controllers
 
                 ViewBag.IsStudentUser = true;   // View me dropdown ko readonly/hidden karne ke liye
             }
-        
+
             else
             {
                 // ============================================
@@ -552,7 +554,7 @@ namespace Shikhsa.Controllers
             if (paymentModeText.Trim().Equals("Online", StringComparison.OrdinalIgnoreCase))
             {
 
-                HttpContext.Session.SetString("PendingOnlineFeeReceipt",System.Text.Json.JsonSerializer.Serialize(vm.FeeReceipt));
+                HttpContext.Session.SetString("PendingOnlineFeeReceipt", System.Text.Json.JsonSerializer.Serialize(vm.FeeReceipt));
 
                 return RedirectToAction("InitiateFromSession", "Payment");
                 //TempData["Info"] = "Online payment integration next part me implement hoga.";
@@ -570,7 +572,7 @@ namespace Shikhsa.Controllers
             // OTHER PAYMENT MODE (Cheque, Card etc.) — abhi block
             // ============================================
 
-            TempData["Error"] = $"'{paymentModeText}' payment mode abhi supported nahi hai.";
+            TempData["Error"] = $"'{paymentModeText}'The payment mode is not currently supported";
 
             return RedirectToAction("FeeReceipt", "FeeHeading", new
             {
@@ -608,79 +610,79 @@ namespace Shikhsa.Controllers
         }
 
 
-    //    [HttpPost]
-    //    public async Task<IActionResult> SendFeeReceiptEmail(long feeReceiptId, string templateCode)
-    //    {
-    //        var receipt = await _context.FeeReceipt
-    //            .Include(x => x.Student)
-    //                .ThenInclude(s => s.Parent)
-    //            .Include(x => x.PaymentMode)
-    //            .Include(x => x.Details)
-    //            .FirstOrDefaultAsync(x => x.FeeReceiptId == feeReceiptId);
+        //    [HttpPost]
+        //    public async Task<IActionResult> SendFeeReceiptEmail(long feeReceiptId, string templateCode)
+        //    {
+        //        var receipt = await _context.FeeReceipt
+        //            .Include(x => x.Student)
+        //                .ThenInclude(s => s.Parent)
+        //            .Include(x => x.PaymentMode)
+        //            .Include(x => x.Details)
+        //            .FirstOrDefaultAsync(x => x.FeeReceiptId == feeReceiptId);
 
-    //        if (receipt == null)
-    //            return NotFound();
+        //        if (receipt == null)
+        //            return NotFound();
 
-    //        // ============================================
-    //        // BATCH NAME (join se aayega)
-    //        // ============================================
+        //        // ============================================
+        //        // BATCH NAME (join se aayega)
+        //        // ============================================
 
-    //        var batchName = await _context.Batches
-    //            .Where(x => x.BatchId == receipt.BatchId)
-    //            .Select(x => x.AcademicYear)
-    //            .FirstOrDefaultAsync();
+        //        var batchName = await _context.Batches
+        //            .Where(x => x.BatchId == receipt.BatchId)
+        //            .Select(x => x.AcademicYear)
+        //            .FirstOrDefaultAsync();
 
-    //        var firstDetail = receipt.Details.FirstOrDefault();
-
-
-    //        // ============================================
-    //        // EXTRA [NotMapped] FIELDS YAHIN POPULATE KARO
-    //        // ============================================
-
-    //        receipt.BatchName = batchName ?? "";
-    //        //receipt.TotalFee = receipt.Details.Sum(x => x.Amount).ToString("N2");
-    //        receipt.AlreadyPaidAmount = receipt.Details.Sum(x => x.PreviousPaidAmount).ToString("N2");
-    //        receipt.FeeType = firstDetail?.FeeType ?? "";
-    //        receipt.FeeDescription = firstDetail?.FeeDescription ?? "";
-    //        receipt.FeeMonth = firstDetail != null
-    //                                        ? new DateTime(2000, firstDetail.Month, 1).ToString("MMMM")
-    //                                        : "";
-    //        receipt.FeeYear = firstDetail?.Year.ToString() ?? "";
+        //        var firstDetail = receipt.Details.FirstOrDefault();
 
 
-    //        // ============================================
-    //        // PDF ATTACHMENT (agar attach karna hai)
-    //        // ============================================
+        //        // ============================================
+        //        // EXTRA [NotMapped] FIELDS YAHIN POPULATE KARO
+        //        // ============================================
 
-    //        string receiptHtml = await _viewRenderer.RenderViewToStringAsync(
-    //            "~/Views/FeeHeading/PrintReceipt.cshtml",
-    //            receipt,
-    //            new Dictionary<string, object> { { "School", await _notificationService.GetSchoolInfo() } });
-
-    //        byte[] pdfBytes = await _pdfGenerator.GeneratePdfFromHtmlAsync(receiptHtml);
-
-    //        var attachments = new List<(string, byte[], string)>
-    //{
-    //    ($"Receipt-{receipt.ReceiptNumber}.pdf", pdfBytes, "application/pdf")
-    //};
+        //        receipt.BatchName = batchName ?? "";
+        //        //receipt.TotalFee = receipt.Details.Sum(x => x.Amount).ToString("N2");
+        //        receipt.AlreadyPaidAmount = receipt.Details.Sum(x => x.PreviousPaidAmount).ToString("N2");
+        //        receipt.FeeType = firstDetail?.FeeType ?? "";
+        //        receipt.FeeDescription = firstDetail?.FeeDescription ?? "";
+        //        receipt.FeeMonth = firstDetail != null
+        //                                        ? new DateTime(2000, firstDetail.Month, 1).ToString("MMMM")
+        //                                        : "";
+        //        receipt.FeeYear = firstDetail?.Year.ToString() ?? "";
 
 
-    //        // ============================================
-    //        // NOTIFICATION SEND — Entity DIRECTLY pass ho raha hai
-    //        // ============================================
+        //        // ============================================
+        //        // PDF ATTACHMENT (agar attach karna hai)
+        //        // ============================================
 
-    //        var result = await _notificationService.SendAsync(
-    //            templateCode,
-    //            receipt.Student.Email,
-    //            receipt.FeeReceiptId,
-    //            attachments,
-    //            receipt.Student,          // → {{Student.XXX}}
-    //            receipt.Student.Parent,   // → {{Parent.XXX}}
-    //            receipt                   // → {{Fee.XXX}}
-    //        );
+        //        string receiptHtml = await _viewRenderer.RenderViewToStringAsync(
+        //            "~/Views/FeeHeading/PrintReceipt.cshtml",
+        //            receipt,
+        //            new Dictionary<string, object> { { "School", await _notificationService.GetSchoolInfo() } });
 
-    //        return Json(result);
-    //    }
+        //        byte[] pdfBytes = await _pdfGenerator.GeneratePdfFromHtmlAsync(receiptHtml);
+
+        //        var attachments = new List<(string, byte[], string)>
+        //{
+        //    ($"Receipt-{receipt.ReceiptNumber}.pdf", pdfBytes, "application/pdf")
+        //};
+
+
+        //        // ============================================
+        //        // NOTIFICATION SEND — Entity DIRECTLY pass ho raha hai
+        //        // ============================================
+
+        //        var result = await _notificationService.SendAsync(
+        //            templateCode,
+        //            receipt.Student.Email,
+        //            receipt.FeeReceiptId,
+        //            attachments,
+        //            receipt.Student,          // → {{Student.XXX}}
+        //            receipt.Student.Parent,   // → {{Parent.XXX}}
+        //            receipt                   // → {{Fee.XXX}}
+        //        );
+
+        //        return Json(result);
+        //    }
         [SkipPermission]
         private async Task SendFeeReceiptEmailAsync(long feeReceiptId, string templateCode)
         {
@@ -922,7 +924,7 @@ namespace Shikhsa.Controllers
             }
         }
         [HttpGet]
-        public async Task<IActionResult> ExportFeeReceiptReports(DateTime? dateFrom = null,DateTime? dateTo = null,string? search = null,int? classId = null,int? batchId = null,int? paymentModeId = null)
+        public async Task<IActionResult> ExportFeeReceiptReports(DateTime? dateFrom = null, DateTime? dateTo = null, string? search = null, int? classId = null, int? batchId = null, int? paymentModeId = null)
         {
             var request = new FeeReceiptDataTableRequest
             {
@@ -1191,5 +1193,9 @@ namespace Shikhsa.Controllers
         }
 
         #endregion
+
+       
+
+        }
     }
-}
+
